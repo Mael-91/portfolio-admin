@@ -4,7 +4,10 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const response = await fetch(`${env.apiBaseUrl}${path}`, {
+  const url = `${env.apiBaseUrl}${path}`;
+  console.log("API URL:", url);
+
+  const response = await fetch(url, {
     ...options,
     credentials: "include",
     headers: {
