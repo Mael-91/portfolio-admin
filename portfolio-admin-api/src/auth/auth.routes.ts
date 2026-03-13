@@ -33,7 +33,7 @@ authRouter.post("/login", loginLimiter, async (req, res) => {
         message: "Identifiants invalides",
       });
     }
-
+    console.log("SESSION =", req.session);
     req.session.adminUser = {
       id: adminUser.id,
       firstName: adminUser.firstName,
