@@ -21,6 +21,9 @@ const sessionStore = new MySQLStore({
   password: env.dbPass,
   database: env.dbName,
   createDatabaseTable: true,
+
+  clearExpired: true,
+  checkExpirationInterval: 900000,
 });
 
 app.use(
