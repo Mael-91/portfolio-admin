@@ -24,6 +24,8 @@ const sessionStore = new MySQLStore({
 
   clearExpired: true,
   checkExpirationInterval: 900000,
+
+  disableTouch: true
 });
 
 app.use(
