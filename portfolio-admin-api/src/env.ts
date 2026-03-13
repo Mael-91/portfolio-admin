@@ -23,4 +23,7 @@ export const env = {
   dbPass: process.env.DB_PASS || "",
 
   sessionSecret: process.env.SESSION_SECRET || "",
+  sessionName: process.env.SESSION_NAME || "mc_admin_sid",
+  sessionMaxAgeMs: Number(process.env.SESSION_MAX_AGE_MS || 1000 * 60 * 60 * 8),
+  sessionCookieSecure: String(process.env.SESSION_COOKIE_SECURE) === "true",
 };
