@@ -4,6 +4,7 @@ import helmet from "helmet";
 import { env } from "./env";
 import { healthRouter } from "./routes/health.routes";
 import { checkDatabaseConnection } from "./db/db";
+import { authRouter } from "./auth/auth.routes";
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use(
 app.use(express.json());
 
 app.use("/", healthRouter);
+app.use("/api", authRouter);
 
 app.use((_req, res) => {
   res.status(404).json({
