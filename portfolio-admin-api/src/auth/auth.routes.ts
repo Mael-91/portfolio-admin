@@ -33,7 +33,7 @@ authRouter.post("/login", loginLimiter, async (req, res) => {
         message: "Identifiants invalides",
       });
     }
-    console.log("SESSION =", req.session);
+
     req.session.adminUser = {
       id: adminUser.id,
       firstName: adminUser.firstName,
@@ -41,9 +41,20 @@ authRouter.post("/login", loginLimiter, async (req, res) => {
       email: adminUser.email,
     };
 
-    return res.status(200).json({
-      success: true,
-      user: req.session.adminUser,
+    req.session.save((sessionError) => {
+      if (sessionError) {
+        console.error("Erreur sauvegarde session admin :", sessionError);
+
+        return res.status(500).json({
+          success: false,
+          message: "Erreur serveur",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        user: req.session.adminUser,
+      });
     });
   } catch (error: any) {
     if (error?.name === "ZodError") {

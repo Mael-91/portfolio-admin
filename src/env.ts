@@ -4,5 +4,3 @@ export const env = {
   isProd: import.meta.env.PROD,
   mode: import.meta.env.MODE,
 };
-
-console.log("FRONT API BASE =", env.apiBaseUrl);
