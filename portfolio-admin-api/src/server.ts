@@ -9,6 +9,9 @@ const app = express();
 
 app.set("trust proxy", 1);
 
+console.log("BACKEND CORS_ORIGIN =", process.env.CORS_ORIGIN);
+console.log("BACKEND PORT =", process.env.PORT);
+
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
