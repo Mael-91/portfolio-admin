@@ -1,8 +1,6 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import session from "express-session";
-import MySQLStoreFactory from "express-mysql-session";
 import { env } from "./env";
 import { healthRouter } from "./routes/health.routes";
 import { checkDatabaseConnection } from "./db/db";
@@ -12,16 +10,8 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-const MySQLStore = MySQLStoreFactory(session);
-
-const sessionStore = new MySQLStore({
-  host: env.dbHost,
-  port: env.dbPort,
-  user: env.dbUser,
-  password: env.dbPass,
-  database: env.dbName,
-  createDatabaseTable: true,
-});
+console.log("BACKEND CORS_ORIGIN =", process.env.CORS_ORIGIN);
+console.log("BACKEND PORT =", process.env.PORT);
 
 app.use(
   helmet({
@@ -38,25 +28,8 @@ app.use(
 
 app.use(express.json());
 
-app.use(
-  session({
-    name: env.sessionName,
-    secret: env.sessionSecret,
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    proxy: true,
-    cookie: {
-      httpOnly: true,
-      secure: env.sessionCookieSecure,
-      sameSite: "lax",
-      maxAge: env.sessionMaxAgeMs,
-    },
-  })
-);
-
-app.use("/api", healthRouter);
-app.use("/api/auth", authRouter);
+app.use("/", healthRouter);
+app.use("/api/auth/login", authRouter);
 
 app.use((_req, res) => {
   res.status(404).json({
