@@ -28,8 +28,8 @@ app.use(
 
 app.use(express.json());
 
-app.use("/", healthRouter);
-app.use("/api/auth/login", authRouter);
+app.use("/api", healthRouter);
+app.use("/api/auth", authRouter);
 
 app.use((_req, res) => {
   res.status(404).json({
