@@ -17,7 +17,8 @@ export interface ContactMessageRow extends RowDataPacket {
   company: string | null;
   email: string;
   phone: string | null;
-  message_text: string;
+  message_preview: string;
+  message_text?: string;
   allow_phone_contact: number;
   consent_privacy: number;
   processing_status: "unprocessed" | "in_progress" | "processed";
@@ -92,55 +93,56 @@ export async function findMessages(params: {
   values.push(params.pageSize, offset);
 
   const [rows] = await db.execute<ContactMessageRow[]>(
-    `
-      SELECT
-        id,
-        request_type,
-        first_name,
-        last_name,
-        company,
-        email,
-        phone,
-        message_text,
-        allow_phone_contact,
-        consent_privacy,
-        processing_status,
-        processing_updated_at,
-        created_at
-      FROM contact_submissions
-      ${whereClause}
-      ORDER BY ${sortField} ${sortOrder}
-      LIMIT ? OFFSET ?
-    `,
-    values
-  );
+  `
+    SELECT
+      id,
+      request_type,
+      first_name,
+      last_name,
+      company,
+      email,
+      phone,
+      LEFT(
+      TRIM(REPLACE(REPLACE(REPLACE(message_text, '\r', ' '),'\n', ' '),'\t', ' ')),200) AS message_preview
+      allow_phone_contact,
+      consent_privacy,
+      processing_status,
+      processing_updated_at,
+      created_at
+    FROM contact_submissions
+    ${whereClause}
+    ORDER BY ${sortField} ${sortOrder}
+    LIMIT ? OFFSET ?
+  `,
+  values
+);
 
   return rows;
 }
 
 export async function findMessageById(id: number): Promise<ContactMessageRow | null> {
   const [rows] = await db.execute<ContactMessageRow[]>(
-    `
-      SELECT
-        id,
-        request_type,
-        first_name,
-        last_name,
-        company,
-        email,
-        phone,
-        message_text,
-        allow_phone_contact,
-        consent_privacy,
-        processing_status,
-        processing_updated_at,
-        created_at
-      FROM contact_submissions
-      WHERE id = ?
-      LIMIT 1
-    `,
-    [id]
-  );
+  `
+    SELECT
+      id,
+      request_type,
+      first_name,
+      last_name,
+      company,
+      email,
+      phone,
+      message_text,
+      allow_phone_contact,
+      consent_privacy,
+      processing_status,
+      processing_updated_at,
+      created_at
+    FROM contact_submissions
+    WHERE id = ?
+    LIMIT 1
+  `,
+  [id]
+);
 
   return rows[0] ?? null;
 }

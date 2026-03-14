@@ -375,7 +375,7 @@ export function MessagesPage() {
 
                   <td className="px-4 py-3 text-slate-700">{message.email}</td>
 
-                  <td className="max-w-md px-4 py-3 text-slate-600">
+                  <td className="max-w-md px-4 py-3 text-slate-600 line-clamp-2">
                     {message.messagePreview}
                   </td>
 

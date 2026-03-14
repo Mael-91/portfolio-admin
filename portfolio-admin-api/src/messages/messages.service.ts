@@ -6,14 +6,26 @@ import {
   updateMessageProcessingStatus,
 } from "./messages.repository";
 
-function buildMessagePreview(message: string, maxLength = 120): string {
-  const normalized = message.replace(/\s+/g, " ").trim();
+function buildCleanPreview(text: string, maxLength = 160): string {
+  if (!text) {
+    return "";
+  }
+
+  const normalized = text.replace(/\s+/g, " ").trim();
 
   if (normalized.length <= maxLength) {
     return normalized;
   }
 
-  return `${normalized.slice(0, maxLength)}...`;
+  const truncated = normalized.slice(0, maxLength);
+
+  const lastSpace = truncated.lastIndexOf(" ");
+
+  if (lastSpace === -1) {
+    return `${truncated}...`;
+  }
+
+  return `${truncated.slice(0, lastSpace)}...`;
 }
 
 export async function listMessages(params: {
@@ -36,7 +48,7 @@ export async function listMessages(params: {
       id: row.id,
       requestType: row.request_type,
       email: row.email,
-      messagePreview: buildMessagePreview(row.message_text),
+      messagePreview: buildCleanPreview(row.message_preview),
       allowPhoneContact: Boolean(row.allow_phone_contact),
       consentPrivacy: Boolean(row.consent_privacy),
       processingStatus: row.processing_status,
