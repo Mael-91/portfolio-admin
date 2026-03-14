@@ -103,7 +103,7 @@ export async function findMessages(params: {
       email,
       phone,
       LEFT(
-      TRIM(REPLACE(REPLACE(REPLACE(message_text, '\r', ' '),'\n', ' '),'\t', ' ')),200) AS message_preview
+      TRIM(REPLACE(REPLACE(REPLACE(message_text, '\r', ' '),'\n', ' '),'\t', ' ')),200) AS message_preview,
       allow_phone_contact,
       consent_privacy,
       processing_status,
