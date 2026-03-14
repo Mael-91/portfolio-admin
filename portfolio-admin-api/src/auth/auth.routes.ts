@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { loginAdmin } from "./auth.service";
 import { env } from "../env";
+import { requireAdminAuth } from "./auth.middleware";
 
 export const authRouter = Router();
 
@@ -73,7 +74,7 @@ authRouter.post("/login", loginLimiter, async (req, res) => {
   }
 });
 
-authRouter.post("/logout", (req, res) => {
+authRouter.post("/logout", requireAdminAuth,(req, res) => {
   req.session.destroy((error) => {
     if (error) {
       console.error("Erreur logout admin :", error);
@@ -92,14 +93,8 @@ authRouter.post("/logout", (req, res) => {
   });
 });
 
-authRouter.get("/me", (req, res) => {
-  if (!req.session.adminUser) {
-    return res.status(401).json({
-      success: false,
-      message: "Non authentifié",
-    });
-  }
 
+authRouter.get("/me", requireAdminAuth, (req, res) => {
   return res.status(200).json({
     success: true,
     user: req.session.adminUser,
