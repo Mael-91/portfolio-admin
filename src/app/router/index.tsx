@@ -4,6 +4,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { LoginPage } from "../pages/LoginPage";
 import { MessagesPage } from "../pages/MessagesPage";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import { MessageDetailPage } from "../pages/MessageDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
       {
         path: "messages",
         element: <MessagesPage />,
+      },
+      {
+        path: "messages/:id",
+        element: <MessageDetailPage />,
       },
     ],
   },
