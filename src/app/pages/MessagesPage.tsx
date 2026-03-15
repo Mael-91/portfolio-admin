@@ -61,6 +61,20 @@ function formatDate(value: string): string {
   }).format(date);
 }
 
+function buildPagination(currentPage: number, totalPages: number): number[] {
+  const pages = new Set<number>();
+  pages.add(1);
+  pages.add(totalPages);
+
+  for (let i = currentPage - 1; i <= currentPage + 1; i += 1) {
+    if (i >= 1 && i <= totalPages) {
+      pages.add(i);
+    }
+  }
+
+  return Array.from(pages).sort((a, b) => a - b);
+}
+
 export function MessagesPage() {
   const navigate = useNavigate();
 
@@ -84,18 +98,14 @@ export function MessagesPage() {
   const lastSeenIdRef = useRef<number>(0);
   const hasLoadedOnceRef = useRef(false);
 
-  const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(total / pageSize));
-  }, [pageSize, total]);
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / pageSize)), [pageSize, total]);
+  const paginationPages = useMemo(() => buildPagination(page, totalPages), [page, totalPages]);
 
   async function loadMessages(options?: { silent?: boolean }) {
     const silent = options?.silent ?? false;
 
-    if (!silent) {
-      setIsLoading(true);
-    } else {
-      setIsRefreshing(true);
-    }
+    if (!silent) setIsLoading(true);
+    else setIsRefreshing(true);
 
     try {
       setErrorMessage("");
@@ -113,7 +123,6 @@ export function MessagesPage() {
 
       if (response.messages.length > 0) {
         const maxId = Math.max(...response.messages.map((message) => message.id));
-
         if (!hasLoadedOnceRef.current) {
           lastSeenIdRef.current = maxId;
           hasLoadedOnceRef.current = true;
@@ -144,7 +153,7 @@ export function MessagesPage() {
         }, 5000);
       }
     } catch {
-      // on ignore silencieusement pour le polling
+      // noop
     }
   }
 
@@ -165,8 +174,7 @@ export function MessagesPage() {
 
   useEffect(() => {
     const titleBase = "Admin";
-    document.title =
-      newMessagesCount > 0 ? `(${newMessagesCount}) ${titleBase}` : titleBase;
+    document.title = newMessagesCount > 0 ? `(${newMessagesCount}) ${titleBase}` : titleBase;
   }, [newMessagesCount]);
 
   useEffect(() => {
@@ -187,32 +195,25 @@ export function MessagesPage() {
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [page, sortBy, sortOrder, statusFilter]);
 
   useEffect(() => {
     return () => {
-      if (toastTimeoutRef.current) {
-        window.clearTimeout(toastTimeoutRef.current);
-      }
+      if (toastTimeoutRef.current) window.clearTimeout(toastTimeoutRef.current);
     };
   }, []);
 
   useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
+    if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
   return (
-    <div className="relative p-8">
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div className="relative space-y-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Demandes de contact</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <h1 className="text-2xl font-bold text-white">Demandes de contact</h1>
+          <p className="mt-1 text-sm text-admin-text-soft">
             Consulte les demandes, surveille les nouveaux messages et ouvre le détail.
           </p>
         </div>
@@ -220,59 +221,37 @@ export function MessagesPage() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={handleRefreshNow}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800"
+            className="rounded-2xl bg-admin-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
           >
             Actualiser
           </button>
-
-          <button
-            type="button"
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50"
-          >
-            Export RGPD
-          </button>
         </div>
       </div>
 
-      <div className="mb-6 grid gap-3 md:grid-cols-4">
-        <div className="rounded-[24px] border border-admin-border bg-white/[0.025] p-4 shadow-lg shadow-black/10">
-          <p className="text-sm text-slate-500">Total</p>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{total}</p>
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="rounded-[24px] bg-white/[0.025] p-4 shadow-lg shadow-black/10">
+          <p className="text-sm text-admin-text-muted">Total</p>
+          <p className="mt-2 text-2xl font-bold text-white">{total}</p>
         </div>
 
-        <div className="rounded-[24px] border border-admin-border bg-white/[0.025] p-4 shadow-lg shadow-black/10">
-          <p className="text-sm text-slate-500">Nouveaux messages</p>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{newMessagesCount}</p>
-        </div>
-
-        <div className="rounded-[24px] border border-admin-border bg-white/[0.025] p-4 shadow-lg shadow-black/10">
-          <p className="text-sm text-slate-500">Polling</p>
-          <p className="mt-2 text-sm font-medium text-slate-900">
-            {isRefreshing ? "Actualisation..." : "Actif"}
-          </p>
-        </div>
-
-        <div className="rounded-[24px] border border-admin-border bg-white/[0.025] p-4 shadow-lg shadow-black/10">
-          <p className="text-sm text-slate-500">Page</p>
-          <p className="mt-2 text-2xl font-bold text-slate-900">
-            {page} / {totalPages}
-          </p>
+        <div className="rounded-[24px] bg-white/[0.025] p-4 shadow-lg shadow-black/10">
+          <p className="text-sm text-admin-text-muted">Nouveaux messages</p>
+          <p className="mt-2 text-2xl font-bold text-white">{newMessagesCount}</p>
         </div>
       </div>
 
-      <div className="mb-4 grid gap-3 rounded-xl bg-white p-4 shadow md:grid-cols-4">
+      <div className="grid gap-3 rounded-[24px] bg-white/[0.025] p-4 shadow-lg shadow-black/10 md:grid-cols-4">
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">
+          <label className="mb-2 block text-sm font-medium text-admin-text-soft">
             Trier par
           </label>
-
           <select
             value={sortBy}
             onChange={(e) => {
               setPage(1);
               setSortBy(e.target.value);
             }}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-white/8 bg-admin-panel-3/60 px-3 py-2 text-sm text-white outline-none"
           >
             <option value="date">Date</option>
             <option value="id">ID</option>
@@ -283,17 +262,16 @@ export function MessagesPage() {
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">
+          <label className="mb-2 block text-sm font-medium text-admin-text-soft">
             Ordre
           </label>
-
           <select
             value={sortOrder}
             onChange={(e) => {
               setPage(1);
               setSortOrder(e.target.value as "asc" | "desc");
             }}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-white/8 bg-admin-panel-3/60 px-3 py-2 text-sm text-white outline-none"
           >
             <option value="desc">Décroissant</option>
             <option value="asc">Croissant</option>
@@ -301,17 +279,16 @@ export function MessagesPage() {
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">
+          <label className="mb-2 block text-sm font-medium text-admin-text-soft">
             Statut
           </label>
-
           <select
             value={statusFilter}
             onChange={(e) => {
               setPage(1);
               setStatusFilter(e.target.value as "" | ProcessingStatus);
             }}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-white/8 bg-admin-panel-3/60 px-3 py-2 text-sm text-white outline-none"
           >
             <option value="">Tous</option>
             <option value="unprocessed">Non traité</option>
@@ -321,19 +298,19 @@ export function MessagesPage() {
         </div>
 
         <div className="flex items-end">
-          <div className="w-full rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
-            Les nouveaux messages mettent à jour l’onglet et affichent une alerte.
+          <div className="w-full rounded-xl bg-admin-panel-3/60 px-3 py-2 text-sm text-admin-text-soft">
+            {isRefreshing ? "Actualisation..." : "Liste synchronisée"}
           </div>
         </div>
       </div>
 
       {errorMessage ? (
-        <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
         </div>
       ) : null}
 
-      <div className="overflow-hidden rounded-[24px] border border-admin-border bg-white/[0.025] shadow-lg shadow-black/10">
+      <div className="overflow-hidden rounded-[24px] bg-white/[0.025] shadow-lg shadow-black/10">
         <table className="w-full text-left text-sm">
           <thead className="bg-white/[0.03] text-admin-text-soft">
             <tr>
@@ -351,13 +328,13 @@ export function MessagesPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={8} className="px-4 py-8 text-center text-admin-text-soft">
                   Chargement des messages...
                 </td>
               </tr>
             ) : messages.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={8} className="px-4 py-8 text-center text-admin-text-soft">
                   Aucun message trouvé.
                 </td>
               </tr>
@@ -366,20 +343,16 @@ export function MessagesPage() {
                 <tr
                   key={message.id}
                   onClick={() => navigate(`/messages/${message.id}`)}
-                  className="cursor-pointer border-t transition hover:bg-slate-50"
+                  className="cursor-pointer border-t border-white/6 transition hover:bg-[#112545]"
                 >
-                  <td className="px-4 py-3 font-medium text-slate-900">{message.id}</td>
-
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 font-medium text-white">{message.id}</td>
+                  <td className="px-4 py-3 text-admin-text-soft">
                     {getRequestTypeLabel(message.requestType)}
                   </td>
-
-                  <td className="px-4 py-3 text-slate-700">{message.email}</td>
-
-                  <td className="max-w-md px-4 py-3 text-slate-600 line-clamp-2">
-                    {message.messagePreview}
+                  <td className="px-4 py-3 text-admin-text-soft">{message.email}</td>
+                  <td className="max-w-md px-4 py-3 text-admin-text-soft" title={message.messagePreview}>
+                    <div className="line-clamp-2">{message.messagePreview}</div>
                   </td>
-
                   <td className="px-4 py-3">
                     <span
                       className={`inline-block h-3 w-3 rounded-full ${
@@ -387,7 +360,6 @@ export function MessagesPage() {
                       }`}
                     />
                   </td>
-
                   <td className="px-4 py-3">
                     <span
                       className={`inline-block h-3 w-3 rounded-full ${
@@ -395,21 +367,13 @@ export function MessagesPage() {
                       }`}
                     />
                   </td>
-
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-block h-3 w-3 rounded-full ${getStatusDotClass(
-                          message.processingStatus
-                        )}`}
-                      />
-                      <span>{getStatusLabel(message.processingStatus)}</span>
+                      <span className={`inline-block h-3 w-3 rounded-full ${getStatusDotClass(message.processingStatus)}`} />
+                      <span className="text-admin-text-soft">{getStatusLabel(message.processingStatus)}</span>
                     </div>
                   </td>
-
-                  <td className="px-4 py-3 text-slate-600">
-                    {formatDate(message.createdAt)}
-                  </td>
+                  <td className="px-4 py-3 text-admin-text-soft">{formatDate(message.createdAt)}</td>
                 </tr>
               ))
             )}
@@ -417,24 +381,46 @@ export function MessagesPage() {
         </table>
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
-        <p className="text-sm text-slate-600">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <p className="text-sm text-admin-text-soft">
           {total} résultat{total > 1 ? "s" : ""}
         </p>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setPage((current) => Math.max(1, current - 1))}
             disabled={page === 1}
-            className="rounded-lg border border-slate-300 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-admin-text-soft disabled:cursor-not-allowed disabled:opacity-50"
           >
             Précédent
           </button>
 
+          {paginationPages.map((pageNumber, index) => {
+            const previousPage = paginationPages[index - 1];
+            const showGap = previousPage && pageNumber - previousPage > 1;
+
+            return (
+              <div key={pageNumber} className="flex items-center gap-2">
+                {showGap ? <span className="px-1 text-admin-text-muted">…</span> : null}
+
+                <button
+                  onClick={() => setPage(pageNumber)}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    page === pageNumber
+                      ? "bg-admin-accent text-white"
+                      : "border border-white/10 bg-white/[0.03] text-admin-text-soft hover:bg-white/[0.05]"
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              </div>
+            );
+          })}
+
           <button
             onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
             disabled={page >= totalPages}
-            className="rounded-lg border border-slate-300 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-admin-text-soft disabled:cursor-not-allowed disabled:opacity-50"
           >
             Suivant
           </button>
@@ -453,10 +439,7 @@ export function MessagesPage() {
               </p>
             </div>
 
-            <button
-              onClick={() => setShowToast(false)}
-              className="text-slate-300 hover:text-white"
-            >
+            <button onClick={() => setShowToast(false)} className="text-slate-300 hover:text-white">
               ✕
             </button>
           </div>

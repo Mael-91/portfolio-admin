@@ -52,8 +52,8 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-admin-bg text-admin-text">
-      <div className="mx-auto flex min-h-screen max-w-[1800px] overflow-hidden rounded-[28px] border border-admin-border bg-admin-panel shadow-2xl shadow-black/30">
-        <aside className="flex w-[290px] shrink-0 flex-col border-r border-admin-border bg-[#041126]">
+      <div className="flex min-h-screen w-full bg-admin-panel">
+        <aside className="flex w-[250px] shrink-0 flex-col border-r border-white/6 bg-[#041126]">
           <div className="flex h-20 items-center px-7">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-admin-accent-soft text-admin-accent ring-1 ring-white/5">
               <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current">
@@ -62,8 +62,8 @@ export function AdminLayout() {
             </div>
           </div>
 
-          <div className="px-5">
-            <nav className="space-y-1.5">
+          <div className="px-5 pt-8">
+            <nav className="space-y-2">
               {navItems.map((item) => {
                 const isActive =
                   item.href === "/"
@@ -75,7 +75,7 @@ export function AdminLayout() {
                     key={item.href}
                     to={item.href}
                     className={cn(
-                      "group flex items-center gap-3 rounded-2xl px-4 py-3 text-[17px] font-medium transition",
+                      "group flex items-center gap-3 rounded-2xl px-4 py-3 text-[14px] font-medium transition",
                       isActive
                         ? "bg-white/8 text-white shadow-inner ring-1 ring-white/5"
                         : "text-admin-text-soft hover:bg-white/5 hover:text-white"
@@ -96,25 +96,10 @@ export function AdminLayout() {
             </nav>
           </div>
 
-          <div className="mt-10 px-8">
-            <p className="text-sm font-semibold text-admin-text-muted">Espaces</p>
-
-            <div className="mt-5 space-y-4">
-              {["Administration", "Support", "Exports"].map((team, index) => (
-                <div key={team} className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/6 bg-white/[0.03] text-sm font-semibold text-admin-text-soft">
-                    {["A", "S", "E"][index]}
-                  </div>
-                  <span className="text-[17px] font-medium text-admin-text-soft">{team}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div className="mt-auto px-5 pb-5">
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[17px] font-medium text-admin-text-soft transition hover:bg-white/5 hover:text-white"
+              className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[14px] font-medium text-admin-text-soft transition hover:bg-white/5 hover:text-white"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <path d="M15 3h3a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-3" />
@@ -127,7 +112,7 @@ export function AdminLayout() {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col bg-[linear-gradient(180deg,#07152e_0%,#08152b_100%)]">
-          <header className="sticky top-0 z-20 border-b border-admin-border bg-admin-panel/80 px-8 py-5 backdrop-blur-md">
+          <header className="sticky top-0 z-20 border-b border-white/6 bg-admin-panel/80 px-8 py-5 backdrop-blur-md">
             <div className="flex items-center justify-between gap-6">
               <div className="relative w-full max-w-xl">
                 <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-admin-text-muted">
@@ -140,7 +125,7 @@ export function AdminLayout() {
                 <input
                   type="text"
                   placeholder="Search"
-                  className="h-12 w-full rounded-2xl border border-white/6 bg-white/[0.03] pl-12 pr-4 text-sm text-white placeholder:text-admin-text-muted outline-none ring-0 transition focus:border-admin-border-strong focus:bg-white/[0.045]"
+                  className="h-12 w-full rounded-2xl border border-white/6 bg-white/[0.03] pl-12 pr-4 text-sm text-white placeholder:text-admin-text-muted outline-none transition focus:border-white/15 focus:bg-white/[0.045]"
                 />
               </div>
 
@@ -162,10 +147,6 @@ export function AdminLayout() {
                   <div className="hidden text-left md:block">
                     <p className="text-base font-semibold text-white">Mael Constantin</p>
                   </div>
-
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 text-admin-text-muted" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
                 </button>
               </div>
             </div>
