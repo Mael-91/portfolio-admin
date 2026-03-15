@@ -90,3 +90,14 @@ export async function fetchNewMessagesCount(lastSeenId: number): Promise<{
 }> {
   return apiFetch(`/api/messages/new-count?lastSeenId=${lastSeenId}`);
 }
+
+export async function exportMessageRgpd(id: number, email: string): Promise<{
+  success: boolean;
+  sent: boolean;
+  email: string;
+}> {
+  return apiFetch(`/api/messages/${id}/export-rgpd`, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}

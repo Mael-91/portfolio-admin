@@ -5,6 +5,8 @@ import {
   findNewMessagesCountSinceId,
   updateMessageProcessingStatus,
 } from "./messages.repository";
+import { sendRgpdExportEmail } from "./messages.mail";
+import { MessageDetail } from "./messages.types";
 
 function buildCleanPreview(text: string, maxLength = 160): string {
   if (!text) {
@@ -57,7 +59,7 @@ export async function listMessages(params: {
   };
 }
 
-export async function getMessageDetail(id: number) {
+export async function getMessageDetail(id: number): Promise<MessageDetail | null> {
   const row = await findMessageById(id);
 
   if (!row) {
@@ -72,7 +74,7 @@ export async function getMessageDetail(id: number) {
     company: row.company,
     email: row.email,
     phone: row.phone,
-    messageText: row.message_text,
+    messageText: row.message_text ?? "",
     allowPhoneContact: Boolean(row.allow_phone_contact),
     consentPrivacy: Boolean(row.consent_privacy),
     processingStatus: row.processing_status,
@@ -94,4 +96,25 @@ export async function getNewMessagesCount(lastSeenId: number) {
   const total = await findNewMessagesCountSinceId(lastSeenId);
 
   return { total };
+}
+
+export async function exportMessageRgpdByEmail(params: {
+  id: number;
+  email: string;
+}) {
+  const message = await getMessageDetail(params.id);
+
+  if (!message) {
+    return null;
+  }
+
+  await sendRgpdExportEmail({
+    to: params.email,
+    message,
+  });
+
+  return {
+    sent: true,
+    email: params.email,
+  };
 }

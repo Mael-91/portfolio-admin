@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  exportMessageRgpd,
   fetchMessageDetail,
   type MessageDetail,
   type ProcessingStatus,
  updateMessageProcessingStatus,
 } from "../services/messages";
+import { ExportRgpdModal } from "../components/ExportRgpdModal";
 
 function getStatusLabel(status: ProcessingStatus): string {
   switch (status) {
@@ -25,6 +27,9 @@ export function MessageDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isExportingRgpd, setIsExportingRgpd] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function loadMessage() {
     if (!id) {
@@ -61,6 +66,27 @@ export function MessageDetailPage() {
     }
   }
 
+  async function handleRgpdExport(email: string) {
+  if (!id) {
+    return;
+  }
+
+  try {
+    setIsExportingRgpd(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    const response = await exportMessageRgpd(Number(id), email);
+
+    setSuccessMessage(`Export envoyé à ${response.email}`);
+    setIsExportModalOpen(false);
+  } catch (error: any) {
+    setErrorMessage(error?.message || "Impossible d’envoyer l’export RGPD.");
+  } finally {
+    setIsExportingRgpd(false);
+  }
+}
+
   useEffect(() => {
     loadMessage();
   }, [id]);
@@ -85,6 +111,17 @@ export function MessageDetailPage() {
 
   return (
     <div className="p-8">
+      {errorMessage ? (
+        <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
+
+      {successMessage ? (
+        <div className="mb-4 rounded-xl bg-green-50 px-4 py-3 text-green-700">
+          {successMessage}
+        </div>
+      ) : null}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <Link to="/messages" className="text-sm text-slate-600 hover:text-slate-900">
@@ -181,17 +218,11 @@ export function MessageDetailPage() {
               </div>
             </div>
 
-            <div className="pt-4">
-              <button
-                type="button"
-                className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800"
-              >
-                Export RGPD
-              </button>
-            </div>
+            <button type="button" onClick={() => setIsExportModalOpen(true)} className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">Export RGPD</button>
           </div>
         </div>
       </div>
+      <ExportRgpdModal isOpen={isExportModalOpen} defaultEmail={message.email} isSubmitting={isExportingRgpd} onClose={() => setIsExportModalOpen(false)} onConfirm={handleRgpdExport}/>
     </div>
   );
 }

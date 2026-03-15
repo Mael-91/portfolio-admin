@@ -7,6 +7,7 @@ import {
   listMessages,
   setMessageProcessingStatus,
 } from "./messages.service";
+import { exportMessageRgpdByEmail } from "./messages.service";
 
 export const messagesRouter = Router();
 
@@ -62,6 +63,53 @@ messagesRouter.get("/new-count", async (req, res) => {
     });
   } catch (error) {
     console.error("Erreur new-count messages :", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+    });
+  }
+});
+
+messagesRouter.post("/:id/export-rgpd", async (req, res) => {
+  try {
+    const paramsSchema = z.object({
+      id: z.coerce.number().int().min(1),
+    });
+
+    const bodySchema = z.object({
+      email: z.string().trim().email("Email invalide"),
+    });
+
+    const params = paramsSchema.parse(req.params);
+    const body = bodySchema.parse(req.body);
+
+    const result = await exportMessageRgpdByEmail({
+      id: params.id,
+      email: body.email,
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Message introuvable",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      sent: true,
+      email: result.email,
+    });
+  } catch (error: any) {
+    if (error?.name === "ZodError") {
+      return res.status(400).json({
+        success: false,
+        errors: error.errors,
+      });
+    }
+
+    console.error("Erreur export RGPD :", error);
 
     return res.status(500).json({
       success: false,
