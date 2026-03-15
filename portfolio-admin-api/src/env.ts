@@ -26,4 +26,11 @@ export const env = {
   sessionName: process.env.SESSION_NAME || "mc_admin_sid",
   sessionMaxAgeMs: Number(process.env.SESSION_MAX_AGE_MS || 1000 * 60 * 60 * 8),
   sessionCookieSecure: String(process.env.SESSION_COOKIE_SECURE) === "true",
+
+  mailHost: process.env.MAIL_HOST || "mail.maelconstantin.fr",
+  mailPort: Number(process.env.MAIL_PORT || 587),
+  mailSecure: String(process.env.MAIL_SECURE) === "true",
+  mailUser: process.env.MAIL_USER || "",
+  mailPass: process.env.MAIL_PASS || "",
+  mailFrom: process.env.MAIL_FROM || "",
 };

@@ -7,6 +7,7 @@ import { env } from "./env";
 import { healthRouter } from "./routes/health.routes";
 import { checkDatabaseConnection } from "./db/db";
 import { authRouter } from "./auth/auth.routes";
+import { messagesRouter } from "./messages/messages.routes";
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use(
 
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/messages", messagesRouter);
 
 app.use((_req, res) => {
   res.status(404).json({
