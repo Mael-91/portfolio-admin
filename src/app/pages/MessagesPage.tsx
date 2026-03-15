@@ -235,24 +235,24 @@ export function MessagesPage() {
       </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-4">
-        <div className="rounded-xl bg-white p-4 shadow">
+        <div className="rounded-[24px] border border-admin-border bg-white/[0.025] p-4 shadow-lg shadow-black/10">
           <p className="text-sm text-slate-500">Total</p>
           <p className="mt-2 text-2xl font-bold text-slate-900">{total}</p>
         </div>
 
-        <div className="rounded-xl bg-white p-4 shadow">
+        <div className="rounded-[24px] border border-admin-border bg-white/[0.025] p-4 shadow-lg shadow-black/10">
           <p className="text-sm text-slate-500">Nouveaux messages</p>
           <p className="mt-2 text-2xl font-bold text-slate-900">{newMessagesCount}</p>
         </div>
 
-        <div className="rounded-xl bg-white p-4 shadow">
+        <div className="rounded-[24px] border border-admin-border bg-white/[0.025] p-4 shadow-lg shadow-black/10">
           <p className="text-sm text-slate-500">Polling</p>
           <p className="mt-2 text-sm font-medium text-slate-900">
             {isRefreshing ? "Actualisation..." : "Actif"}
           </p>
         </div>
 
-        <div className="rounded-xl bg-white p-4 shadow">
+        <div className="rounded-[24px] border border-admin-border bg-white/[0.025] p-4 shadow-lg shadow-black/10">
           <p className="text-sm text-slate-500">Page</p>
           <p className="mt-2 text-2xl font-bold text-slate-900">
             {page} / {totalPages}
@@ -333,9 +333,9 @@ export function MessagesPage() {
         </div>
       ) : null}
 
-      <div className="overflow-hidden rounded-xl bg-white shadow">
+      <div className="overflow-hidden rounded-[24px] border border-admin-border bg-white/[0.025] shadow-lg shadow-black/10">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-100 text-slate-600">
+          <thead className="bg-white/[0.03] text-admin-text-soft">
             <tr>
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Type</th>
