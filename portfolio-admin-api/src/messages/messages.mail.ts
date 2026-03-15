@@ -45,12 +45,14 @@ export async function sendRgpdExportEmail(params: {
 }) {
   const { to, message } = params;
 
-  const subject = "Export de vos données personnelles";
+  const subject = "Vos données personnelles – export demandé";
 
   const text = [
     "Bonjour,",
     "",
-    "Voici les données vous concernant enregistrées via le formulaire de contact.",
+    "Vous recevez ce message car un export de vos données personnelles a été demandé depuis notre interface d’administration, à partir de votre demande de contact.",
+    "",
+    "Vous trouverez ci-dessous les informations actuellement enregistrées vous concernant.",
     "",
     `Identifiant : ${message.id}`,
     `Type de demande : ${formatRequestType(message.requestType)}`,
@@ -67,7 +69,7 @@ export async function sendRgpdExportEmail(params: {
     "Message :",
     message.messageText,
     "",
-    "Ceci est un export de vos données à caractère personnel.",
+    "Si vous n’êtes pas à l’origine de cette demande ou si vous souhaitez exercer un autre droit sur vos données, vous pouvez répondre à ce message.",
     "",
     "Cordialement,",
     "Administration maelconstantin.fr",

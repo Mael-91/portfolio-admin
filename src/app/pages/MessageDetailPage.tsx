@@ -105,6 +105,16 @@ export function MessageDetailPage() {
     );
   }
 
+  useEffect(() => {
+    if (!successMessage) return;
+
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   if (!message) {
     return <div className="p-8">Message introuvable.</div>;
   }
