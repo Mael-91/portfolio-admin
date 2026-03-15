@@ -5,7 +5,8 @@ export type MessageSortField =
   | "created_at"
   | "id"
   | "email"
-  | "processing_status";
+  | "processing_status"
+  | "request_type";
 
 export type MessageSortOrder = "asc" | "desc";
 
@@ -34,6 +35,8 @@ const allowedSortFields: Record<string, MessageSortField> = {
   email: "email",
   status: "processing_status",
   processing_status: "processing_status",
+  type: "request_type",
+  request_type: "request_type",
 };
 
 function resolveSortField(sortBy?: string): MessageSortField {

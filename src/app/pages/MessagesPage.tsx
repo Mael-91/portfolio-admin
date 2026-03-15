@@ -278,6 +278,7 @@ export function MessagesPage() {
             <option value="id">ID</option>
             <option value="alphabetical">Ordre alphabétique</option>
             <option value="status">Statut</option>
+            <option value="type">Type de demande</option>
           </select>
         </div>
 
