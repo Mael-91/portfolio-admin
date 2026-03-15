@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import {
   exportMessageRgpd,
   fetchMessageDetail,
@@ -84,6 +84,7 @@ const processingStatusOptions: Array<{
 
 export function MessageDetailPage() {
   const { id } = useParams();
+  const location = useLocation();
   const { showToast } = useToast();
 
   const [message, setMessage] = useState<MessageDetail | null>(null);
@@ -93,6 +94,10 @@ export function MessageDetailPage() {
 
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExportingRgpd, setIsExportingRgpd] = useState(false);
+
+  const backToMessagesHref = useMemo(() => {
+    return location.search ? `/messages${location.search}` : "/messages";
+  }, [location.search]);
 
   async function loadMessage() {
     if (!id) {
@@ -199,7 +204,7 @@ export function MessageDetailPage() {
         </div>
 
         <Link
-          to="/messages"
+          to={backToMessagesHref}
           className="inline-flex rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-admin-text-soft"
         >
           ← Retour à la liste
@@ -228,7 +233,7 @@ export function MessageDetailPage() {
 
       <div className="flex items-center justify-between gap-4">
         <div>
-          <Link to="/messages" className="text-sm text-admin-text-soft hover:text-white">
+          <Link to={backToMessagesHref} className="text-sm text-admin-text-soft hover:text-white">
             ← Retour à la liste
           </Link>
           <h1 className="mt-2 text-[26px] font-semibold tracking-tight text-white">
@@ -249,7 +254,9 @@ export function MessageDetailPage() {
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
                 Type
               </p>
-              <p className="mt-2 text-sm text-admin-text">{getRequestTypeLabel(message.requestType)}</p>
+              <p className="mt-2 text-sm text-admin-text">
+                {getRequestTypeLabel(message.requestType)}
+              </p>
             </div>
 
             <div>
