@@ -12,7 +12,7 @@ dotenv.config({
 
 export const env = {
   nodeEnv,
-  port: Number(process.env.PORT || 4100),
+  port: Number(process.env.PORT || 9808),
 
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
 
@@ -33,4 +33,7 @@ export const env = {
   mailUser: process.env.MAIL_USER || "",
   mailPass: process.env.MAIL_PASS || "",
   mailFrom: process.env.MAIL_FROM || "",
+
+  rgpdRetentionDays: Number(process.env.RGPD_RETENTION_DAYS || 180),
+  rgpdPurgeCron: process.env.RGPD_PURGE_CRON || "0 3 * * *",
 };

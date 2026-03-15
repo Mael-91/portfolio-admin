@@ -47,7 +47,9 @@ function getRequestTypeLabel(requestType: string): string {
   }
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string | null) {
+  if (!value) return "-";
+
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
@@ -131,7 +133,7 @@ export function MessageDetailPage() {
 
       showToast({
         title: "Statut mis à jour",
-        description: `Le message est maintenant marqué comme "${getStatusLabel(status)}".`,
+        description: `Le message est maintenant marqué comme « ${getStatusLabel(status)} ».`,
         variant: "success",
       });
     } catch (error: any) {
@@ -179,6 +181,24 @@ export function MessageDetailPage() {
       });
     } finally {
       setIsExportingRgpd(false);
+    }
+  }
+
+  async function handleCopy(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+
+      showToast({
+        title: "Copie effectuée",
+        description: `${label} a été copié dans le presse-papiers.`,
+        variant: "success",
+      });
+    } catch {
+      showToast({
+        title: "Erreur",
+        description: `Impossible de copier ${label.toLowerCase()}.`,
+        variant: "error",
+      });
     }
   }
 
@@ -231,174 +251,259 @@ export function MessageDetailPage() {
         </div>
       ) : null}
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <Link to={backToMessagesHref} className="text-sm text-admin-text-soft hover:text-white">
             ← Retour à la liste
           </Link>
-          <h1 className="mt-2 text-[26px] font-semibold tracking-tight text-white">
+
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">
             Message #{message.id}
           </h1>
-          <p className="mt-1 text-sm text-admin-text-soft">
-            Consultation du détail et gestion du statut de traitement.
-          </p>
+
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-admin-text-soft">
+            <span>{getRequestTypeLabel(message.requestType)}</span>
+            <span className="h-1 w-1 rounded-full bg-admin-text-muted" />
+            <span>{formatDate(message.createdAt)}</span>
+            <span className="h-1 w-1 rounded-full bg-admin-text-muted" />
+            <span className="inline-flex items-center gap-2">
+              <span
+                className={`inline-block h-2.5 w-2.5 rounded-full ${getStatusDotClass(
+                  message.processingStatus
+                )}`}
+              />
+              {getStatusLabel(message.processingStatus)}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
-        <section className="rounded-[24px] bg-white/[0.025] p-6 shadow-lg shadow-black/10">
-          <h2 className="text-lg font-semibold text-white">Informations</h2>
+      <div className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
+        <section className="space-y-6">
+          <div className="rounded-[24px] bg-white/[0.025] p-6 shadow-lg shadow-black/10">
+            <h2 className="text-base font-semibold text-white">Contact</h2>
 
-          <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-                Type
-              </p>
-              <p className="mt-2 text-sm text-admin-text">
-                {getRequestTypeLabel(message.requestType)}
-              </p>
-            </div>
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Prénom
+                </p>
+                <p className="mt-2 text-sm text-admin-text">{message.firstName || "-"}</p>
+              </div>
 
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-                Date
-              </p>
-              <p className="mt-2 text-sm text-admin-text">{formatDate(message.createdAt)}</p>
-            </div>
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Nom
+                </p>
+                <p className="mt-2 text-sm text-admin-text">{message.lastName || "-"}</p>
+              </div>
 
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-                Prénom
-              </p>
-              <p className="mt-2 text-sm text-admin-text">{message.firstName || "-"}</p>
-            </div>
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Email
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <p className="text-sm text-admin-text">{message.email}</p>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(message.email, "L’email")}
+                    className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1 text-xs text-admin-text-soft transition hover:bg-white/[0.06] hover:text-white"
+                  >
+                    Copier
+                  </button>
+                </div>
+              </div>
 
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-                Nom
-              </p>
-              <p className="mt-2 text-sm text-admin-text">{message.lastName || "-"}</p>
-            </div>
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Téléphone
+                </p>
+                <p className="mt-2 text-sm text-admin-text">{message.phone || "-"}</p>
+              </div>
 
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-                Email
-              </p>
-              <p className="mt-2 text-sm text-admin-text">{message.email}</p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-                Téléphone
-              </p>
-              <p className="mt-2 text-sm text-admin-text">{message.phone || "-"}</p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-                Société
-              </p>
-              <p className="mt-2 text-sm text-admin-text">{message.company || "-"}</p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-                Consentement confidentialité
-              </p>
-              <p className="mt-2 text-sm text-admin-text">
-                {message.consentPrivacy ? "Oui" : "Non"}
-              </p>
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Société
+                </p>
+                <p className="mt-2 text-sm text-admin-text">{message.company || "-"}</p>
+              </div>
             </div>
           </div>
 
-          <div className="mt-8">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-              Message
-            </p>
+          <div className="rounded-[24px] bg-white/[0.025] p-6 shadow-lg shadow-black/10">
+            <h2 className="text-base font-semibold text-white">Informations de demande</h2>
 
-            <div className="mt-3 rounded-[20px] bg-[#0d1d38] p-5 text-sm leading-7 text-admin-text-soft whitespace-pre-wrap">
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Type
+                </p>
+                <p className="mt-2 text-sm text-admin-text">
+                  {getRequestTypeLabel(message.requestType)}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Date de création
+                </p>
+                <p className="mt-2 text-sm text-admin-text">{formatDate(message.createdAt)}</p>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Consentement confidentialité
+                </p>
+                <p className="mt-2 text-sm text-admin-text">
+                  {message.consentPrivacy ? "Oui" : "Non"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Contact téléphone
+                </p>
+                <p className="mt-2 text-sm text-admin-text">
+                  {message.allowPhoneContact ? "Autorisé" : "Non autorisé"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Dernière mise à jour statut
+                </p>
+                <p className="mt-2 text-sm text-admin-text">
+                  {formatDate(message.processingUpdatedAt)}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                  Identifiant technique
+                </p>
+                <p className="mt-2 text-sm text-admin-text">#{message.id}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[24px] bg-white/[0.025] p-6 shadow-lg shadow-black/10">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-base font-semibold text-white">Message</h2>
+
+              <button
+                type="button"
+                onClick={() => handleCopy(message.messageText, "Le message")}
+                className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-admin-text-soft transition hover:bg-white/[0.06] hover:text-white"
+              >
+                Copier le message
+              </button>
+            </div>
+
+            <div className="mt-4 rounded-[20px] bg-[#0c1a34] p-5 text-[15px] leading-7 text-admin-text-soft whitespace-pre-wrap">
               {message.messageText}
             </div>
           </div>
         </section>
 
-        <aside className="rounded-[24px] bg-white/[0.025] p-6 shadow-lg shadow-black/10">
-          <h2 className="text-lg font-semibold text-white">Traitement</h2>
+        <aside className="space-y-6">
+          <div className="rounded-[24px] bg-white/[0.025] p-6 shadow-lg shadow-black/10">
+            <h2 className="text-base font-semibold text-white">Traitement</h2>
 
-          <div className="mt-6 rounded-[20px] bg-[#0d1d38] p-5">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-              Statut actuel
-            </p>
+            <div className="mt-5 rounded-[20px] bg-[#0d1d38] p-5">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                Statut actuel
+              </p>
 
-            <div className="mt-3 flex items-center gap-3">
-              <span
-                className={`inline-block h-3.5 w-3.5 rounded-full ${getStatusDotClass(
-                  message.processingStatus
-                )}`}
-              />
-              <span className="text-sm font-medium text-white">
-                {getStatusLabel(message.processingStatus)}
-              </span>
+              <div className="mt-3 flex items-center gap-3">
+                <span
+                  className={`inline-block h-3.5 w-3.5 rounded-full ${getStatusDotClass(
+                    message.processingStatus
+                  )}`}
+                />
+                <span className="text-sm font-medium text-white">
+                  {getStatusLabel(message.processingStatus)}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className="mt-6">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
-              Changer le statut
-            </p>
+            <div className="mt-6">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+                Changer le statut
+              </p>
 
-            <div className="mt-3 space-y-2">
-              {processingStatusOptions.map((option) => {
-                const isSelected = message.processingStatus === option.value;
+              <div className="mt-3 space-y-2">
+                {processingStatusOptions.map((option) => {
+                  const isSelected = message.processingStatus === option.value;
 
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    disabled={isUpdatingStatus || isSelected}
-                    onClick={() => handleStatusChange(option.value)}
-                    className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                      isSelected
-                        ? "border-admin-accent bg-admin-accent-soft/60"
-                        : "border-white/8 bg-white/[0.03] hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    <span
-                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      disabled={isUpdatingStatus || isSelected}
+                      onClick={() => handleStatusChange(option.value)}
+                      className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
                         isSelected
-                          ? "border-admin-accent bg-admin-accent"
-                          : "border-white/20 bg-transparent"
+                          ? "border-admin-accent bg-admin-accent-soft/60"
+                          : "border-white/8 bg-white/[0.03] hover:bg-white/[0.06]"
                       }`}
                     >
                       <span
-                        className={`h-2.5 w-2.5 rounded-full ${
-                          isSelected ? "bg-white" : "bg-transparent"
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                          isSelected
+                            ? "border-admin-accent bg-admin-accent"
+                            : "border-white/20 bg-transparent"
                         }`}
-                      />
-                    </span>
+                      >
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full ${
+                            isSelected ? "bg-white" : "bg-transparent"
+                          }`}
+                        />
+                      </span>
 
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium text-white">
-                        {option.label}
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium text-white">
+                          {option.label}
+                        </span>
+                        <span className="mt-1 block text-xs leading-5 text-admin-text-soft">
+                          {option.description}
+                        </span>
                       </span>
-                      <span className="mt-1 block text-xs leading-5 text-admin-text-soft">
-                        {option.description}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          <div className="mt-8">
-            <button
-              type="button"
-              onClick={() => setIsExportModalOpen(true)}
-              className="w-full rounded-2xl bg-admin-accent px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110"
-            >
-              Export RGPD
-            </button>
+          <div className="rounded-[24px] bg-white/[0.025] p-6 shadow-lg shadow-black/10">
+            <h2 className="text-base font-semibold text-white">Actions</h2>
+
+            <div className="mt-5 space-y-3">
+              <button
+                type="button"
+                onClick={() => setIsExportModalOpen(true)}
+                className="w-full rounded-2xl bg-admin-accent px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110"
+              >
+                Export RGPD
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCopy(message.email, "L’email")}
+                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-medium text-admin-text-soft transition hover:bg-white/[0.06] hover:text-white"
+              >
+                Copier l’email
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCopy(message.messageText, "Le message")}
+                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-medium text-admin-text-soft transition hover:bg-white/[0.06] hover:text-white"
+              >
+                Copier le message
+              </button>
+            </div>
           </div>
         </aside>
       </div>

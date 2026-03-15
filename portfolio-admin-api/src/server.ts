@@ -8,6 +8,7 @@ import { healthRouter } from "./routes/health.routes";
 import { checkDatabaseConnection } from "./db/db";
 import { authRouter } from "./auth/auth.routes";
 import { messagesRouter } from "./messages/messages.routes";
+import { startRgpdCron } from "./rgpd/rgpd-cron";
 
 const app = express();
 
@@ -82,3 +83,5 @@ app.listen(env.port, async () => {
     console.error("Erreur connexion MariaDB :", error);
   }
 });
+
+startRgpdCron();
