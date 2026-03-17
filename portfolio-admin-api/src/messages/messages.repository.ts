@@ -57,7 +57,7 @@ function buildWhereClause(params: CountMessagesParams) {
       )
     `);
 
-    values.push(like, like, like, like, like);
+    values.push(like, like, like, like);
   }
 
   const whereClause =
