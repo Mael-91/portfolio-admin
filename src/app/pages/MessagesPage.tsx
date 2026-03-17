@@ -2,15 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   fetchMessages,
-  fetchNewMessagesCount,
   type MessageListItem,
   type ProcessingStatus,
 } from "../services/messages";
-import { useToast } from "../hooks/useToast";
+import { useMessageNotifications } from "../hooks/useMessageNotifications";
 
 const PAGE_SIZE = 10;
-const ACTIVE_POLLING_INTERVAL_MS = 15000;
-const BACKGROUND_POLLING_INTERVAL_MS = 30000;
+//const ACTIVE_POLLING_INTERVAL_MS = 15000;
+//const BACKGROUND_POLLING_INTERVAL_MS = 30000;
 
 function getStatusLabel(status: ProcessingStatus): string {
   switch (status) {
@@ -86,7 +85,11 @@ function parseSortOrder(value: string | null): "asc" | "desc" {
 }
 
 function parseStatusFilter(value: string | null): "" | ProcessingStatus {
-  if (value === "unprocessed" || value === "in_progress" || value === "processed") {
+  if (
+    value === "unprocessed" ||
+    value === "in_progress" ||
+    value === "processed"
+  ) {
     return value;
   }
 
@@ -100,16 +103,14 @@ function parseSortBy(value: string | null): string {
 
 export function MessagesPage() {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [messages, setMessages] = useState<MessageListItem[]>([]);
   const [total, setTotal] = useState(0);
-
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [newMessagesCount, setNewMessagesCount] = useState(0);
+  const { unprocessedCount, refreshSignal } = useMessageNotifications();
 
   const page = parsePositiveInt(searchParams.get("page"), 1);
   const sortBy = parseSortBy(searchParams.get("sortBy"));
@@ -117,12 +118,16 @@ export function MessagesPage() {
   const statusFilter = parseStatusFilter(searchParams.get("status"));
 
   const isFetchingRef = useRef(false);
-  const lastSeenIdRef = useRef<number>(0);
-  const hasLoadedOnceRef = useRef(false);
-  const lastNotifiedCountRef = useRef<number>(0);
 
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
-  const paginationPages = useMemo(() => buildPagination(page, totalPages), [page, totalPages]);
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    [total]
+  );
+
+  const paginationPages = useMemo(
+    () => buildPagination(page, totalPages),
+    [page, totalPages]
+  );
 
   function updateSearchParams(patch: Record<string, string | null>) {
     const next = new URLSearchParams(searchParams);
@@ -165,22 +170,8 @@ export function MessagesPage() {
     });
   }
 
-  function markCurrentMessagesAsSeen(currentMessages: MessageListItem[]) {
-    if (currentMessages.length === 0) {
-      setNewMessagesCount(0);
-      lastNotifiedCountRef.current = 0;
-      return;
-    }
-
-    const maxId = Math.max(...currentMessages.map((message) => message.id));
-    lastSeenIdRef.current = maxId;
-    setNewMessagesCount(0);
-    lastNotifiedCountRef.current = 0;
-  }
-
-  async function loadMessages(options?: { silent?: boolean; markSeen?: boolean }) {
+  async function loadMessages(options?: { silent?: boolean }) {
     const silent = options?.silent ?? false;
-    const markSeen = options?.markSeen ?? false;
 
     if (isFetchingRef.current) {
       return;
@@ -205,19 +196,6 @@ export function MessagesPage() {
 
       setMessages(response.messages);
       setTotal(response.total);
-
-      if (response.messages.length > 0) {
-        const maxId = Math.max(...response.messages.map((message) => message.id));
-
-        if (!hasLoadedOnceRef.current) {
-          lastSeenIdRef.current = maxId;
-          hasLoadedOnceRef.current = true;
-        }
-      }
-
-      if (markSeen) {
-        markCurrentMessagesAsSeen(response.messages);
-      }
     } catch (error: any) {
       setErrorMessage(error?.message || "Impossible de charger les messages.");
     } finally {
@@ -229,75 +207,17 @@ export function MessagesPage() {
     }
   }
 
-  async function checkNewMessages() {
-    if (!hasLoadedOnceRef.current) {
+  useEffect(() => {
+    loadMessages();
+  }, [page, sortBy, sortOrder, statusFilter]);
+
+  useEffect(() => {
+    if (refreshSignal === 0) {
       return;
     }
 
-    try {
-      const response = await fetchNewMessagesCount(lastSeenIdRef.current);
-
-      if (response.total > 0) {
-        setNewMessagesCount(response.total);
-
-        if (lastNotifiedCountRef.current !== response.total) {
-          showToast({
-            title: "Nouveaux messages reçus",
-            description:
-              response.total === 1
-                ? "1 nouveau message a été détecté."
-                : `${response.total} nouveaux messages ont été détectés.`,
-            variant: "info",
-          });
-
-          lastNotifiedCountRef.current = response.total;
-        }
-      }
-    } catch {
-      // noop
-    }
-  }
-
-  useEffect(() => {
-    loadMessages({ markSeen: true });
-  }, [page, sortBy, sortOrder, statusFilter]);
-
-  useEffect(() => {
-    const titleBase = "Admin";
-    document.title = newMessagesCount > 0 ? `(${newMessagesCount}) ${titleBase}` : titleBase;
-  }, [newMessagesCount]);
-
-  useEffect(() => {
-    const runPollingCycle = () => {
-      loadMessages({ silent: true });
-      checkNewMessages();
-    };
-
-    const interval = window.setInterval(
-      runPollingCycle,
-      document.hidden ? BACKGROUND_POLLING_INTERVAL_MS : ACTIVE_POLLING_INTERVAL_MS
-    );
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [page, sortBy, sortOrder, statusFilter]);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        loadMessages({ silent: true, markSeen: true });
-      } else {
-        checkNewMessages();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [page, sortBy, sortOrder, statusFilter]);
+    loadMessages({ silent: true });
+  }, [refreshSignal]);
 
   useEffect(() => {
     if (page > totalPages) {
@@ -313,7 +233,8 @@ export function MessagesPage() {
             Demandes de contact
           </h1>
           <p className="mt-1 text-sm text-admin-text-soft">
-            Liste paginée des demandes avec tri, filtres et détection des nouveaux messages.
+            Liste paginée des demandes avec tri, filtres et détection des
+            nouveaux messages.
           </p>
         </div>
 
@@ -321,7 +242,9 @@ export function MessagesPage() {
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-admin-text-muted">
             Nouveaux messages
           </p>
-          <p className="mt-1 text-lg font-semibold text-white">{newMessagesCount}</p>
+          <p className="mt-1 text-lg font-semibold text-white">
+            {unprocessedCount}
+          </p>
         </div>
       </div>
 
@@ -350,7 +273,9 @@ export function MessagesPage() {
             </label>
             <select
               value={sortOrder}
-              onChange={(e) => setSortOrderValue(e.target.value as "asc" | "desc")}
+              onChange={(e) =>
+                setSortOrderValue(e.target.value as "asc" | "desc")
+              }
               className="w-full rounded-xl border border-white/8 bg-admin-panel-3/60 px-3 py-2 text-sm text-white outline-none"
             >
               <option value="desc">Décroissant</option>
@@ -364,7 +289,9 @@ export function MessagesPage() {
             </label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilterValue(e.target.value as "" | ProcessingStatus)}
+              onChange={(e) =>
+                setStatusFilterValue(e.target.value as "" | ProcessingStatus)
+              }
               className="w-full rounded-xl border border-white/8 bg-admin-panel-3/60 px-3 py-2 text-sm text-white outline-none"
             >
               <option value="">Tous</option>
@@ -393,21 +320,40 @@ export function MessagesPage() {
           <table className="w-full text-left">
             <thead className="bg-white/[0.03] text-admin-text-soft">
               <tr>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">ID</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">Type</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">Email</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">Message</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">Téléphone</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">Consentement</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">Statut</th>
-                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">Date</th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  ID
+                </th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  Type
+                </th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  Email
+                </th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  Message
+                </th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  Téléphone
+                </th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  Consentement
+                </th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  Statut
+                </th>
+                <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  Date
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-sm text-admin-text-soft">
+                  <td
+                    colSpan={8}
+                    className="px-4 py-10 text-center text-sm text-admin-text-soft"
+                  >
                     Chargement des messages...
                   </td>
                 </tr>
@@ -415,9 +361,12 @@ export function MessagesPage() {
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center">
                     <div className="mx-auto max-w-md">
-                      <p className="text-sm font-medium text-white">Aucun message trouvé</p>
+                      <p className="text-sm font-medium text-white">
+                        Aucun message trouvé
+                      </p>
                       <p className="mt-1 text-sm text-admin-text-soft">
-                        Essaie de modifier les filtres ou attends l’arrivée d’une nouvelle demande.
+                        Essaie de modifier les filtres ou attends l’arrivée d’une
+                        nouvelle demande.
                       </p>
                     </div>
                   </td>
@@ -426,37 +375,55 @@ export function MessagesPage() {
                 messages.map((message) => (
                   <tr
                     key={message.id}
-                    onClick={() => {
-                      markCurrentMessagesAsSeen(messages);
-                      navigate(`/messages/${message.id}?${searchParams.toString()}`);
-                    }}
+                    onClick={() =>
+                      navigate(
+                        `/messages/${message.id}?${searchParams.toString()}`
+                      )
+                    }
                     className="cursor-pointer border-t border-white/6 transition hover:bg-[#0d1f3c]"
                   >
-                    <td className="px-4 py-3.5 text-sm font-medium text-white">{message.id}</td>
+                    <td className="px-4 py-3.5 text-sm font-medium text-white">
+                      {message.id}
+                    </td>
                     <td className="px-4 py-3.5 text-sm text-admin-text-soft">
                       {getRequestTypeLabel(message.requestType)}
                     </td>
-                    <td className="px-4 py-3.5 text-sm text-admin-text-soft">{message.email}</td>
-                    <td className="max-w-md px-4 py-3.5 text-sm text-admin-text-soft" title={message.messagePreview}>
-                      <div className="line-clamp-2">{message.messagePreview}</div>
+                    <td className="px-4 py-3.5 text-sm text-admin-text-soft">
+                      {message.email}
+                    </td>
+                    <td
+                      className="max-w-md px-4 py-3.5 text-sm text-admin-text-soft"
+                      title={message.messagePreview}
+                    >
+                      <div className="line-clamp-2">
+                        {message.messagePreview}
+                      </div>
                     </td>
                     <td className="px-4 py-3.5">
                       <span
                         className={`inline-block h-3 w-3 rounded-full ${
-                          message.allowPhoneContact ? "bg-green-500" : "bg-red-500"
+                          message.allowPhoneContact
+                            ? "bg-green-500"
+                            : "bg-red-500"
                         }`}
                       />
                     </td>
                     <td className="px-4 py-3.5">
                       <span
                         className={`inline-block h-3 w-3 rounded-full ${
-                          message.consentPrivacy ? "bg-green-500" : "bg-red-500"
+                          message.consentPrivacy
+                            ? "bg-green-500"
+                            : "bg-red-500"
                         }`}
                       />
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2">
-                        <span className={`inline-block h-3 w-3 rounded-full ${getStatusDotClass(message.processingStatus)}`} />
+                        <span
+                          className={`inline-block h-3 w-3 rounded-full ${getStatusDotClass(
+                            message.processingStatus
+                          )}`}
+                        />
                         <span className="text-sm text-admin-text-soft">
                           {getStatusLabel(message.processingStatus)}
                         </span>
@@ -493,7 +460,9 @@ export function MessagesPage() {
 
             return (
               <div key={pageNumber} className="flex items-center gap-2">
-                {showGap ? <span className="px-1 text-admin-text-muted">…</span> : null}
+                {showGap ? (
+                  <span className="px-1 text-admin-text-muted">…</span>
+                ) : null}
 
                 <button
                   onClick={() => setPage(pageNumber)}

@@ -4,6 +4,7 @@ import { requireAdminAuth } from "../auth/auth.middleware";
 import {
   getMessageDetail,
   getNewMessagesCount,
+  getUnprocessedMessagesCount,
   listMessages,
   setMessageProcessingStatus,
 } from "./messages.service";
@@ -70,6 +71,28 @@ messagesRouter.get("/new-count", async (req, res) => {
     });
   }
 });
+
+messagesRouter.get(
+  "/count-unprocessed",
+  requireAdminAuth,
+  async (_req, res) => {
+    try {
+      const result = await getUnprocessedMessagesCount();
+
+      return res.status(200).json({
+        success: true,
+        ...result,
+      });
+    } catch (error) {
+      console.error("Erreur compteur messages :", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Erreur récupération compteur",
+      });
+    }
+  }
+);
 
 messagesRouter.post("/:id/export-rgpd", async (req, res) => {
   try {

@@ -1,3 +1,4 @@
+import { env } from "../../env";
 import { apiFetch } from "./api";
 
 export type ProcessingStatus = "unprocessed" | "in_progress" | "processed";
@@ -100,4 +101,22 @@ export async function exportMessageRgpd(id: number, email: string): Promise<{
     method: "POST",
     body: JSON.stringify({ email }),
   });
+}
+
+export async function fetchUnprocessedMessagesCount(): Promise<number> {
+  const baseUrl = env.apiBaseUrl;
+
+  const url = `${baseUrl}/api/messages/count-unprocessed`;
+  console.log("FETCH COUNT URL:", url);
+
+  const response = await fetch(url, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Erreur récupération compteur messages");
+  }
+
+  const data = await response.json();
+  return data.total;
 }
