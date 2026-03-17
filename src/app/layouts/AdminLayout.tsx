@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { logout } from "../services/auth";
 import { Sidebar } from "../components/Sidebar";
 
-export default function AdminLayout() {
+export function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
