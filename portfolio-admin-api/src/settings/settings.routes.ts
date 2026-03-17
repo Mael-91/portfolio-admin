@@ -23,11 +23,30 @@ settingsRouter.get("/", async (_req, res) => {
 
 // PATCH
 settingsRouter.patch("/", async (req, res) => {
-  const { retentionDays, autoPurgeEnabled } = req.body;
+  const { retentionDays, autoPurgeEnabled, purgeHour } = req.body;
+
+  if (
+    typeof retentionDays !== "number" ||
+    typeof autoPurgeEnabled !== "boolean" ||
+    typeof purgeHour !== "number"
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "Paramètres invalides",
+    });
+  }
+
+  if (purgeHour < 0 || purgeHour > 23) {
+    return res.status(400).json({
+      success: false,
+      message: "Heure de purge invalide",
+    });
+  }
 
   await updateAppSettings({
     retentionDays,
     autoPurgeEnabled,
+    purgeHour,
   });
 
   res.json({ success: true });
@@ -43,8 +62,12 @@ settingsRouter.post("/purge-now", async (_req, res) => {
   });
 });
 
-settingsRouter.get("/rgpd-stats", async (_req, res) => {
-  const stats = await getRgpdStats();
+settingsRouter.get("/rgpd-stats", async (req, res) => {
+  const retentionDays = req.query.retentionDays
+    ? Number(req.query.retentionDays)
+    : undefined;
+
+  const stats = await getRgpdStats(retentionDays);
 
   res.json({
     success: true,

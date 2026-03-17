@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { env } from "../../env";
 
 function getNextPurge(purgeHour: number) {
@@ -25,16 +25,7 @@ export function SettingsPage() {
   const [showModal, setShowModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  // 🔁 debounce autosave
-  useEffect(() => {
-    if (loading) return;
-
-    const timeout = setTimeout(() => {
-      saveSettings();
-    }, 600);
-
-    return () => clearTimeout(timeout);
-  }, [retentionDays, autoPurgeEnabled, purgeHour]);
+  const nextPurge = useMemo(() => getNextPurge(purgeHour), [purgeHour]);
 
   async function loadAll() {
     try {
@@ -42,9 +33,12 @@ export function SettingsPage() {
         fetch(`${env.apiBaseUrl}/api/settings`, {
           credentials: "include",
         }),
-        fetch(`${env.apiBaseUrl}/api/settings/rgpd-stats`, {
-          credentials: "include",
-        }),
+        fetch(
+          `${env.apiBaseUrl}/api/settings/rgpd-stats?retentionDays=${retentionDays}`,
+          {
+            credentials: "include",
+          }
+        ),
       ]);
 
       const settings = await settingsRes.json();
@@ -54,10 +48,26 @@ export function SettingsPage() {
       setAutoPurgeEnabled(settings.settings.autoPurgeEnabled);
       setPurgeHour(settings.settings.purgeHour);
       setToDelete(stats.stats.toDelete);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error("Erreur chargement settings:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function refreshStats(currentRetentionDays: number) {
+    try {
+      const res = await fetch(
+        `${env.apiBaseUrl}/api/settings/rgpd-stats?retentionDays=${currentRetentionDays}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      const data = await res.json();
+      setToDelete(data.stats.toDelete);
+    } catch (error) {
+      console.error("Erreur chargement stats RGPD:", error);
     }
   }
 
@@ -74,28 +84,25 @@ export function SettingsPage() {
         }),
       });
     } catch (error) {
-      console.error(error);
+      console.error("Erreur sauvegarde settings:", error);
     }
   }
 
   async function confirmPurge() {
     try {
-      const res = await fetch(
-        `${env.apiBaseUrl}/api/settings/purge-now`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`${env.apiBaseUrl}/api/settings/purge-now`, {
+        method: "POST",
+        credentials: "include",
+      });
 
       const data = await res.json();
 
       setSuccessMessage(`${data.deleted} messages supprimés`);
       setShowModal(false);
 
-      loadAll();
+      await refreshStats(retentionDays);
     } catch (error) {
-      console.error(error);
+      console.error("Erreur purge:", error);
     }
   }
 
@@ -103,13 +110,32 @@ export function SettingsPage() {
     loadAll();
   }, []);
 
+  useEffect(() => {
+    if (loading) return;
+
+    const timeout = setTimeout(() => {
+      saveSettings();
+    }, 600);
+
+    return () => clearTimeout(timeout);
+  }, [retentionDays, autoPurgeEnabled, purgeHour, loading]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const timeout = setTimeout(() => {
+      refreshStats(retentionDays);
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [retentionDays, loading]);
+
   if (loading) {
-    return <div className="text-admin-text-soft text-sm">Chargement...</div>;
+    return <div className="text-sm text-admin-text-soft">Chargement...</div>;
   }
 
   return (
     <div className="space-y-6 text-white">
-      {/* HEADER */}
       <div>
         <h1 className="text-xl font-semibold">Paramètres RGPD</h1>
         <p className="text-sm text-admin-text-soft">
@@ -117,30 +143,21 @@ export function SettingsPage() {
         </p>
       </div>
 
-      {/* STATS */}
       <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-2xl bg-white/[0.03] p-4">
-          <p className="text-xs text-admin-text-muted uppercase">
+          <p className="text-xs uppercase text-admin-text-muted">
             Messages à supprimer
           </p>
-          <p className="mt-1 text-2xl font-semibold text-red-400">
-            {toDelete}
-          </p>
+          <p className="mt-1 text-2xl font-semibold text-red-400">{toDelete}</p>
         </div>
 
         <div className="rounded-2xl bg-white/[0.03] p-4">
-          <p className="text-xs text-admin-text-muted uppercase">
-            Durée
-          </p>
-          <p className="mt-1 text-2xl font-semibold">
-            {retentionDays} j
-          </p>
+          <p className="text-xs uppercase text-admin-text-muted">Durée</p>
+          <p className="mt-1 text-2xl font-semibold">{retentionDays} j</p>
         </div>
 
         <div className="rounded-2xl bg-white/[0.03] p-4">
-          <p className="text-xs text-admin-text-muted uppercase">
-            Statut
-          </p>
+          <p className="text-xs uppercase text-admin-text-muted">Statut</p>
           <p
             className={`mt-1 text-2xl font-semibold ${
               autoPurgeEnabled ? "text-green-400" : "text-orange-400"
@@ -151,17 +168,16 @@ export function SettingsPage() {
         </div>
 
         <div className="rounded-2xl bg-white/[0.03] p-4">
-          <p className="text-xs text-admin-text-muted uppercase">
+          <p className="text-xs uppercase text-admin-text-muted">
             Prochaine purge
           </p>
           <p className="mt-1 text-sm font-semibold">
-            {getNextPurge(purgeHour).toLocaleString()}
+            {nextPurge.toLocaleString()}
           </p>
         </div>
       </div>
 
-      {/* CONFIG */}
-      <div className="rounded-2xl bg-white/[0.03] p-5 space-y-4">
+      <div className="space-y-4 rounded-2xl bg-white/[0.03] p-5">
         <h2 className="text-sm font-semibold">Configuration</h2>
 
         <div>
@@ -170,10 +186,9 @@ export function SettingsPage() {
           </label>
           <input
             type="number"
+            min={1}
             value={retentionDays}
-            onChange={(e) =>
-              setRetentionDays(Number(e.target.value))
-            }
+            onChange={(e) => setRetentionDays(Number(e.target.value))}
             className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
           />
         </div>
@@ -187,32 +202,39 @@ export function SettingsPage() {
             min={0}
             max={23}
             value={purgeHour}
-            onChange={(e) =>
-              setPurgeHour(Number(e.target.value))
-            }
+            onChange={(e) => setPurgeHour(Number(e.target.value))}
             className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={autoPurgeEnabled}
-            onChange={(e) =>
-              setAutoPurgeEnabled(e.target.checked)
-            }
-          />
-          <span className="text-sm">
-            Activer la purge automatique
-          </span>
+        <div className="flex items-center justify-between rounded-xl bg-admin-panel-3/40 px-4 py-3">
+          <div>
+            <p className="text-sm font-medium text-white">Purge automatique</p>
+            <p className="text-xs text-admin-text-soft">
+              Active ou désactive l’exécution quotidienne
+            </p>
+          </div>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={autoPurgeEnabled}
+            onClick={() => setAutoPurgeEnabled((prev) => !prev)}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition ${
+              autoPurgeEnabled ? "bg-admin-accent" : "bg-white/15"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                autoPurgeEnabled ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
         </div>
       </div>
 
-      {/* ACTION */}
       <div className="rounded-2xl bg-red-500/10 p-5">
-        <h2 className="text-sm font-semibold text-red-400">
-          Action critique
-        </h2>
+        <h2 className="text-sm font-semibold text-red-400">Action critique</h2>
 
         <button
           onClick={() => setShowModal(true)}
@@ -222,10 +244,9 @@ export function SettingsPage() {
         </button>
       </div>
 
-      {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60">
-          <div className="rounded-2xl bg-admin-panel-2 p-6 w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-admin-panel-2 p-6">
             <h3 className="text-lg font-semibold text-white">
               Confirmer la purge
             </h3>
@@ -253,7 +274,6 @@ export function SettingsPage() {
         </div>
       )}
 
-      {/* SUCCESS */}
       {successMessage && (
         <div className="rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-400">
           {successMessage}

@@ -42,15 +42,15 @@ export async function purgeOldMessages() {
   };
 }
 
-export async function getRgpdStats() {
+export async function getRgpdStats(retentionDaysOverride?: number) {
   const settings = await getSettings();
-  const retentionDays = Number(settings.rgpd_retention_days || 90);
+  const retentionDays = retentionDaysOverride ?? Number(settings.rgpd_retention_days || 90);
 
   const [rows]: any = await db.execute(
     `
-    SELECT COUNT(*) as total
-    FROM contact_submissions
-    WHERE created_at < NOW() - INTERVAL ? DAY
+      SELECT COUNT(*) as total
+      FROM contact_submissions
+      WHERE created_at < NOW() - INTERVAL ? DAY
     `,
     [retentionDays]
   );
