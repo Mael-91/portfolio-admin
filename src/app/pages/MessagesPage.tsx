@@ -105,6 +105,7 @@ export function MessagesPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParam = searchParams.get("search") || "";
+  const [isSearching, setIsSearching] = useState(false);
 
   const [messages, setMessages] = useState<MessageListItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -184,6 +185,10 @@ export function MessagesPage() {
       setIsLoading(true);
     }
 
+    if (searchParam) {
+      setIsSearching(true);
+    }
+
     try {
       setErrorMessage("");
 
@@ -202,6 +207,7 @@ export function MessagesPage() {
       setErrorMessage(error?.message || "Impossible de charger les messages.");
     } finally {
       isFetchingRef.current = false;
+      setIsSearching(false);
 
       if (!silent) {
         setIsLoading(false);

@@ -18,28 +18,31 @@ export function AdminLayout() {
 
   // 🔥 Debounce recherche globale
   useEffect(() => {
-  const timeout = setTimeout(() => {
-    const params = new URLSearchParams(location.search);
+    const timeout = setTimeout(() => {
+      const currentParams = new URLSearchParams(location.search);
+      const currentSearch = currentParams.get("search") || "";
 
-    if (search) {
-      params.set("search", search);
-      params.set("page", "1");
+      if (search === currentSearch) {
+        return;
+      }
 
-      navigate(`/messages?${params.toString()}`, {
+      const nextParams = new URLSearchParams(location.search);
+
+      if (search.trim()) {
+        nextParams.set("search", search.trim());
+        nextParams.set("page", "1");
+      } else {
+        nextParams.delete("search");
+        nextParams.delete("page");
+      }
+
+      navigate(`/messages?${nextParams.toString()}`, {
         replace: true,
       });
-    } else {
-      params.delete("search");
-
-      // si déjà sur messages → reset
-      if (location.pathname === "/messages") {
-        navigate(`/messages`, { replace: true });
-      }
-    }
-  }, 400);
+    }, 200);
 
     return () => clearTimeout(timeout);
-  }, [search]);
+  }, [search, location.search, navigate]);
 
   const handleLogout = async () => {
     await logout();
