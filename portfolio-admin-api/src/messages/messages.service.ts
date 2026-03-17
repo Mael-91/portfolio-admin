@@ -37,9 +37,13 @@ export async function listMessages(params: {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
+  search?: string;
 }) {
   const [total, rows] = await Promise.all([
-    countMessages({ status: params.status }),
+    countMessages({
+      status: params.status,
+      search: params.search, 
+    }),
     findMessages(params),
   ]);
 
@@ -51,7 +55,7 @@ export async function listMessages(params: {
       id: row.id,
       requestType: row.request_type,
       email: row.email,
-      messagePreview: buildCleanPreview(row.message_preview),
+      messagePreview: buildCleanPreview(row.message_preview ?? ""),
       allowPhoneContact: Boolean(row.allow_phone_contact),
       consentPrivacy: Boolean(row.consent_privacy),
       processingStatus: row.processing_status,

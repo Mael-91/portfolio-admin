@@ -1,16 +1,21 @@
-import { RowDataPacket } from "mysql2";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "../db/db";
 
-export type MessageSortField =
-  | "created_at"
-  | "id"
-  | "email"
-  | "processing_status"
-  | "request_type";
+type FindMessagesParams = {
+  page: number;
+  pageSize: number;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  search?: string;
+};
 
-export type MessageSortOrder = "asc" | "desc";
+type CountMessagesParams = {
+  status?: string;
+  search?: string;
+};
 
-export interface ContactMessageRow extends RowDataPacket {
+type MessageRow = RowDataPacket & {
   id: number;
   request_type: string;
   first_name: string | null;
@@ -18,85 +23,84 @@ export interface ContactMessageRow extends RowDataPacket {
   company: string | null;
   email: string;
   phone: string | null;
-  message_preview: string;
-  message_text?: string;
-  allow_phone_contact: number;
-  consent_privacy: number;
+  message_text: string;
+  message_preview?: string;
+  allow_phone_contact: number | boolean;
+  consent_privacy: number | boolean;
   processing_status: "unprocessed" | "in_progress" | "processed";
   processing_updated_at: string | null;
   created_at: string;
-}
-
-const allowedSortFields: Record<string, MessageSortField> = {
-  date: "created_at",
-  created_at: "created_at",
-  id: "id",
-  alphabetical: "email",
-  email: "email",
-  status: "processing_status",
-  processing_status: "processing_status",
-  type: "request_type",
-  request_type: "request_type",
 };
 
-function resolveSortField(sortBy?: string): MessageSortField {
-  return allowedSortFields[sortBy || "date"] || "created_at";
-}
+type CountRow = RowDataPacket & {
+  total: number;
+};
 
-function resolveSortOrder(sortOrder?: string): MessageSortOrder {
-  return sortOrder === "asc" ? "asc" : "desc";
-}
-
-export async function countMessages(params: {
-  status?: string;
-}): Promise<number> {
+function buildWhereClause(params: CountMessagesParams) {
   const where: string[] = [];
-  const values: Array<string | number | boolean | null> = [];
+  const values: Array<string> = [];
 
   if (params.status) {
-    where.push("processing_status = ?");
+    where.push(`processing_status = ?`);
     values.push(params.status);
   }
 
-  const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  if (params.search) {
+    const like = `%${params.search}%`;
 
-  const [rows] = await db.execute<RowDataPacket[]>(
+    where.push(`
+      (
+        email LIKE ?
+        OR message_text LIKE ?
+        OR first_name LIKE ?
+        OR last_name LIKE ?
+        OR company LIKE ?
+      )
+    `);
+
+    values.push(like, like, like, like, like);
+  }
+
+  const whereClause =
+    where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
+  return {
+    whereClause,
+    values,
+  };
+}
+
+function resolveOrderBy(sortBy?: string, sortOrder?: string) {
+  const direction = sortOrder?.toLowerCase() === "asc" ? "ASC" : "DESC";
+
+  switch (sortBy) {
+    case "id":
+      return `id ${direction}`;
+    case "alphabetical":
+      return `email ${direction}`;
+    case "status":
+      return `processing_status ${direction}, created_at DESC`;
+    case "type":
+      return `request_type ${direction}, created_at DESC`;
+    case "date":
+    default:
+      return `created_at ${direction}`;
+  }
+}
+
+export async function findMessages(params: FindMessagesParams) {
+  const { page, pageSize } = params;
+  const offset = (page - 1) * pageSize;
+
+  const { whereClause, values } = buildWhereClause({
+    status: params.status,
+    search: params.search,
+  });
+
+  const orderBy = resolveOrderBy(params.sortBy, params.sortOrder);
+
+  const [rows] = await db.execute<MessageRow[]>(
     `
-      SELECT COUNT(*) AS total
-      FROM contact_submissions
-      ${whereClause}
-    `,
-    values
-  );
-
-  return Number(rows[0]?.total ?? 0);
-}
-
-export async function findMessages(params: {
-  page: number;
-  pageSize: number;
-  sortBy?: string;
-  sortOrder?: string;
-  status?: string;
-}): Promise<ContactMessageRow[]> {
-  const offset = (params.page - 1) * params.pageSize;
-  const sortField = resolveSortField(params.sortBy);
-  const sortOrder = resolveSortOrder(params.sortOrder);
-
-  const where: string[] = [];
-  const values: Array<string | number | boolean | null> = [];
-
-  if (params.status) {
-    where.push("processing_status = ?");
-    values.push(params.status);
-  }
-
-  const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
-
-  values.push(params.pageSize, offset);
-
-  const [rows] = await db.execute<ContactMessageRow[]>(
-  `
     SELECT
       id,
       request_type,
@@ -106,7 +110,11 @@ export async function findMessages(params: {
       email,
       phone,
       LEFT(
-      TRIM(REPLACE(REPLACE(REPLACE(message_text, '\r', ' '),'\n', ' '),'\t', ' ')),200) AS message_preview,
+        TRIM(
+          REPLACE(REPLACE(REPLACE(message_text, '\\r', ' '), '\\n', ' '), '\\t', ' ')
+        ),
+        200
+      ) AS message_preview,
       allow_phone_contact,
       consent_privacy,
       processing_status,
@@ -114,18 +122,58 @@ export async function findMessages(params: {
       created_at
     FROM contact_submissions
     ${whereClause}
-    ORDER BY ${sortField} ${sortOrder}
+    ORDER BY ${orderBy}
     LIMIT ? OFFSET ?
-  `,
-  values
-);
+    `,
+    [...values, String(pageSize), String(offset)]
+  );
 
   return rows;
 }
 
-export async function findMessageById(id: number): Promise<ContactMessageRow | null> {
-  const [rows] = await db.execute<ContactMessageRow[]>(
-  `
+export async function countMessages(params: CountMessagesParams) {
+  const { whereClause, values } = buildWhereClause(params);
+
+  const [rows] = await db.execute<CountRow[]>(
+    `
+    SELECT COUNT(*) AS total
+    FROM contact_submissions
+    ${whereClause}
+    `,
+    values
+  );
+
+  return rows[0]?.total ?? 0;
+}
+
+export async function countUnprocessedMessages(): Promise<number> {
+  const [rows] = await db.execute<CountRow[]>(
+    `
+    SELECT COUNT(*) AS total
+    FROM contact_submissions
+    WHERE processing_status = 'unprocessed'
+    `
+  );
+
+  return rows[0]?.total ?? 0;
+}
+
+export async function findNewMessagesCountSinceId(lastSeenId: number): Promise<number> {
+  const [rows] = await db.execute<CountRow[]>(
+    `
+    SELECT COUNT(*) AS total
+    FROM contact_submissions
+    WHERE id > ?
+    `,
+    [String(lastSeenId)]
+  );
+
+  return rows[0]?.total ?? 0;
+}
+
+export async function findMessageById(id: number) {
+  const [rows] = await db.execute<MessageRow[]>(
+    `
     SELECT
       id,
       request_type,
@@ -143,9 +191,9 @@ export async function findMessageById(id: number): Promise<ContactMessageRow | n
     FROM contact_submissions
     WHERE id = ?
     LIMIT 1
-  `,
-  [id]
-);
+    `,
+    [String(id)]
+  );
 
   return rows[0] ?? null;
 }
@@ -153,42 +201,19 @@ export async function findMessageById(id: number): Promise<ContactMessageRow | n
 export async function updateMessageProcessingStatus(params: {
   id: number;
   processingStatus: "unprocessed" | "in_progress" | "processed";
-}): Promise<void> {
-  await db.execute(
+}) {
+  const { id, processingStatus } = params;
+
+  await db.execute<ResultSetHeader>(
     `
-      UPDATE contact_submissions
-      SET
-        processing_status = ?,
-        processing_updated_at = NOW()
-      WHERE id = ?
+    UPDATE contact_submissions
+    SET
+      processing_status = ?,
+      processing_updated_at = NOW()
+    WHERE id = ?
     `,
-    [params.processingStatus, params.id]
-  );
-}
-
-export async function findNewMessagesCountSinceId(lastSeenId: number): Promise<number> {
-  const [rows] = await db.execute<RowDataPacket[]>(
-    `
-      SELECT COUNT(*) AS total
-      FROM contact_submissions
-      WHERE id > ?
-    `,
-    [lastSeenId]
+    [processingStatus, String(id)]
   );
 
-  return Number(rows[0]?.total ?? 0);
-}
-
-export async function countUnprocessedMessages(): Promise<number> {
-  const [rows] = await db.execute(
-    `
-      SELECT COUNT(*) AS total
-      FROM contact_submissions
-      WHERE processing_status = 'unprocessed'
-    `
-  );
-
-  const result = rows as any[];
-
-  return result[0].total;
+  return findMessageById(id);
 }

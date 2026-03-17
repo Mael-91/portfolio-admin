@@ -20,6 +20,7 @@ const listSchema = z.object({
   sortBy: z.string().optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
   status: z.enum(["unprocessed", "in_progress", "processed"]).optional(),
+  search: z.string().trim().optional(),
 });
 
 messagesRouter.get("/", async (req, res) => {
@@ -72,27 +73,23 @@ messagesRouter.get("/new-count", async (req, res) => {
   }
 });
 
-messagesRouter.get(
-  "/count-unprocessed",
-  requireAdminAuth,
-  async (_req, res) => {
-    try {
-      const result = await getUnprocessedMessagesCount();
+messagesRouter.get("/count-unprocessed", async (_req, res) => {
+  try {
+    const result = await getUnprocessedMessagesCount();
 
-      return res.status(200).json({
-        success: true,
-        ...result,
-      });
-    } catch (error) {
-      console.error("Erreur compteur messages :", error);
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    console.error("Erreur compteur messages :", error);
 
-      return res.status(500).json({
-        success: false,
-        message: "Erreur récupération compteur",
-      });
-    }
+    return res.status(500).json({
+      success: false,
+      message: "Erreur récupération compteur",
+    });
   }
-);
+});
 
 messagesRouter.post("/:id/export-rgpd", async (req, res) => {
   try {
