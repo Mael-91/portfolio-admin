@@ -22,7 +22,19 @@ export function SettingsPage() {
   const [toDelete, setToDelete] = useState(0);
 
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  // 🔁 debounce autosave
+  useEffect(() => {
+    if (loading) return;
+
+    const timeout = setTimeout(() => {
+      saveSettings();
+    }, 600);
+
+    return () => clearTimeout(timeout);
+  }, [retentionDays, autoPurgeEnabled, purgeHour]);
 
   async function loadAll() {
     try {
@@ -35,30 +47,15 @@ export function SettingsPage() {
         }),
       ]);
 
-      const settingsText = await settingsRes.text();
-      const statsText = await statsRes.text();
-
-      let settings;
-      let stats;
-
-      try {
-        settings = JSON.parse(settingsText);
-        stats = JSON.parse(statsText);
-      } catch {
-        console.error("Réponse API invalide", {
-          settingsText,
-          statsText,
-        });
-        throw new Error("Réponse serveur invalide");
-      }
+      const settings = await settingsRes.json();
+      const stats = await statsRes.json();
 
       setRetentionDays(settings.settings.retentionDays);
       setAutoPurgeEnabled(settings.settings.autoPurgeEnabled);
       setPurgeHour(settings.settings.purgeHour);
-
       setToDelete(stats.stats.toDelete);
-    } catch (error) {
-      console.error("Erreur chargement settings:", error);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -76,14 +73,12 @@ export function SettingsPage() {
           purgeHour,
         }),
       });
-
-      setSuccessMessage("Paramètres sauvegardés");
     } catch (error) {
       console.error(error);
     }
   }
 
-  async function purgeNow() {
+  async function confirmPurge() {
     try {
       const res = await fetch(
         `${env.apiBaseUrl}/api/settings/purge-now`,
@@ -96,8 +91,8 @@ export function SettingsPage() {
       const data = await res.json();
 
       setSuccessMessage(`${data.deleted} messages supprimés`);
+      setShowModal(false);
 
-      // refresh stats
       loadAll();
     } catch (error) {
       console.error(error);
@@ -109,11 +104,7 @@ export function SettingsPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="text-admin-text-soft text-sm">
-        Chargement...
-      </div>
-    );
+    return <div className="text-admin-text-soft text-sm">Chargement...</div>;
   }
 
   return (
@@ -139,7 +130,7 @@ export function SettingsPage() {
 
         <div className="rounded-2xl bg-white/[0.03] p-4">
           <p className="text-xs text-admin-text-muted uppercase">
-            Durée conservation
+            Durée
           </p>
           <p className="mt-1 text-2xl font-semibold">
             {retentionDays} j
@@ -148,7 +139,7 @@ export function SettingsPage() {
 
         <div className="rounded-2xl bg-white/[0.03] p-4">
           <p className="text-xs text-admin-text-muted uppercase">
-            Statut RGPD
+            Statut
           </p>
           <p
             className={`mt-1 text-2xl font-semibold ${
@@ -215,13 +206,6 @@ export function SettingsPage() {
             Activer la purge automatique
           </span>
         </div>
-
-        <button
-          onClick={saveSettings}
-          className="rounded-xl bg-admin-accent px-4 py-2 text-sm"
-        >
-          Sauvegarder
-        </button>
       </div>
 
       {/* ACTION */}
@@ -230,17 +214,44 @@ export function SettingsPage() {
           Action critique
         </h2>
 
-        <p className="text-sm text-admin-text-soft">
-          Cette action supprimera définitivement les données concernées.
-        </p>
-
         <button
-          onClick={purgeNow}
+          onClick={() => setShowModal(true)}
           className="mt-3 rounded-xl bg-red-500 px-4 py-2 text-sm"
         >
           Purger maintenant
         </button>
       </div>
+
+      {/* MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60">
+          <div className="rounded-2xl bg-admin-panel-2 p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-white">
+              Confirmer la purge
+            </h3>
+
+            <p className="mt-2 text-sm text-admin-text-soft">
+              {toDelete} messages seront définitivement supprimés.
+            </p>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                onClick={() => setShowModal(false)}
+                className="rounded-xl bg-white/10 px-4 py-2 text-sm"
+              >
+                Annuler
+              </button>
+
+              <button
+                onClick={confirmPurge}
+                className="rounded-xl bg-red-500 px-4 py-2 text-sm"
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SUCCESS */}
       {successMessage && (
