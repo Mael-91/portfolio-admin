@@ -533,58 +533,6 @@ export function MessageDetailPage() {
               >
                 Export RGPD
               </button>
-
-              <button
-                    onClick={async () => {
-                      const success = await copyToClipboard(message.email);
-
-                      if (success) {
-                        showToast({
-                          title: "Copié",
-                          description: "Adresse email copiée",
-                          variant: "success",
-                        });
-                      } else {
-                        showToast({
-                          title: "Erreur",
-                          description: "Impossible de copier l’email",
-                          variant: "error",
-                        });
-                      }
-                    }}
-                    className="flex items-center justify-centerh-8 w-8rounded-lgbg-white/[0.03]border border-white/10text-admin-text-softtransition-all duration-200hover:bg-white/[0.08]hover:text-whitehover:border-white/20active:scale-90"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25h3A2.25 2.25 0 0021 15V5.25A2.25 2.25 0 0018.75 3h-9.5A2.25 2.25 0 007 5.25v3"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h-3A2.25 2.25 0 003.75 9.75v9.75A2.25 2.25 0 006 21.75h9.75A2.25 2.25 0 0018 19.5v-9.75A2.25 2.25 0 0015.75 7.5H9z"/>
-                    </svg>
-                  </button>
-
-              <button
-                onClick={async () => {
-                  const success = await copyToClipboard(message.messageText);
-
-                  if (success) {
-                    showToast({
-                      title: "Copié",
-                      description: "Message copié",
-                      variant: "success",
-                    });
-                  } else {
-                    showToast({
-                      title: "Erreur",
-                      description: "Impossible de copier le message",
-                      variant: "error",
-                    });
-                  }
-                }}
-                className="flex items-center justify-centerh-8 w-8rounded-lgbg-white/[0.03]border border-white/10text-admin-text-softtransition-all duration-200hover:bg-white/[0.08]hover:text-whitehover:border-white/20active:scale-90"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25h3A2.25 2.25 0 0021 15V5.25A2.25 2.25 0 0018.75 3h-9.5A2.25 2.25 0 007 5.25v3"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h-3A2.25 2.25 0 003.75 9.75v9.75A2.25 2.25 0 006 21.75h9.75A2.25 2.25 0 0018 19.5v-9.75A2.25 2.25 0 0015.75 7.5H9z"/>
-                </svg>
-              </button>
             </div>
           </div>
         </aside>
