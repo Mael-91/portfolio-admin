@@ -101,6 +101,8 @@ export function MessageDetailPage() {
     return location.search ? `/messages${location.search}` : "/messages";
   }, [location.search]);
 
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
   async function loadMessage() {
     if (!id) {
       setErrorMessage("Identifiant de message manquant.");
@@ -184,21 +186,30 @@ export function MessageDetailPage() {
     }
   }
 
-  async function handleCopy(text: string, label: string) {
+  async function copyToClipboard(text: string) {
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
 
-      showToast({
-        title: "Copie effectuée",
-        description: `${label} a été copié dans le presse-papiers.`,
-        variant: "success",
-      });
-    } catch {
-      showToast({
-        title: "Erreur",
-        description: `Impossible de copier ${label.toLowerCase()}.`,
-        variant: "error",
-      });
+      // 🔁 fallback
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+
+      return true;
+    } catch (error) {
+      console.error("Erreur copie :", error);
+      return false;
     }
   }
 
@@ -305,12 +316,18 @@ export function MessageDetailPage() {
                 <div className="mt-2 flex items-center gap-2">
                   <p className="text-sm text-admin-text">{message.email}</p>
                   <button
-                    type="button"
-                    onClick={() => handleCopy(message.email, "L’email")}
-                    className="rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1 text-xs text-admin-text-soft transition hover:bg-white/[0.06] hover:text-white"
-                  >
-                    Copier
-                  </button>
+                      onClick={async () => {
+                        const success = await copyToClipboard(message.email);
+
+                        if (success) {
+                          setCopiedField("email");
+                          setTimeout(() => setCopiedField(null), 2000);
+                        }
+                      }}
+                      className="text-xs text-admin-accent hover:underline"
+                    >
+                      {copiedField === "email" ? "Copié ✓" : "Copier"}
+                    </button>
                 </div>
               </div>
 
@@ -391,11 +408,17 @@ export function MessageDetailPage() {
               <h2 className="text-base font-semibold text-white">Message</h2>
 
               <button
-                type="button"
-                onClick={() => handleCopy(message.messageText, "Le message")}
-                className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-admin-text-soft transition hover:bg-white/[0.06] hover:text-white"
+                onClick={async () => {
+                  const success = await copyToClipboard(message.messageText);
+
+                  if (success) {
+                    setCopiedField("message");
+                    setTimeout(() => setCopiedField(null), 2000);
+                  }
+                }}
+                className="text-xs text-admin-accent hover:underline"
               >
-                Copier le message
+                {copiedField === "message" ? "Copié ✓" : "Copier"}
               </button>
             </div>
 
@@ -489,19 +512,31 @@ export function MessageDetailPage() {
               </button>
 
               <button
-                type="button"
-                onClick={() => handleCopy(message.email, "L’email")}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-medium text-admin-text-soft transition hover:bg-white/[0.06] hover:text-white"
+                onClick={async () => {
+                  const success = await copyToClipboard(message.email);
+
+                  if (success) {
+                    setCopiedField("email");
+                    setTimeout(() => setCopiedField(null), 2000);
+                  }
+                }}
+                className="text-xs text-admin-accent hover:underline"
               >
-                Copier l’email
+                {copiedField === "email" ? "Copié ✓" : "Copier"}
               </button>
 
               <button
-                type="button"
-                onClick={() => handleCopy(message.messageText, "Le message")}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-medium text-admin-text-soft transition hover:bg-white/[0.06] hover:text-white"
+                onClick={async () => {
+                  const success = await copyToClipboard(message.messageText);
+
+                  if (success) {
+                    setCopiedField("message");
+                    setTimeout(() => setCopiedField(null), 2000);
+                  }
+                }}
+                className="text-xs text-admin-accent hover:underline"
               >
-                Copier le message
+                {copiedField === "message" ? "Copié ✓" : "Copier"}
               </button>
             </div>
           </div>
