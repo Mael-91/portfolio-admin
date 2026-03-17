@@ -1,17 +1,13 @@
-import cron from "node-cron";
-import { purgeOldContactSubmissions } from "./rgpd-purge.service";
-import { env } from "../env";
+import { purgeOldMessages, getAppSettings } from "../settings/settings.service";
 
 export function startRgpdCron() {
-  const retentionDays = Number(env.rgpdRetentionDays);
+  setInterval(async () => {
+    const settings = await getAppSettings();
 
-  cron.schedule(env.rgpdPurgeCron, async () => {
-    try {
-      await purgeOldContactSubmissions(retentionDays);
-    } catch (err) {
-      console.error("Erreur purge RGPD :", err);
-    }
-  });
+    if (!settings.autoPurgeEnabled) return;
 
-  console.log("Cron RGPD démarré");
+    const result = await purgeOldMessages();
+
+    console.log("RGPD purge:", result.deleted);
+  }, 24 * 60 * 60 * 1000); // 1 jour
 }
