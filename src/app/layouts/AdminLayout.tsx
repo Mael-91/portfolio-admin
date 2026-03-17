@@ -73,7 +73,7 @@ export function AdminLayout() {
               onChange={(e) => setSearch(e.target.value)}
               className="h-12 w-full rounded-2xl border border-white/6 bg-white/[0.03] pl-12 pr-4 text-sm text-white placeholder:text-admin-text-muted outline-none transition focus:border-white/15 focus:bg-white/[0.045]"
             />
-            <button onClick={() => setSearch("")}className="absolute right-2 top-1/2 -translate-y-1/2text-xs text-white/50hover:text-white">✕</button>
+            {search && (<button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-white/50 hover:text-white">✕</button>)}
           </div>
 
           {/* Actions */}
