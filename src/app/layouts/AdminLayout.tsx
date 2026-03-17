@@ -94,22 +94,42 @@ export function AdminLayout() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLogout}
-              className="
-                rounded-lg
-                bg-red-500/10
-                px-3 py-1.5
-                text-sm text-red-400
-                border border-red-500/20
-                hover:bg-red-500/20
-                transition
-              "
-            >
-              Déconnexion
+          <div className="flex items-center gap-5">
+            <button className="relative text-admin-text-soft transition hover:text-white">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path d="M15 17H9a4 4 0 0 1-4-4V10a7 7 0 1 1 14 0v3a4 4 0 0 1-4 4Z" />
+                <path d="M10 20a2 2 0 0 0 4 0" />
+              </svg>
             </button>
-          </div>
+
+            <div className="h-8 w-px bg-white/10" />
+
+            <button className="flex items-center gap-3 rounded-2xl px-2 py-1.5 transition hover:bg-white/5">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
+                MC
+              </div>
+
+              <div className="hidden text-left md:block">
+                <p className="text-base font-semibold text-white">Mael Constantin</p>
+              </div>
+
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4 text-admin-text-muted"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+              </div>
         </header>
 
         {/* Content */}
