@@ -4,6 +4,7 @@ import {
   getAppSettings,
   updateAppSettings,
   purgeOldMessages,
+  getRgpdStats,
 } from "./settings.service";
 
 export const settingsRouter = Router();
@@ -39,5 +40,14 @@ settingsRouter.post("/purge-now", async (_req, res) => {
   res.json({
     success: true,
     ...result,
+  });
+});
+
+settingsRouter.get("/rgpd-stats", async (_req, res) => {
+  const stats = await getRgpdStats();
+
+  res.json({
+    success: true,
+    stats,
   });
 });

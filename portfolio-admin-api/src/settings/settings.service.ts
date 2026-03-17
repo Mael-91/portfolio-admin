@@ -38,3 +38,21 @@ export async function purgeOldMessages() {
     deleted: result.affectedRows || 0,
   };
 }
+
+export async function getRgpdStats() {
+  const settings = await getSettings();
+  const retentionDays = Number(settings.rgpd_retention_days || 90);
+
+  const [rows]: any = await db.execute(
+    `
+    SELECT COUNT(*) as total
+    FROM contact_submissions
+    WHERE created_at < NOW() - INTERVAL ? DAY
+    `,
+    [retentionDays]
+  );
+
+  return {
+    toDelete: rows[0].total,
+  };
+}
