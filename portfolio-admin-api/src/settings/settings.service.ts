@@ -7,18 +7,21 @@ export async function getAppSettings() {
   return {
     retentionDays: Number(settings.rgpd_retention_days || 90),
     autoPurgeEnabled: settings.rgpd_auto_purge_enabled === "true",
+    purgeHour: Number(settings.rgpd_purge_hour || 3),
   };
 }
 
 export async function updateAppSettings(data: {
   retentionDays: number;
   autoPurgeEnabled: boolean;
+  purgeHour: number;
 }) {
   await updateSetting("rgpd_retention_days", String(data.retentionDays));
   await updateSetting(
     "rgpd_auto_purge_enabled",
     data.autoPurgeEnabled ? "true" : "false"
   );
+  await updateSetting("rgpd_purge_hour", String(data.purgeHour));
 }
 
 export async function purgeOldMessages() {

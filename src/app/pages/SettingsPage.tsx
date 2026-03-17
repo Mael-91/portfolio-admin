@@ -1,56 +1,107 @@
 import { useEffect, useState } from "react";
 import { env } from "../../env";
 
+function getNextPurge(purgeHour: number) {
+  const now = new Date();
+  const next = new Date();
+
+  next.setHours(purgeHour, 0, 0, 0);
+
+  if (next <= now) {
+    next.setDate(next.getDate() + 1);
+  }
+
+  return next;
+}
+
 export function SettingsPage() {
   const [retentionDays, setRetentionDays] = useState(90);
   const [autoPurgeEnabled, setAutoPurgeEnabled] = useState(true);
+  const [purgeHour, setPurgeHour] = useState(3);
+
   const [toDelete, setToDelete] = useState(0);
+
   const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function loadAll() {
     try {
       const [settingsRes, statsRes] = await Promise.all([
-        fetch(`${env.apiBaseUrl}/api/settings`, { credentials: "include" }),
+        fetch(`${env.apiBaseUrl}/api/settings`, {
+          credentials: "include",
+        }),
         fetch(`${env.apiBaseUrl}/api/settings/rgpd-stats`, {
           credentials: "include",
         }),
       ]);
 
-      const settings = await settingsRes.json();
-      const stats = await statsRes.json();
+      const settingsText = await settingsRes.text();
+      const statsText = await statsRes.text();
+
+      let settings;
+      let stats;
+
+      try {
+        settings = JSON.parse(settingsText);
+        stats = JSON.parse(statsText);
+      } catch {
+        console.error("Réponse API invalide", {
+          settingsText,
+          statsText,
+        });
+        throw new Error("Réponse serveur invalide");
+      }
 
       setRetentionDays(settings.settings.retentionDays);
       setAutoPurgeEnabled(settings.settings.autoPurgeEnabled);
+      setPurgeHour(settings.settings.purgeHour);
+
       setToDelete(stats.stats.toDelete);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error("Erreur chargement settings:", error);
     } finally {
       setLoading(false);
     }
   }
 
   async function saveSettings() {
-    await fetch(`${env.apiBaseUrl}/api/settings`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ retentionDays, autoPurgeEnabled }),
-    });
+    try {
+      await fetch(`${env.apiBaseUrl}/api/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          retentionDays,
+          autoPurgeEnabled,
+          purgeHour,
+        }),
+      });
 
-    setSuccess("Paramètres sauvegardés");
+      setSuccessMessage("Paramètres sauvegardés");
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async function purgeNow() {
-    const res = await fetch(`${env.apiBaseUrl}/api/settings/purge-now`, {
-      method: "POST",
-      credentials: "include",
-    });
+    try {
+      const res = await fetch(
+        `${env.apiBaseUrl}/api/settings/purge-now`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setSuccess(`${data.deleted} messages supprimés`);
-    loadAll();
+      setSuccessMessage(`${data.deleted} messages supprimés`);
+
+      // refresh stats
+      loadAll();
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   useEffect(() => {
@@ -58,7 +109,11 @@ export function SettingsPage() {
   }, []);
 
   if (loading) {
-    return <div className="text-admin-text-soft">Chargement...</div>;
+    return (
+      <div className="text-admin-text-soft text-sm">
+        Chargement...
+      </div>
+    );
   }
 
   return (
@@ -72,7 +127,7 @@ export function SettingsPage() {
       </div>
 
       {/* STATS */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-2xl bg-white/[0.03] p-4">
           <p className="text-xs text-admin-text-muted uppercase">
             Messages à supprimer
@@ -87,7 +142,7 @@ export function SettingsPage() {
             Durée conservation
           </p>
           <p className="mt-1 text-2xl font-semibold">
-            {retentionDays} jours
+            {retentionDays} j
           </p>
         </div>
 
@@ -100,7 +155,16 @@ export function SettingsPage() {
               autoPurgeEnabled ? "text-green-400" : "text-orange-400"
             }`}
           >
-            {autoPurgeEnabled ? "Actif" : "Désactivé"}
+            {autoPurgeEnabled ? "Actif" : "Off"}
+          </p>
+        </div>
+
+        <div className="rounded-2xl bg-white/[0.03] p-4">
+          <p className="text-xs text-admin-text-muted uppercase">
+            Prochaine purge
+          </p>
+          <p className="mt-1 text-sm font-semibold">
+            {getNextPurge(purgeHour).toLocaleString()}
           </p>
         </div>
       </div>
@@ -116,7 +180,25 @@ export function SettingsPage() {
           <input
             type="number"
             value={retentionDays}
-            onChange={(e) => setRetentionDays(Number(e.target.value))}
+            onChange={(e) =>
+              setRetentionDays(Number(e.target.value))
+            }
+            className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-admin-text-soft">
+            Heure de purge (0 - 23)
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={23}
+            value={purgeHour}
+            onChange={(e) =>
+              setPurgeHour(Number(e.target.value))
+            }
             className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
           />
         </div>
@@ -125,9 +207,13 @@ export function SettingsPage() {
           <input
             type="checkbox"
             checked={autoPurgeEnabled}
-            onChange={(e) => setAutoPurgeEnabled(e.target.checked)}
+            onChange={(e) =>
+              setAutoPurgeEnabled(e.target.checked)
+            }
           />
-          <span className="text-sm">Activer la purge automatique</span>
+          <span className="text-sm">
+            Activer la purge automatique
+          </span>
         </div>
 
         <button
@@ -156,8 +242,11 @@ export function SettingsPage() {
         </button>
       </div>
 
-      {success && (
-        <div className="text-green-400 text-sm">{success}</div>
+      {/* SUCCESS */}
+      {successMessage && (
+        <div className="rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-400">
+          {successMessage}
+        </div>
       )}
     </div>
   );

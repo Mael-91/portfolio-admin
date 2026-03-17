@@ -1,13 +1,48 @@
-import { purgeOldMessages, getAppSettings } from "../settings/settings.service";
+import {
+  purgeOldMessages,
+  getAppSettings,
+} from "../settings/settings.service";
 
-export function startRgpdCron() {
-  setInterval(async () => {
+function msUntilNextRun(hour: number) {
+  const now = new Date();
+  const next = new Date();
+
+  next.setHours(hour, 0, 0, 0);
+
+  if (next <= now) {
+    next.setDate(next.getDate() + 1);
+  }
+
+  return next.getTime() - now.getTime();
+}
+
+export async function startRgpdCron() {
+  async function scheduleNextRun() {
     const settings = await getAppSettings();
 
-    if (!settings.autoPurgeEnabled) return;
+    const delay = msUntilNextRun(settings.purgeHour);
 
-    const result = await purgeOldMessages();
+    console.log(
+      `Prochaine purge RGPD à ${settings.purgeHour}:00 dans ${
+        Math.round(delay / 1000 / 60)
+      } minutes`
+    );
 
-    console.log("RGPD purge:", result.deleted);
-  }, 24 * 60 * 60 * 1000); // 1 jour
+    setTimeout(async () => {
+      const currentSettings = await getAppSettings();
+
+      if (currentSettings.autoPurgeEnabled) {
+        const result = await purgeOldMessages();
+
+        console.log(
+          `RGPD purge exécutée (${currentSettings.purgeHour}h) :`,
+          result.deleted
+        );
+      }
+
+      scheduleNextRun(); // 🔁 recalcul dynamique
+    }, delay);
+  }
+
+  scheduleNextRun();
 }
