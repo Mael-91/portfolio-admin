@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { env } from "../../env";
 
 export function SettingsPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -8,7 +9,7 @@ export function SettingsPage() {
 
   async function loadSettings() {
     const res = await fetch(
-      `${import.meta.env.VITE_ADMIN_API_URL}/api/settings`,
+      `${env.apiBaseUrl}/api/settings`,
       { credentials: "include" }
     );
 
@@ -21,7 +22,7 @@ export function SettingsPage() {
 
   async function saveSettings() {
     await fetch(
-      `${import.meta.env.VITE_ADMIN_API_URL}/api/settings`,
+      `${env.apiBaseUrl}/api/settings`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -38,7 +39,7 @@ export function SettingsPage() {
 
   async function purgeNow() {
     const res = await fetch(
-      `${import.meta.env.VITE_ADMIN_API_URL}/api/settings/purge-now`,
+      `${env.apiBaseUrl}/api/settings/purge-now`,
       {
         method: "POST",
         credentials: "include",
