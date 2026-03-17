@@ -1,17 +1,48 @@
-import cron from "node-cron";
-import { purgeOldContactSubmissions } from "./rgpd-purge.service";
-import { env } from "../env";
+import {
+  purgeOldMessages,
+  getAppSettings,
+} from "../settings/settings.service";
 
-export function startRgpdCron() {
-  const retentionDays = Number(env.rgpdRetentionDays);
+function msUntilNextRun(hour: number) {
+  const now = new Date();
+  const next = new Date();
 
-  cron.schedule(env.rgpdPurgeCron, async () => {
-    try {
-      await purgeOldContactSubmissions(retentionDays);
-    } catch (err) {
-      console.error("Erreur purge RGPD :", err);
-    }
-  });
+  next.setHours(hour, 0, 0, 0);
 
-  console.log("Cron RGPD démarré");
+  if (next <= now) {
+    next.setDate(next.getDate() + 1);
+  }
+
+  return next.getTime() - now.getTime();
+}
+
+export async function startRgpdCron() {
+  async function scheduleNextRun() {
+    const settings = await getAppSettings();
+
+    const delay = msUntilNextRun(settings.purgeHour);
+
+    console.log(
+      `Prochaine purge RGPD à ${settings.purgeHour}:00 dans ${
+        Math.round(delay / 1000 / 60)
+      } minutes`
+    );
+
+    setTimeout(async () => {
+      const currentSettings = await getAppSettings();
+
+      if (currentSettings.autoPurgeEnabled) {
+        const result = await purgeOldMessages();
+
+        console.log(
+          `RGPD purge exécutée (${currentSettings.purgeHour}h) :`,
+          result.deleted
+        );
+      }
+
+      scheduleNextRun(); // 🔁 recalcul dynamique
+    }, delay);
+  }
+
+  scheduleNextRun();
 }

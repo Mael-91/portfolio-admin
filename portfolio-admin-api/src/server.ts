@@ -9,6 +9,7 @@ import { checkDatabaseConnection } from "./db/db";
 import { authRouter } from "./auth/auth.routes";
 import { messagesRouter } from "./messages/messages.routes";
 import { startRgpdCron } from "./rgpd/rgpd-cron";
+import { settingsRouter } from "./settings/settings.routes";
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use(
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/messages", messagesRouter);
+app.use("/api/settings", settingsRouter);
 
 app.use((_req, res) => {
   res.status(404).json({
