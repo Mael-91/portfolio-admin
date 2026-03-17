@@ -1,18 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { env } from "../../env";
-
-function getNextPurge(purgeHour: number) {
-  const now = new Date();
-  const next = new Date();
-
-  next.setHours(purgeHour, 0, 0, 0);
-
-  if (next <= now) {
-    next.setDate(next.getDate() + 1);
-  }
-
-  return next;
-}
 
 export function SettingsPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -24,8 +11,12 @@ export function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [nextDeletionDate, setNextDeletionDate] = useState<string | null>(null);
 
-  const nextPurge = useMemo(() => getNextPurge(purgeHour), [purgeHour]);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  //const nextPurge = useMemo(() => getNextPurge(purgeHour), [purgeHour]);
 
   async function loadAll() {
     try {
@@ -48,6 +39,7 @@ export function SettingsPage() {
       setAutoPurgeEnabled(settings.settings.autoPurgeEnabled);
       setPurgeHour(settings.settings.purgeHour);
       setToDelete(stats.stats.toDelete);
+      setNextDeletionDate(stats.stats.nextDeletionDate);
     } catch (error) {
       console.error("Erreur chargement settings:", error);
     } finally {
@@ -66,6 +58,7 @@ export function SettingsPage() {
 
       const data = await res.json();
       setToDelete(data.stats.toDelete);
+      setNextDeletionDate(data.stats.nextDeletionDate);
     } catch (error) {
       console.error("Erreur chargement stats RGPD:", error);
     }
@@ -130,12 +123,43 @@ export function SettingsPage() {
     return () => clearTimeout(timeout);
   }, [retentionDays, loading]);
 
+  useEffect(() => {
+    if (loading) return;
+
+    setSaving(true);
+    setSaved(false);
+
+    const timeout = setTimeout(async () => {
+      await saveSettings();
+
+      setSaving(false);
+      setSaved(true);
+
+      setTimeout(() => setSaved(false), 2000);
+    }, 600);
+
+    return () => clearTimeout(timeout);
+  }, [retentionDays, autoPurgeEnabled, purgeHour]);
+
   if (loading) {
     return <div className="text-sm text-admin-text-soft">Chargement...</div>;
   }
 
   return (
     <div className="space-y-6 text-white">
+      <div className="h-6">
+        {saving && (
+          <span className="text-xs text-blue-400 animate-pulse">
+            Enregistrement...
+          </span>
+        )}
+
+        {!saving && saved && (
+          <span className="text-xs text-green-400">
+            ✔ Paramètres sauvegardés
+          </span>
+        )}
+      </div>
       <div>
         <h1 className="text-xl font-semibold">Paramètres RGPD</h1>
         <p className="text-sm text-admin-text-soft">
@@ -168,11 +192,13 @@ export function SettingsPage() {
         </div>
 
         <div className="rounded-2xl bg-white/[0.03] p-4">
-          <p className="text-xs uppercase text-admin-text-muted">
-            Prochaine purge
+          <p className="text-xs text-admin-text-muted uppercase">
+            Prochaine purge automatique
           </p>
           <p className="mt-1 text-sm font-semibold">
-            {nextPurge.toLocaleString()}
+            {nextDeletionDate
+              ? new Date(nextDeletionDate).toLocaleString()
+              : "Aucune donnée"}
           </p>
         </div>
       </div>

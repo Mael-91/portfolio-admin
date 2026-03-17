@@ -44,18 +44,42 @@ export async function purgeOldMessages() {
 
 export async function getRgpdStats(retentionDaysOverride?: number) {
   const settings = await getSettings();
-  const retentionDays = retentionDaysOverride ?? Number(settings.rgpd_retention_days || 90);
+  const retentionDays =
+    retentionDaysOverride ?? Number(settings.rgpd_retention_days || 90);
 
-  const [rows]: any = await db.execute(
+  // 🔹 messages à supprimer
+  const [toDeleteRows]: any = await db.execute(
     `
-      SELECT COUNT(*) as total
-      FROM contact_submissions
-      WHERE created_at < NOW() - INTERVAL ? DAY
-    `,
+    SELECT COUNT(*) as total
+    FROM contact_submissions
+    WHERE created_at < NOW() - INTERVAL ? DAY
+  `,
     [retentionDays]
   );
 
+  // 🔹 message le plus ancien
+  const [oldestRows]: any = await db.execute(
+    `
+    SELECT created_at
+    FROM contact_submissions
+    ORDER BY created_at ASC
+    LIMIT 1
+  `
+  );
+
+  let nextDeletionDate = null;
+
+  if (oldestRows.length > 0) {
+    const oldest = new Date(oldestRows[0].created_at);
+
+    const next = new Date(oldest);
+    next.setDate(next.getDate() + retentionDays);
+
+    nextDeletionDate = next;
+  }
+
   return {
-    toDelete: rows[0].total,
+    toDelete: toDeleteRows[0].total,
+    nextDeletionDate,
   };
 }
