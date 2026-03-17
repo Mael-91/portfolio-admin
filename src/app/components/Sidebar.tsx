@@ -91,6 +91,7 @@ export function Sidebar({ onLogout }: SidebarProps) {
                 : location.pathname.startsWith(item.href);
 
             const isMessages = item.href === "/messages";
+            console.log("COUNT SIDEBAR:", unprocessedCount);
 
             return (
               <Link
@@ -114,7 +115,9 @@ export function Sidebar({ onLogout }: SidebarProps) {
                   >
                     {item.icon}
                   </span>
-                  <span className="truncate">{item.label}</span>
+                  <span className="block leading-tight whitespace-normal">
+                    {item.label}
+                  </span>
                 </span>
 
                 {isMessages && unprocessedCount > 0 ? (

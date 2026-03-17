@@ -11,17 +11,16 @@ export const MessageNotificationsContext = createContext<ContextType | null>(nul
 export function MessageNotificationsProvider({ children }: { children: React.ReactNode }) {
   const [unprocessedCount, setUnprocessedCount] = useState(0);
 
-  const previousCountRef = useRef(0);
-  const hasInitializedRef = useRef(false);
-
+  const previousCountRef = useRef<number | null>(null);
   const { showToast } = useToast();
 
   async function loadCount() {
     try {
       const count = await fetchUnprocessedMessagesCount();
 
-      // Détection nouveaux messages
-      if (hasInitializedRef.current && count > previousCountRef.current) {
+      console.log("Polling count:", count);
+
+      if (previousCountRef.current !== null && count > previousCountRef.current) {
         const diff = count - previousCountRef.current;
 
         showToast({
@@ -36,12 +35,8 @@ export function MessageNotificationsProvider({ children }: { children: React.Rea
 
       previousCountRef.current = count;
       setUnprocessedCount(count);
-
-      if (!hasInitializedRef.current) {
-        hasInitializedRef.current = true;
-      }
-    } catch (error) {
-      console.error("Erreur polling messages :", error);
+    } catch (err) {
+      console.error("Polling error:", err);
     }
   }
 
@@ -54,11 +49,7 @@ export function MessageNotificationsProvider({ children }: { children: React.Rea
   }, []);
 
   return (
-    <MessageNotificationsContext.Provider
-      value={{
-        unprocessedCount,
-      }}
-    >
+    <MessageNotificationsContext.Provider value={{ unprocessedCount }}>
       {children}
     </MessageNotificationsContext.Provider>
   );
