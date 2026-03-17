@@ -103,18 +103,21 @@ export async function exportMessageRgpd(id: number, email: string): Promise<{
 }
 
 export async function fetchUnprocessedMessagesCount(): Promise<number> {
-  const response = await fetch(
-    `${import.meta.env.VITE_ADMIN_API_URL}/api/messages/count-unprocessed`,
-    {
-      credentials: "include",
-    }
-  );
+  const url = `${import.meta.env.VITE_ADMIN_API_URL}/api/messages/count-unprocessed`;
 
-  if (!response.ok) {
-    throw new Error("Erreur récupération compteur messages");
+  console.log("FETCH COUNT URL:", url);
+
+  const response = await fetch(url, {
+    credentials: "include",
+  });
+
+  const text = await response.text();
+
+  try {
+    const data = JSON.parse(text);
+    return data.total;
+  } catch (e) {
+    console.error("Réponse non JSON:", text);
+    throw e;
   }
-
-  const data = await response.json();
-
-  return data.total;
 }
