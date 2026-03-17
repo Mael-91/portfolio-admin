@@ -106,10 +106,6 @@ export async function exportMessageRgpd(id: number, email: string): Promise<{
 export async function fetchUnprocessedMessagesCount(): Promise<number> {
   const baseUrl = env.apiBaseUrl;
 
-  if (!baseUrl) {
-    throw new Error("VITE_ADMIN_API_URL est manquant");
-  }
-
   const url = `${baseUrl}/api/messages/count-unprocessed`;
   console.log("FETCH COUNT URL:", url);
 
