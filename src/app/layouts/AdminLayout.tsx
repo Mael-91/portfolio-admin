@@ -48,49 +48,32 @@ export function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-admin-bg text-white">
-      {/* Sidebar */}
       <Sidebar onLogout={handleLogout} />
-
-      {/* Main */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
         <header className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           {/* 🔍 SEARCH BAR */}
-          <div className="relative w-full max-w-sm">
+          <div className="relative w-full max-w-xl">
+            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-admin-text-muted">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+            </span>
+
             <input
               type="text"
-              placeholder="Rechercher (email, message...)"
+              placeholder="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="
-                w-full
-                rounded-xl
-                bg-white/[0.03]
-                border border-white/10
-                px-3 py-2 pr-8
-                text-sm text-white
-                placeholder:text-admin-text-muted
-                outline-none
-                transition-all
-
-                focus:border-admin-accent
-                focus:ring-1 focus:ring-admin-accent
-              "
+              className="h-12 w-full rounded-2xl border border-white/6 bg-white/[0.03] pl-12 pr-4 text-sm text-white placeholder:text-admin-text-muted outline-none transition focus:border-white/15 focus:bg-white/[0.045]"
             />
-
-            {/* ❌ Clear button */}
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                className="
-                  absolute right-2 top-1/2 -translate-y-1/2
-                  text-xs text-white/50
-                  hover:text-white
-                "
-              >
-                ✕
-              </button>
-            )}
+            <button onClick={() => setSearch("")}className="absolute right-2 top-1/2 -translate-y-1/2text-xs text-white/50hover:text-white">✕</button>
           </div>
 
           {/* Actions */}
