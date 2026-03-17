@@ -5,6 +5,7 @@ import { LoginPage } from "../pages/LoginPage";
 import { MessagesPage } from "../pages/MessagesPage";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { MessageDetailPage } from "../pages/MessageDetailPage";
+import { SettingsPage } from "../pages/SettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ export const router = createBrowserRouter([
       {
         path: "messages/:id",
         element: <MessageDetailPage />,
+      },
+      {
+        path: "/settings",
+        element: <SettingsPage />,
       },
     ],
   },
