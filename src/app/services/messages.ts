@@ -1,3 +1,4 @@
+import { env } from "../../env";
 import { apiFetch } from "./api";
 
 export type ProcessingStatus = "unprocessed" | "in_progress" | "processed";
@@ -103,21 +104,23 @@ export async function exportMessageRgpd(id: number, email: string): Promise<{
 }
 
 export async function fetchUnprocessedMessagesCount(): Promise<number> {
-  const url = `${import.meta.env.VITE_ADMIN_API_URL}/api/messages/count-unprocessed`;
+  const baseUrl = env.apiBaseUrl;
 
+  if (!baseUrl) {
+    throw new Error("VITE_ADMIN_API_URL est manquant");
+  }
+
+  const url = `${baseUrl}/api/messages/count-unprocessed`;
   console.log("FETCH COUNT URL:", url);
 
   const response = await fetch(url, {
     credentials: "include",
   });
 
-  const text = await response.text();
-
-  try {
-    const data = JSON.parse(text);
-    return data.total;
-  } catch (e) {
-    console.error("Réponse non JSON:", text);
-    throw e;
+  if (!response.ok) {
+    throw new Error("Erreur récupération compteur messages");
   }
+
+  const data = await response.json();
+  return data.total;
 }
