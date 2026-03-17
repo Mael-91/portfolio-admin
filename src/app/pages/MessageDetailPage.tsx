@@ -97,6 +97,8 @@ export function MessageDetailPage() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExportingRgpd, setIsExportingRgpd] = useState(false);
 
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
   const backToMessagesHref = useMemo(() => {
     return location.search ? `/messages${location.search}` : "/messages";
   }, [location.search]);
@@ -317,26 +319,33 @@ export function MessageDetailPage() {
                   <button
                     onClick={async () => {
                       const success = await copyToClipboard(message.email);
-
                       if (success) {
+                        setCopiedField("email");
                         showToast({
                           title: "Copié",
                           description: "Adresse email copiée",
                           variant: "success",
                         });
+                        setTimeout(() => setCopiedField(null), 1500);
                       } else {
                         showToast({
                           title: "Erreur",
-                          description: "Impossible de copier l’email",
+                          description: "Impossible de copier",
                           variant: "error",
                         });
                       }
                     }}
-                    className="flex items-center justify-centerh-8 w-8rounded-lgbg-white/[0.03]border border-white/10text-admin-text-softtransition-all duration-200hover:bg-white/[0.08]hover:text-whitehover:border-white/20active:scale-90"
+                    title="Copier" className={`relative flex items-center justify-centerh-8 w-8rounded-lgbordertransition-all duration-200active:scale-90 ${copiedField === "email" ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/[0.03] border-white/10 text-admin-text-soft hover:bg-white/[0.08] hover:text-white"}`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
+                    {/* COPY ICON */}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-0 scale-75" : "opacity-100 scale-100" }`}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25h3A2.25 2.25 0 0021 15V5.25A2.25 2.25 0 0018.75 3h-9.5A2.25 2.25 0 007 5.25v3"/>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h-3A2.25 2.25 0 003.75 9.75v9.75A2.25 2.25 0 006 21.75h9.75A2.25 2.25 0 0018 19.5v-9.75A2.25 2.25 0 0015.75 7.5H9z"/>
+                    </svg>
+
+                    {/* SUCCESS ICON */}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`absolute h-4 w-4transition-all duration-200 ${copiedField === "email" ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
                     </svg>
                   </button>
                 </div>
@@ -419,30 +428,37 @@ export function MessageDetailPage() {
               <h2 className="text-base font-semibold text-white">Message</h2>
 
               <button
-                onClick={async () => {
-                  const success = await copyToClipboard(message.messageText);
+                    onClick={async () => {
+                      const success = await copyToClipboard(message.messageText);
+                      if (success) {
+                        setCopiedField("messageText");
+                        showToast({
+                          title: "Copié",
+                          description: "Message copié",
+                          variant: "success",
+                        });
+                        setTimeout(() => setCopiedField(null), 1500);
+                      } else {
+                        showToast({
+                          title: "Erreur",
+                          description: "Impossible de copier",
+                          variant: "error",
+                        });
+                      }
+                    }}
+                    title="Copier" className={`relative flex items-center justify-centerh-8 w-8rounded-lgbordertransition-all duration-200active:scale-90 ${copiedField === "message" ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/[0.03] border-white/10 text-admin-text-soft hover:bg-white/[0.08] hover:text-white"}`}
+                  >
+                    {/* COPY ICON */}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`h-4 w-4 transition-all duration-200 ${copiedField === "message" ? "opacity-0 scale-75" : "opacity-100 scale-100" }`}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25h3A2.25 2.25 0 0021 15V5.25A2.25 2.25 0 0018.75 3h-9.5A2.25 2.25 0 007 5.25v3"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h-3A2.25 2.25 0 003.75 9.75v9.75A2.25 2.25 0 006 21.75h9.75A2.25 2.25 0 0018 19.5v-9.75A2.25 2.25 0 0015.75 7.5H9z"/>
+                    </svg>
 
-                  if (success) {
-                    showToast({
-                      title: "Copié",
-                      description: "Message copié",
-                      variant: "success",
-                    });
-                  } else {
-                    showToast({
-                      title: "Erreur",
-                      description: "Impossible de copier le message",
-                      variant: "error",
-                    });
-                  }
-                }}
-                className="flex items-center justify-centerh-8 w-8rounded-lgbg-white/[0.03]border border-white/10text-admin-text-softtransition-all duration-200hover:bg-white/[0.08]hover:text-whitehover:border-white/20active:scale-90"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25h3A2.25 2.25 0 0021 15V5.25A2.25 2.25 0 0018.75 3h-9.5A2.25 2.25 0 007 5.25v3"/>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h-3A2.25 2.25 0 003.75 9.75v9.75A2.25 2.25 0 006 21.75h9.75A2.25 2.25 0 0018 19.5v-9.75A2.25 2.25 0 0015.75 7.5H9z"/>
-                </svg>
-              </button>
+                    {/* SUCCESS ICON */}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`absolute h-4 w-4transition-all duration-200 ${copiedField === "message" ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
             </div>
 
             <div className="mt-4 rounded-[20px] bg-[#0c1a34] p-5 text-[15px] leading-7 text-admin-text-soft whitespace-pre-wrap">
