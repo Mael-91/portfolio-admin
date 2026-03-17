@@ -1,11 +1,14 @@
 import { RouterProvider } from "react-router-dom";
 import { router } from "./app/router";
 import { ToastProvider } from "./app/components/ToastProvider";
+import { MessageNotificationsProvider } from "./app/providers/MessageNotificationsProvider";
 
 function App() {
   return (
     <ToastProvider>
-      <RouterProvider router={router} />
+      <MessageNotificationsProvider>
+        <RouterProvider router={router} />
+      </MessageNotificationsProvider>
     </ToastProvider>
   );
 }

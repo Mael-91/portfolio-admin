@@ -178,3 +178,17 @@ export async function findNewMessagesCountSinceId(lastSeenId: number): Promise<n
 
   return Number(rows[0]?.total ?? 0);
 }
+
+export async function countUnprocessedMessages(): Promise<number> {
+  const [rows] = await db.execute(
+    `
+      SELECT COUNT(*) AS total
+      FROM contact_submissions
+      WHERE processing_status = 'unprocessed'
+    `
+  );
+
+  const result = rows as any[];
+
+  return result[0].total;
+}

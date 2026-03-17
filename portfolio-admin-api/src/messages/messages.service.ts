@@ -1,5 +1,6 @@
 import {
   countMessages,
+  countUnprocessedMessages,
   findMessageById,
   findMessages,
   findNewMessagesCountSinceId,
@@ -116,5 +117,13 @@ export async function exportMessageRgpdByEmail(params: {
   return {
     sent: true,
     email: params.email,
+  };
+}
+
+export async function getUnprocessedMessagesCount() {
+  const total = await countUnprocessedMessages();
+
+  return {
+    total,
   };
 }
