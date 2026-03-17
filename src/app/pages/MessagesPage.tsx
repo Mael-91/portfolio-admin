@@ -104,6 +104,7 @@ function parseSortBy(value: string | null): string {
 export function MessagesPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const searchParam = searchParams.get("search") || "";
 
   const [messages, setMessages] = useState<MessageListItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -192,6 +193,7 @@ export function MessagesPage() {
         sortBy,
         sortOrder,
         status: statusFilter || undefined,
+        search: searchParam || undefined,
       });
 
       setMessages(response.messages);
