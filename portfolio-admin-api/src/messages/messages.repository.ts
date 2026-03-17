@@ -46,7 +46,7 @@ function buildWhereClause(params: CountMessagesParams) {
   }
 
   if (params.search) {
-    const like = `%${params.search}%`;
+    const like = `${params.search}%`;
 
     where.push(`
       (
