@@ -51,7 +51,6 @@ function buildWhereClause(params: CountMessagesParams) {
     where.push(`
       (
         email LIKE ?
-        OR message_text LIKE ?
         OR first_name LIKE ?
         OR last_name LIKE ?
         OR company LIKE ?
