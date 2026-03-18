@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { logout } from "../services/auth";
 import { Sidebar } from "../components/Sidebar";
@@ -8,43 +8,35 @@ export function AdminLayout() {
   const location = useLocation();
 
   const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // 🔁 Sync avec URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const searchParam = params.get("search") || "";
     setSearch(searchParam);
-  }, [location.search]);
+  }, [searchParams]);
 
   // 🔥 Debounce recherche globale
   useEffect(() => {
     const timeout = setTimeout(() => {
-      const currentParams = new URLSearchParams(location.search);
-      const currentSearch = currentParams.get("search") || "";
       const trimmedSearch = search.trim();
 
-      if (trimmedSearch === currentSearch) {
-        return;
-      }
-
-      const nextParams = new URLSearchParams(location.search);
+      const params = new URLSearchParams(searchParams);
 
       if (trimmedSearch) {
-        nextParams.set("search", trimmedSearch);
-        nextParams.set("page", "1");
+        params.set("search", trimmedSearch);
+        params.set("page", "1");
       } else {
-        nextParams.delete("search");
-        nextParams.delete("page");
+        params.delete("search");
+        params.delete("page");
       }
 
-      navigate({
-        pathname: "/messages",
-        search: `?${nextParams.toString()}`
-      }, { replace: true });
+      setSearchParams(params);
     }, 200);
 
     return () => clearTimeout(timeout);
-  }, [search, navigate]);
+  }, [search]);
 
   const handleLogout = async () => {
     await logout();
