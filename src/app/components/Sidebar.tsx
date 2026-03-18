@@ -155,4 +155,5 @@ function SidebarComponent({ onLogout }: SidebarProps) {
   );
 }
 
-export const Sidebar = memo(SidebarComponent);
+const Sidebar = memo(SidebarComponent);
+export default Sidebar;
