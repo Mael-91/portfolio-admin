@@ -12,27 +12,27 @@ export function AdminLayout() {
 
   // 🔁 Sync avec URL
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const searchParam = params.get("search") || "";
-    setSearch(searchParam);
-  }, [searchParams, location.search]);
+    const urlSearch = searchParams.get("search") || "";
+    setSearch(urlSearch);
+  }, [location.search]);
 
   // 🔥 Debounce recherche globale
   useEffect(() => {
     const timeout = setTimeout(() => {
-      const trimmedSearch = search.trim();
+      const trimmed = search.trim();
 
-      const params = new URLSearchParams(searchParams);
+      const params = new URLSearchParams(location.search);
 
-      if (trimmedSearch) {
-        params.set("search", trimmedSearch);
+      if (trimmed) {
+        params.set("search", trimmed);
         params.set("page", "1");
       } else {
         params.delete("search");
         params.delete("page");
       }
 
-      setSearchParams(params);
+      setSearchParams(params, { replace: true });
+
     }, 200);
 
     return () => clearTimeout(timeout);
