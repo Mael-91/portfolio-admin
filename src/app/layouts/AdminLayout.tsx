@@ -21,15 +21,16 @@ export function AdminLayout() {
     const timeout = setTimeout(() => {
       const currentParams = new URLSearchParams(location.search);
       const currentSearch = currentParams.get("search") || "";
+      const trimmedSearch = search.trim();
 
-      if (search === currentSearch) {
+      if (trimmedSearch === currentSearch) {
         return;
       }
 
       const nextParams = new URLSearchParams(location.search);
 
-      if (search.trim()) {
-        nextParams.set("search", search.trim());
+      if (trimmedSearch) {
+        nextParams.set("search", trimmedSearch);
         nextParams.set("page", "1");
       } else {
         nextParams.delete("search");

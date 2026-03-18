@@ -221,7 +221,6 @@ export function MessagesPage() {
 
   useEffect(() => {
     if (refreshSignal === 0) return;
-
     if (searchParam) return;
 
     loadMessages({ silent: true });
