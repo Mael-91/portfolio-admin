@@ -92,7 +92,6 @@ function SidebarComponent({ onLogout }: SidebarProps) {
                 : location.pathname.startsWith(item.href);
 
             const isMessages = item.href === "/messages";
-            console.log("COUNT SIDEBAR:", unprocessedCount);
 
             return (
               <Link

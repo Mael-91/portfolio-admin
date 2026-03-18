@@ -1,13 +1,11 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { logout } from "../services/auth";
 import Sidebar from "../components/Sidebar";
 import HeaderSearch from "../components/HeaderSearch";
 
 export function AdminLayout() {
   const navigate = useNavigate();
-
-  const [search, setSearch] = useState("");
 
   const handleLogout = useCallback(async () => {
     await logout();

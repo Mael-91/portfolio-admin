@@ -7,13 +7,13 @@ export default function HeaderSearch() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
 
-  // 🔁 Sync avec URL
+  // Sync avec URL
   useEffect(() => {
     const urlSearch = searchParams.get("search") || "";
     setSearch(urlSearch);
   }, [location.search]);
 
-  // 🔥 Debounce recherche globale
+  // Debounce recherche globale
   useEffect(() => {
     const timeout = setTimeout(() => {
       const trimmed = search.trim();
@@ -25,7 +25,6 @@ export default function HeaderSearch() {
         params.set("page", "1");
       }
 
-      // ✅ CAS 1 : recherche active → redirection ou update
       if (trimmed) {
         if (location.pathname !== "/messages") {
           navigate({
@@ -39,7 +38,6 @@ export default function HeaderSearch() {
         return;
       }
 
-      // ✅ CAS 2 : recherche vide → on nettoie seulement SI on est sur messages
       if (location.pathname === "/messages") {
         setSearchParams({}, { replace: true });
       }

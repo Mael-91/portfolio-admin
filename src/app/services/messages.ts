@@ -112,7 +112,6 @@ export async function fetchUnprocessedMessagesCount(): Promise<number> {
   const baseUrl = env.apiBaseUrl;
 
   const url = `${baseUrl}/api/messages/count-unprocessed`;
-  console.log("FETCH COUNT URL:", url);
 
   const response = await fetch(url, {
     credentials: "include",
