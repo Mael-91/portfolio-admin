@@ -21,14 +21,19 @@ export function AdminLayout() {
     const timeout = setTimeout(() => {
       const trimmed = search.trim();
 
-      const params = new URLSearchParams(location.search);
+      const params = new URLSearchParams();
 
       if (trimmed) {
         params.set("search", trimmed);
         params.set("page", "1");
-      } else {
-        params.delete("search");
-        params.delete("page");
+      }
+
+      if (location.pathname !== "/messages") {
+        navigate({
+          pathname: "/messages",
+          search: params.toString() ? `?${params.toString()}` : "",
+        });
+        return;
       }
 
       setSearchParams(params, { replace: true });
