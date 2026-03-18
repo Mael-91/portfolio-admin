@@ -15,7 +15,7 @@ export function AdminLayout() {
     const params = new URLSearchParams(location.search);
     const searchParam = params.get("search") || "";
     setSearch(searchParam);
-  }, [searchParams]);
+  }, [searchParams, location.search]);
 
   // 🔥 Debounce recherche globale
   useEffect(() => {
