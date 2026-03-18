@@ -220,12 +220,12 @@ export function MessagesPage() {
   }, [page, sortBy, sortOrder, statusFilter]);
 
   useEffect(() => {
-    if (refreshSignal === 0) {
-      return;
-    }
+    if (refreshSignal === 0) return;
+
+    if (searchParam) return;
 
     loadMessages({ silent: true });
-  }, [refreshSignal]);
+  }, [refreshSignal, searchParam]);
 
   useEffect(() => {
     if (page > totalPages) {

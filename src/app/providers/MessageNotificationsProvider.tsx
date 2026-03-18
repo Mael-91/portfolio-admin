@@ -2,6 +2,7 @@ import { createContext, useEffect, useRef, useState } from "react";
 import { fetchUnprocessedMessagesCount } from "../services/messages";
 import { useToast } from "../hooks/useToast";
 
+
 export type MessageNotificationsContextType = {
   unprocessedCount: number;
   refreshSignal: number;
