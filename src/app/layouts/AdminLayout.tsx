@@ -28,20 +28,29 @@ export function AdminLayout() {
         params.set("page", "1");
       }
 
-      if (location.pathname !== "/messages") {
-        navigate({
-          pathname: "/messages",
-          search: params.toString() ? `?${params.toString()}` : "",
-        });
+      // ✅ CAS 1 : recherche active → redirection ou update
+      if (trimmed) {
+        if (location.pathname !== "/messages") {
+          navigate({
+            pathname: "/messages",
+            search: `?${params.toString()}`,
+          });
+        } else {
+          setSearchParams(params, { replace: true });
+        }
+
         return;
       }
 
-      setSearchParams(params, { replace: true });
+      // ✅ CAS 2 : recherche vide → on nettoie seulement SI on est sur messages
+      if (location.pathname === "/messages") {
+        setSearchParams({}, { replace: true });
+      }
 
     }, 200);
 
     return () => clearTimeout(timeout);
-  }, [search]);
+  }, [search, location.pathname]);
 
   const handleLogout = async () => {
     await logout();
