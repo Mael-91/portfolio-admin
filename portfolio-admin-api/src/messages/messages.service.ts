@@ -39,6 +39,7 @@ export async function listMessages(params: {
   status?: string;
   search?: string;
 }) {
+  const start = Date.now();
   const [total, rows] = await Promise.all([
     countMessages({
       status: params.status,
@@ -46,6 +47,8 @@ export async function listMessages(params: {
     }),
     findMessages(params),
   ]);
+
+  console.log("listMessages duration:", Date.now() - start, "ms");
 
   return {
     page: params.page,

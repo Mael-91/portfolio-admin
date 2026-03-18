@@ -132,6 +132,7 @@ export async function findMessages(params: FindMessagesParams) {
 
 export async function countMessages(params: CountMessagesParams) {
   const { whereClause, values } = buildWhereClause(params);
+  const start = Date.now();
 
   const [rows] = await db.execute<CountRow[]>(
     `
@@ -141,6 +142,7 @@ export async function countMessages(params: CountMessagesParams) {
     `,
     values
   );
+  console.log("countMessages SQL duration:", Date.now() - start, "ms");
 
   return rows[0]?.total ?? 0;
 }
@@ -171,6 +173,7 @@ export async function findNewMessagesCountSinceId(lastSeenId: number): Promise<n
 }
 
 export async function findMessageById(id: number) {
+  const start = Date.now();
   const [rows] = await db.execute<MessageRow[]>(
     `
     SELECT
@@ -193,6 +196,7 @@ export async function findMessageById(id: number) {
     `,
     [String(id)]
   );
+  console.log("findMessages SQL duration:", Date.now() - start, "ms");
 
   return rows[0] ?? null;
 }
