@@ -37,9 +37,10 @@ export function AdminLayout() {
         nextParams.delete("page");
       }
 
-      navigate(`/messages?${nextParams.toString()}`, {
-        replace: true,
-      });
+      navigate({
+        pathname: "/messages",
+        search: `?${nextParams.toString()}`
+      }, { replace: true });
     }, 200);
 
     return () => clearTimeout(timeout);
