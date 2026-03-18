@@ -44,7 +44,7 @@ export function AdminLayout() {
     }, 200);
 
     return () => clearTimeout(timeout);
-  }, [search, location.search, navigate]);
+  }, [search, navigate]);
 
   const handleLogout = async () => {
     await logout();

@@ -48,8 +48,6 @@ export async function listMessages(params: {
     findMessages(params),
   ]);
 
-  console.log("listMessages duration:", Date.now() - start, "ms");
-
   return {
     page: params.page,
     pageSize: params.pageSize,

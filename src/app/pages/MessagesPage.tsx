@@ -220,9 +220,10 @@ export function MessagesPage() {
   }, [page, sortBy, sortOrder, statusFilter]);
 
   useEffect(() => {
+    console.log("2 searchParam changed:", searchParam);
     if (refreshSignal === 0) return;
     if (searchParam) return;
-
+    console.log("2 searchParam changed:", searchParam);
     loadMessages({ silent: true });
   }, [refreshSignal, searchParam]);
 

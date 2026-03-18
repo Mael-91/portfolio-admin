@@ -142,7 +142,6 @@ export async function countMessages(params: CountMessagesParams) {
     `,
     values
   );
-  console.log("countMessages SQL duration:", Date.now() - start, "ms");
 
   return rows[0]?.total ?? 0;
 }
@@ -196,7 +195,6 @@ export async function findMessageById(id: number) {
     `,
     [String(id)]
   );
-  console.log("findMessages SQL duration:", Date.now() - start, "ms");
 
   return rows[0] ?? null;
 }
