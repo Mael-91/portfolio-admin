@@ -104,6 +104,8 @@ function parseSortBy(value: string | null): string {
 export function MessagesPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const searchParam = searchParams.get("search") || "";
+  const [isSearching, setIsSearching] = useState(false);
 
   const [messages, setMessages] = useState<MessageListItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -183,6 +185,10 @@ export function MessagesPage() {
       setIsLoading(true);
     }
 
+    if (searchParam) {
+      setIsSearching(true);
+    }
+
     try {
       setErrorMessage("");
 
@@ -192,6 +198,7 @@ export function MessagesPage() {
         sortBy,
         sortOrder,
         status: statusFilter || undefined,
+        search: searchParam || undefined,
       });
 
       setMessages(response.messages);
@@ -200,6 +207,7 @@ export function MessagesPage() {
       setErrorMessage(error?.message || "Impossible de charger les messages.");
     } finally {
       isFetchingRef.current = false;
+      setIsSearching(false);
 
       if (!silent) {
         setIsLoading(false);
@@ -209,15 +217,14 @@ export function MessagesPage() {
 
   useEffect(() => {
     loadMessages();
-  }, [page, sortBy, sortOrder, statusFilter]);
+  }, [searchParam, page, sortBy, sortOrder, statusFilter]);
 
   useEffect(() => {
-    if (refreshSignal === 0) {
-      return;
-    }
-
+    if (refreshSignal === 0) return;
+    if (searchParam) return;
+    
     loadMessages({ silent: true });
-  }, [refreshSignal]);
+  }, [refreshSignal, searchParam]);
 
   useEffect(() => {
     if (page > totalPages) {

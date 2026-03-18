@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
+import { memo } from "react";
 
 type SidebarProps = {
   onLogout: () => void | Promise<void>;
@@ -68,7 +69,7 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-export function Sidebar({ onLogout }: SidebarProps) {
+function SidebarComponent({ onLogout }: SidebarProps) {
   const location = useLocation();
   const { unprocessedCount } = useMessageNotifications();
 
@@ -91,7 +92,6 @@ export function Sidebar({ onLogout }: SidebarProps) {
                 : location.pathname.startsWith(item.href);
 
             const isMessages = item.href === "/messages";
-            console.log("COUNT SIDEBAR:", unprocessedCount);
 
             return (
               <Link
@@ -153,3 +153,6 @@ export function Sidebar({ onLogout }: SidebarProps) {
     </aside>
   );
 }
+
+const Sidebar = memo(SidebarComponent);
+export default Sidebar;

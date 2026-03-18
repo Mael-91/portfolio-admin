@@ -1,6 +1,7 @@
-import { createContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { fetchUnprocessedMessagesCount } from "../services/messages";
 import { useToast } from "../hooks/useToast";
+
 
 export type MessageNotificationsContextType = {
   unprocessedCount: number;
@@ -21,7 +22,8 @@ export function MessageNotificationsProvider({
   const previousCountRef = useRef<number | null>(null);
   const { showToast } = useToast();
 
-  async function loadCount() {
+  const loadCount = useCallback(async () => {
+    
     try {
       const count = await fetchUnprocessedMessagesCount();
 
@@ -39,21 +41,29 @@ export function MessageNotificationsProvider({
       }
 
       previousCountRef.current = count;
-      setUnprocessedCount((prev) => (prev !== count ? count : prev));
+
+      setUnprocessedCount((prev) => {
+      if (prev !== count) {
+        setRefreshSignal((p) => p + 1);
+        return count;
+      }
+      return prev;
+    });
+
       setRefreshSignal((prev) => prev + 1);
     } catch (error) {
       console.error("Polling error:", error);
     }
-  }
+  }, []); 
 
   useEffect(() => {
     loadCount();
 
-    const interval = window.setInterval(loadCount, 15000);
+    const interval = setInterval(() => {
+      loadCount();
+    }, 15000);
 
-    return () => {
-      window.clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   return (
