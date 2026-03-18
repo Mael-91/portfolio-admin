@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { logout } from "../services/auth";
 import { Sidebar } from "../components/Sidebar";
 
@@ -52,10 +52,10 @@ export function AdminLayout() {
     return () => clearTimeout(timeout);
   }, [search, location.pathname]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     navigate("/login");
-  };
+  }, [navigate]);
 
   return (
     <div className="flex h-screen bg-admin-bg text-white">

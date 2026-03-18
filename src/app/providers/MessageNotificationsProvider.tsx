@@ -23,6 +23,7 @@ export function MessageNotificationsProvider({
   const { showToast } = useToast();
 
   const loadCount = useCallback(async () => {
+    
     try {
       const count = await fetchUnprocessedMessagesCount();
 
@@ -60,7 +61,7 @@ export function MessageNotificationsProvider({
 
     const interval = setInterval(() => {
       loadCount();
-    }, 5000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, []);
