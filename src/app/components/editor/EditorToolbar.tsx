@@ -24,6 +24,8 @@ export function EditorToolbar({ editor, onPreview }: EditorToolbarProps) {
   function getButtonClass(isActive: boolean) {
     return [
       "inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium transition",
+      "cursor-pointer",
+      "active:scale-[0.96]",
       isActive
         ? "bg-admin-accent text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
         : "bg-white/[0.04] text-admin-text-soft hover:bg-white/[0.08] hover:text-white",
@@ -193,7 +195,7 @@ export function EditorToolbar({ editor, onPreview }: EditorToolbarProps) {
             event.preventDefault();
             onPreview?.();
           }}
-          className="inline-flex items-center justify-center rounded-lg bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-white transition hover:bg-white/[0.12]"
+          className="inline-flex items-center justify-center rounded-lg bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-white transition hover:bg-white/[0.12] cursor-pointer active:scale-[0.96]"
         >
           Aperçu
         </button>
