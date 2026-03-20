@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { env } from "../../env";
 
-export function SettingsPage() {
+export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
   const [autoPurgeEnabled, setAutoPurgeEnabled] = useState(true);
   const [purgeHour, setPurgeHour] = useState(3);

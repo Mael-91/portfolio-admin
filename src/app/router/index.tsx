@@ -5,9 +5,9 @@ import { LoginPage } from "../pages/LoginPage";
 import { MessagesPage } from "../pages/MessagesPage";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { MessageDetailPage } from "../pages/MessageDetailPage";
-import { SettingsPage } from "../pages/SettingsPage";
+import { RGPDPage } from "../pages/RGPDPage";
 import { LegalDocumentsPage } from "../pages/LegalDocumentsPage";
-import { UsersSettingsPage } from "../pages/UserSettingsPage";
+import { UsersSettingsPage } from "../pages/UsersSettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/settings/rgpd",
-        element: <SettingsPage />,
+        element: <RGPDPage />,
       },
       {
         path: "/legal",

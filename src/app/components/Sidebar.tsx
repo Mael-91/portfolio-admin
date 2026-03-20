@@ -172,7 +172,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
                   to="/settings/user"
                   className={cn(
                     "block rounded-xl px-3 py-2 text-sm transition",
-                    location.pathname === "/settings/user"
+                    location.pathname === "/settings/users"
                       ? "bg-white/8 text-white"
                       : "text-admin-text-soft hover:bg-white/5 hover:text-white"
                   )}
