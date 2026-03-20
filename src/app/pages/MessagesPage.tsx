@@ -255,7 +255,7 @@ export function MessagesPage() {
         </div>
       </div>
       {isSearching && (
-        <div className="px-4 text-xs text-admin-text-soft">
+        <div className="px-4 text-xs text-admin-text-soft animate-pulse">
           Recherche en cours...
         </div>
       )}
