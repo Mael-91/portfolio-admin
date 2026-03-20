@@ -157,10 +157,10 @@ function SidebarComponent({ onLogout }: SidebarProps) {
             {settingsOpen && (
               <div className="ml-6 space-y-1 border-l border-white/6 pl-3">
                 <Link
-                  to="/settings"
+                  to="/settings/rgpd"
                   className={cn(
                     "block rounded-xl px-3 py-2 text-sm transition",
-                    location.pathname === "/settings"
+                    location.pathname === "/settings/rgpd"
                       ? "bg-white/8 text-white"
                       : "text-admin-text-soft hover:bg-white/5 hover:text-white"
                   )}

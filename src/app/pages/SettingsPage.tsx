@@ -16,16 +16,14 @@ export function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  //const nextPurge = useMemo(() => getNextPurge(purgeHour), [purgeHour]);
-
   async function loadAll() {
     try {
       const [settingsRes, statsRes] = await Promise.all([
-        fetch(`${env.apiBaseUrl}/api/settings`, {
+        fetch(`${env.apiBaseUrl}/api/settings/rgpd`, {
           credentials: "include",
         }),
         fetch(
-          `${env.apiBaseUrl}/api/settings/rgpd-stats?retentionDays=${retentionDays}`,
+          `${env.apiBaseUrl}/api/settings/rgpd/rgpd-stats?retentionDays=${retentionDays}`,
           {
             credentials: "include",
           }
@@ -50,7 +48,7 @@ export function SettingsPage() {
   async function refreshStats(currentRetentionDays: number) {
     try {
       const res = await fetch(
-        `${env.apiBaseUrl}/api/settings/rgpd-stats?retentionDays=${currentRetentionDays}`,
+        `${env.apiBaseUrl}/api/settings/rgpd/rgpd-stats?retentionDays=${currentRetentionDays}`,
         {
           credentials: "include",
         }
@@ -66,7 +64,7 @@ export function SettingsPage() {
 
   async function saveSettings() {
     try {
-      await fetch(`${env.apiBaseUrl}/api/settings`, {
+      await fetch(`${env.apiBaseUrl}/api/settings/rgpd`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -83,7 +81,7 @@ export function SettingsPage() {
 
   async function confirmPurge() {
     try {
-      const res = await fetch(`${env.apiBaseUrl}/api/settings/purge-now`, {
+      const res = await fetch(`${env.apiBaseUrl}/api/settings/rgpd/purge-now`, {
         method: "POST",
         credentials: "include",
       });

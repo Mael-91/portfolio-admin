@@ -1,7 +1,7 @@
 import {
   purgeOldMessages,
   getAppSettings,
-} from "../settings/settings.service";
+} from "./settings.service";
 
 function msUntilNextRun(hour: number) {
   const now = new Date();

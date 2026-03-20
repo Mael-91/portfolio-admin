@@ -7,12 +7,12 @@ import {
   getRgpdStats,
 } from "./settings.service";
 
-export const settingsRouter = Router();
+export const RGPDRouter = Router();
 
-settingsRouter.use(requireAdminAuth);
+RGPDRouter.use(requireAdminAuth);
 
 // GET
-settingsRouter.get("/", async (_req, res) => {
+RGPDRouter.get("/", async (_req, res) => {
   const settings = await getAppSettings();
 
   res.json({
@@ -22,7 +22,7 @@ settingsRouter.get("/", async (_req, res) => {
 });
 
 // PATCH
-settingsRouter.patch("/", async (req, res) => {
+RGPDRouter.patch("/", async (req, res) => {
   const { retentionDays, autoPurgeEnabled, purgeHour } = req.body;
 
   if (
@@ -53,7 +53,7 @@ settingsRouter.patch("/", async (req, res) => {
 });
 
 // POST purge
-settingsRouter.post("/purge-now", async (_req, res) => {
+RGPDRouter.post("/purge-now", async (_req, res) => {
   const result = await purgeOldMessages();
 
   res.json({
@@ -62,7 +62,7 @@ settingsRouter.post("/purge-now", async (_req, res) => {
   });
 });
 
-settingsRouter.get("/rgpd-stats", async (req, res) => {
+RGPDRouter.get("/rgpd-stats", async (req, res) => {
   const retentionDays = req.query.retentionDays
     ? Number(req.query.retentionDays)
     : undefined;
