@@ -19,7 +19,7 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
     editorProps: {
       attributes: {
         class:
-          "min-h-[420px] rounded-b-2xl border border-t-0 border-white/10 bg-white/[0.02] px-4 py-4 text-sm text-white outline-none prose prose-invert max-w-none",
+          "min-h-[420px] rounded-b-2xl border border-t-0 border-white/10 bg-white/[0.02] px-5 py-4 text-sm text-white outline-none prose prose-invert max-w-none focus:outline-none",
       },
     },
   });
@@ -41,9 +41,12 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white/[0.03]">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-lg shadow-black/10">
       <EditorToolbar editor={editor} />
-      <EditorContent editor={editor} />
+
+      <div className="bg-white/[0.02]">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }
