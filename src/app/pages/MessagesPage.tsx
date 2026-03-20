@@ -254,7 +254,11 @@ export function MessagesPage() {
           </p>
         </div>
       </div>
-
+      {isSearching && (
+        <div className="px-4 text-xs text-admin-text-soft">
+          Recherche en cours...
+        </div>
+      )}
       <div className="rounded-[20px] bg-white/[0.025] p-3 shadow-lg shadow-black/10">
         <div className="grid gap-3 md:grid-cols-3 xl:max-w-4xl">
           <div>
