@@ -156,7 +156,7 @@ export function LegalDocumentsPage() {
                   key={type.value}
                   type="button"
                   onClick={() => setSelectedType(type.value)}
-                  className={`w-full rounded-xl px-4 py-3 text-left text-sm transition ${
+                  className={`w-full rounded-xl px-4 py-3 text-left text-sm transition cursor-pointer ${
                     active
                       ? "bg-admin-accent text-white"
                       : "bg-white/[0.03] text-admin-text-soft hover:bg-white/[0.06] hover:text-white"
