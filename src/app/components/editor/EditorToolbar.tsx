@@ -3,12 +3,15 @@ import { Editor } from "@tiptap/react";
 
 type EditorToolbarProps = {
   editor: Editor | null;
+  onPreview?: () => void;
 };
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onPreview }: EditorToolbarProps) {
   if (!editor) {
     return null;
   }
+
+  const e = editor;
 
   function handleMouseDown(
     event: React.MouseEvent<HTMLButtonElement>,
@@ -27,16 +30,34 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     ].join(" ");
   }
 
+  function handleSetLink(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+
+    const previousUrl = e.getAttributes("link").href || "";
+    const url = window.prompt("URL du lien", previousUrl);
+
+    if (url === null) {
+      return;
+    }
+
+    if (url.trim() === "") {
+      e.chain().focus().unsetLink().run();
+      return;
+    }
+
+    e.chain().focus().setLink({ href: url.trim() }).run();
+  }
+
   return (
-    <div className="flex flex-wrap gap-2 rounded-t-2xl border border-white/10 border-b-0 bg-white/[0.02] px-3 py-3">
+    <div className="flex flex-wrap items-center gap-2 rounded-t-2xl border border-white/10 border-b-0 bg-white/[0.02] px-3 py-3">
       <button
         type="button"
         onMouseDown={(event) =>
           handleMouseDown(event, () =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run()
+            e.chain().focus().toggleHeading({ level: 1 }).run()
           )
         }
-        className={getButtonClass(editor.isActive("heading", { level: 1 }))}
+        className={getButtonClass(e.isActive("heading", { level: 1 }))}
       >
         H1
       </button>
@@ -45,10 +66,10 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         type="button"
         onMouseDown={(event) =>
           handleMouseDown(event, () =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
+            e.chain().focus().toggleHeading({ level: 2 }).run()
           )
         }
-        className={getButtonClass(editor.isActive("heading", { level: 2 }))}
+        className={getButtonClass(e.isActive("heading", { level: 2 }))}
       >
         H2
       </button>
@@ -57,11 +78,10 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         type="button"
         onMouseDown={(event) =>
           handleMouseDown(event, () =>
-            editor.chain().focus().toggleBold().run()
+            e.chain().focus().toggleBold().run()
           )
         }
-        className={getButtonClass(editor.isActive("bold"))}
-        aria-label="Gras"
+        className={getButtonClass(e.isActive("bold"))}
         title="Gras"
       >
         <span className="font-bold">B</span>
@@ -71,11 +91,10 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         type="button"
         onMouseDown={(event) =>
           handleMouseDown(event, () =>
-            editor.chain().focus().toggleItalic().run()
+            e.chain().focus().toggleItalic().run()
           )
         }
-        className={getButtonClass(editor.isActive("italic"))}
-        aria-label="Italique"
+        className={getButtonClass(e.isActive("italic"))}
         title="Italique"
       >
         <span className="italic">I</span>
@@ -85,11 +104,23 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         type="button"
         onMouseDown={(event) =>
           handleMouseDown(event, () =>
-            editor.chain().focus().toggleBulletList().run()
+            e.chain().focus().toggleUnderline().run()
           )
         }
-        className={getButtonClass(editor.isActive("bulletList"))}
-        aria-label="Liste à puces"
+        className={getButtonClass(e.isActive("underline"))}
+        title="Souligné"
+      >
+        <span className="underline">U</span>
+      </button>
+
+      <button
+        type="button"
+        onMouseDown={(event) =>
+          handleMouseDown(event, () =>
+            e.chain().focus().toggleBulletList().run()
+          )
+        }
+        className={getButtonClass(e.isActive("bulletList"))}
         title="Liste à puces"
       >
         • Liste
@@ -99,13 +130,74 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         type="button"
         onMouseDown={(event) =>
           handleMouseDown(event, () =>
-            editor.chain().focus().setParagraph().run()
+            e.chain().focus().toggleOrderedList().run()
           )
         }
-        className={getButtonClass(editor.isActive("paragraph"))}
+        className={getButtonClass(e.isActive("orderedList"))}
+        title="Liste numérotée"
+      >
+        1. Liste
+      </button>
+
+      <button
+        type="button"
+        onMouseDown={(event) =>
+          handleMouseDown(event, () =>
+            e.chain().focus().toggleBlockquote().run()
+          )
+        }
+        className={getButtonClass(e.isActive("blockquote"))}
+        title="Citation"
+      >
+        “ ”
+      </button>
+
+      <button
+        type="button"
+        onMouseDown={(event) =>
+          handleMouseDown(event, () =>
+            e.chain().focus().setHorizontalRule().run()
+          )
+        }
+        className={getButtonClass(false)}
+        title="Séparateur"
+      >
+        ―
+      </button>
+
+      <button
+        type="button"
+        onMouseDown={handleSetLink}
+        className={getButtonClass(e.isActive("link"))}
+        title="Lien"
+      >
+        Lien
+      </button>
+
+      <button
+        type="button"
+        onMouseDown={(event) =>
+          handleMouseDown(event, () =>
+            e.chain().focus().setParagraph().run()
+          )
+        }
+        className={getButtonClass(e.isActive("paragraph"))}
       >
         Texte
       </button>
+
+      <div className="ml-auto">
+        <button
+          type="button"
+          onMouseDown={(event) => {
+            event.preventDefault();
+            onPreview?.();
+          }}
+          className="inline-flex items-center justify-center rounded-lg bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-white transition hover:bg-white/[0.12]"
+        >
+          Aperçu
+        </button>
+      </div>
     </div>
   );
 }
