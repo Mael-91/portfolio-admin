@@ -35,7 +35,7 @@ export const router = createBrowserRouter([
         element: <MessageDetailPage />,
       },
       {
-        path: "/settings",
+        path: "/settings/rgpd",
         element: <SettingsPage />,
       },
       {
