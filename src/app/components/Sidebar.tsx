@@ -169,7 +169,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
                 </Link>
 
                 <Link
-                  to="/settings/user"
+                  to="/settings/users"
                   className={cn(
                     "block rounded-xl px-3 py-2 text-sm transition",
                     location.pathname === "/settings/users"
