@@ -80,136 +80,153 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
         </div>
 
         <style>{`
-          .ProseMirror {
-            font-weight: 700;
-          }
+            .ProseMirror {
+                font-weight: 400 !important;
+                color: rgba(255,255,255,0.92);
+            }
 
-          .ProseMirror h1 {
-            font-size: 1.875rem;
-            line-height: 2.25rem;
-            font-weight: 700;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            color: white;
-          }
+            .ProseMirror * {
+                font-weight: inherit;
+            }
 
-          .ProseMirror h2 {
-            font-size: 1.5rem;
-            line-height: 2rem;
-            font-weight: 700;
-            margin-top: 1.25rem;
-            margin-bottom: 0.65rem;
-            color: white;
-          }
+            .ProseMirror p {
+                margin: 0.75rem 0;
+                font-weight: 400 !important;
+                color: rgba(255,255,255,0.92);
+            }
 
-          .ProseMirror p {
-            margin: 0.75rem 0;
-            color: rgba(255,255,255,0.92);
-            font-weight: 400 !important;
-          }
+            .ProseMirror strong,
+            .ProseMirror b {
+                font-weight: 700 !important;
+                color: #ffffff;
+            }
 
-          .ProseMirror strong {
-            font-weight: 700;
-            color: white;
-          }
+            .ProseMirror em,
+            .ProseMirror i {
+                font-style: italic;
+            }
 
-          .ProseMirror em {
-            font-style: italic;
-            color: rgba(255,255,255,0.85);
-          }
+            .ProseMirror u {
+                text-decoration: underline;
+            }
 
-          .ProseMirror u {
-            text-decoration: underline;
-          }
+            .ProseMirror h1 {
+                font-size: 1.875rem;
+                line-height: 2.25rem;
+                font-weight: 700 !important;
+                margin-top: 1.5rem;
+                margin-bottom: 0.75rem;
+                color: #ffffff;
+            }
 
-          .ProseMirror ul {
-            list-style-type: disc;
-            padding-left: 1.5rem;
-            margin: 0.75rem 0;
-          }
+            .ProseMirror h2 {
+                font-size: 1.5rem;
+                line-height: 2rem;
+                font-weight: 700 !important;
+                margin-top: 1.25rem;
+                margin-bottom: 0.65rem;
+                color: #ffffff;
+            }
 
-          .ProseMirror ol {
-            list-style-type: decimal;
-            padding-left: 1.5rem;
-            margin: 0.75rem 0;
-          }
+            .ProseMirror ul {
+                list-style-type: disc;
+                padding-left: 1.5rem;
+                margin: 0.75rem 0;
+            }
 
-          .ProseMirror li {
-            margin: 0.25rem 0;
-          }
+            .ProseMirror ol {
+                list-style-type: decimal;
+                padding-left: 1.5rem;
+                margin: 0.75rem 0;
+            }
 
-          .ProseMirror blockquote {
-            border-left: 3px solid rgba(255,255,255,0.25);
-            padding-left: 1rem;
-            margin: 1rem 0;
-            color: rgba(255,255,255,0.75);
-            font-style: italic;
-          }
+            .ProseMirror li {
+                margin: 0.25rem 0;
+            }
 
-          .ProseMirror hr {
-            border: none;
-            border-top: 1px solid rgba(255,255,255,0.15);
-            margin: 1.25rem 0;
-          }
+            .ProseMirror blockquote {
+                border-left: 3px solid rgba(255,255,255,0.25);
+                padding-left: 1rem;
+                margin: 1rem 0;
+                color: rgba(255,255,255,0.75);
+                font-style: italic;
+            }
 
-          .ProseMirror a {
-            color: #7dd3fc;
-            text-decoration: underline;
-          }
+            .ProseMirror hr {
+                border: none;
+                border-top: 1px solid rgba(255,255,255,0.15);
+                margin: 1.25rem 0;
+            }
 
-          .ProseMirror:focus {
-            outline: none;
-          }
+            .ProseMirror a {
+                color: #7dd3fc;
+                text-decoration: underline;
+            }
 
-          .legal-preview h1 {
-            font-size: 2rem;
-            line-height: 2.5rem;
-            font-weight: 700;
-            margin: 1.5rem 0 1rem;
-          }
+            .ProseMirror:focus {
+                outline: none;
+            }
 
-          .legal-preview h2 {
-            font-size: 1.5rem;
-            line-height: 2rem;
-            font-weight: 700;
-            margin: 1.25rem 0 0.75rem;
-          }
+            .legal-preview {
+                font-weight: 400;
+                color: #0f172a;
+            }
 
-          .legal-preview p {
-            margin: 0.75rem 0;
-            line-height: 1.75;
-          }
+            .legal-preview strong,
+            .legal-preview b {
+                font-weight: 700 !important;
+            }
 
-          .legal-preview ul {
-            list-style: disc;
-            padding-left: 1.5rem;
-            margin: 0.75rem 0;
-          }
+            .legal-preview h1 {
+                font-size: 2rem;
+                line-height: 2.5rem;
+                font-weight: 700;
+                margin: 1.5rem 0 1rem;
+            }
 
-          .legal-preview ol {
-            list-style: decimal;
-            padding-left: 1.5rem;
-            margin: 0.75rem 0;
-          }
+            .legal-preview h2 {
+                font-size: 1.5rem;
+                line-height: 2rem;
+                font-weight: 700;
+                margin: 1.25rem 0 0.75rem;
+            }
 
-          .legal-preview blockquote {
-            border-left: 3px solid #cbd5e1;
-            padding-left: 1rem;
-            color: #475569;
-            font-style: italic;
-            margin: 1rem 0;
-          }
+            .legal-preview p {
+                margin: 0.75rem 0;
+                line-height: 1.75;
+                font-weight: 400;
+            }
 
-          .legal-preview hr {
-            border: none;
-            border-top: 1px solid #cbd5e1;
-            margin: 1.25rem 0;
-          }
+            .legal-preview ul {
+                list-style: disc;
+                padding-left: 1.5rem;
+                margin: 0.75rem 0;
+            }
 
-          .legal-preview a {
-            color: #2563eb;
-            text-decoration: underline;
-          }
+            .legal-preview ol {
+                list-style: decimal;
+                padding-left: 1.5rem;
+                margin: 0.75rem 0;
+            }
+
+            .legal-preview blockquote {
+                border-left: 3px solid #cbd5e1;
+                padding-left: 1rem;
+                color: #475569;
+                font-style: italic;
+                margin: 1rem 0;
+            }
+
+            .legal-preview hr {
+                border: none;
+                border-top: 1px solid #cbd5e1;
+                margin: 1.25rem 0;
+            }
+
+            .legal-preview a {
+                color: #2563eb;
+                text-decoration: underline;
+            }
         `}</style>
       </div>
 
