@@ -6,6 +6,7 @@ import { MessagesPage } from "../pages/MessagesPage";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { MessageDetailPage } from "../pages/MessageDetailPage";
 import { SettingsPage } from "../pages/SettingsPage";
+import { LegalDocumentsPage } from "../pages/LegalDocumentsPage";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: "/settings",
         element: <SettingsPage />,
+      },
+      {
+        path: "/legal",
+        element: <LegalDocumentsPage />,
       },
     ],
   },
