@@ -21,14 +21,15 @@ export function EditorToolbar({ editor, onPreview }: EditorToolbarProps) {
     action();
   }
 
-  function getButtonClass(isActive: boolean) {
+  function getButtonClass(isActive: boolean, disabled?: boolean) {
     return [
-      "inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium transition",
-      "cursor-pointer",
-      "active:scale-[0.96]",
+      "inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-150",
+      disabled
+        ? "cursor-not-allowed opacity-40"
+        : "cursor-pointer active:scale-[0.96]",
       isActive
         ? "bg-admin-accent text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
-        : "bg-white/[0.04] text-admin-text-soft hover:bg-white/[0.08] hover:text-white",
+        : "bg-white/[0.04] text-admin-text-soft hover:bg-white/[0.08] hover:text-white hover:scale-[1.03]",
     ].join(" ");
   }
 
