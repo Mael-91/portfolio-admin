@@ -10,9 +10,9 @@ fi
 SQL_DUMP="$1"
 FILES_ARCHIVE="$2"
 
-DB_NAME="portfolio_prod"
-DB_USER="portfolio_admin_user"
-DB_PASS="REMPLACE_MOI"
+DB_NAME="portfolio"
+DB_USER="portfolio_user"
+DB_PASS="gR]0MNeffKsQ0Goa"
 
 API_ROOT="/volume1/web/portfolio-admin/portfolio-admin-api"
 STORAGE_DIR="$API_ROOT/storage"
