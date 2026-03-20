@@ -15,6 +15,7 @@ export const env = {
   port: Number(process.env.PORT || 9808),
 
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  adminApiUrl: process.env.ADMIN_API_URL ?? "http://localhost:9808",
 
   dbHost: process.env.DB_HOST || "127.0.0.1",
   dbPort: Number(process.env.DB_PORT || 3306),
@@ -26,6 +27,11 @@ export const env = {
   sessionName: process.env.SESSION_NAME || "mc_admin_sid",
   sessionMaxAgeMs: Number(process.env.SESSION_MAX_AGE_MS || 1000 * 60 * 60 * 8),
   sessionCookieSecure: String(process.env.SESSION_COOKIE_SECURE) === "true",
+
+  loginRateLimitWindowMs: Number(
+    process.env.LOGIN_RATE_LIMIT_WINDOW_MS ?? 900000
+  ),
+  loginRateLimitMax: Number(process.env.LOGIN_RATE_LIMIT_MAX ?? 5),
 
   mailHost: process.env.MAIL_HOST || "mail.maelconstantin.fr",
   mailPort: Number(process.env.MAIL_PORT || 587),
