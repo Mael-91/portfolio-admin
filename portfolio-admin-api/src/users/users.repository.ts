@@ -98,6 +98,16 @@ export async function insertAdminUser(params: {
   return result.insertId;
 }
 
+export async function deleteAdminUserById(id: number) {
+  await db.execute(
+    `
+    DELETE FROM admin_users
+    WHERE id = ?
+    `,
+    [String(id)]
+  );
+}
+
 export async function updateAdminUser(params: {
   id: number;
   email: string;

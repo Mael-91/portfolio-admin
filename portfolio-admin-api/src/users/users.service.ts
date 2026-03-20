@@ -7,6 +7,7 @@ import {
   updateAdminUser,
   updateAdminUserActiveStatus,
   updateAdminUserPassword,
+  deleteAdminUserById
 } from "./users.repository";
 
 function sanitizeUser(user: any) {
@@ -33,6 +34,11 @@ export async function createAdminUser(params: {
   lastName: string;
 }) {
   const existing = await findAdminUserByEmail(params.email);
+  const passwordErrors = validatePasswordStrength(params.password);
+
+  if (passwordErrors.length > 0) {
+    throw new Error(`WEAK_PASSWORD:${passwordErrors.join(" ")}`);
+  }
 
   if (existing) {
     throw new Error("EMAIL_ALREADY_EXISTS");
@@ -54,6 +60,25 @@ export async function createAdminUser(params: {
   }
 
   return sanitizeUser(user);
+}
+
+export async function deleteAdminUser(params: {
+  id: number;
+  currentAdminUserId: number;
+}) {
+  if (params.id === params.currentAdminUserId) {
+    throw new Error("CANNOT_DELETE_SELF");
+  }
+
+  const user = await findAdminUserById(params.id);
+
+  if (!user) {
+    throw new Error("USER_NOT_FOUND");
+  }
+
+  await deleteAdminUserById(params.id);
+
+  return { success: true };
 }
 
 export async function editAdminUser(params: {
@@ -84,6 +109,11 @@ export async function resetAdminUserPassword(params: {
   password: string;
 }) {
   const user = await findAdminUserById(params.id);
+  const passwordErrors = validatePasswordStrength(params.password);
+
+  if (passwordErrors.length > 0) {
+    throw new Error(`WEAK_PASSWORD:${passwordErrors.join(" ")}`);
+  }
 
   if (!user) {
     throw new Error("USER_NOT_FOUND");
@@ -132,4 +162,30 @@ export async function setAdminUserActiveStatus(params: {
   }
 
   return sanitizeUser(updated);
+}
+
+function validatePasswordStrength(password: string) {
+  const errors: string[] = [];
+
+  if (password.length < 12) {
+    errors.push("Le mot de passe doit contenir au moins 12 caractères.");
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    errors.push("Le mot de passe doit contenir au moins une majuscule.");
+  }
+
+  if (!/[a-z]/.test(password)) {
+    errors.push("Le mot de passe doit contenir au moins une minuscule.");
+  }
+
+  if (!/[0-9]/.test(password)) {
+    errors.push("Le mot de passe doit contenir au moins un chiffre.");
+  }
+
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    errors.push("Le mot de passe doit contenir au moins un caractère spécial.");
+  }
+
+  return errors;
 }

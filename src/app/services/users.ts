@@ -46,6 +46,21 @@ export async function createAdminUser(payload: {
   return data;
 }
 
+export async function deleteAdminUser(id: number) {
+  const res = await fetch(`${env.apiBaseUrl}/api/users/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Erreur suppression utilisateur");
+  }
+
+  return data;
+}
+
 export async function updateAdminUser(
   id: number,
   payload: {

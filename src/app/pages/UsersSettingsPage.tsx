@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import {
   createAdminUser,
+  deleteAdminUser,
   fetchAdminUsers,
   updateAdminUser,
   updateAdminUserActiveStatus,
   updateAdminUserPassword,
   type AdminUser,
 } from "../services/users";
+import { DeleteUserConfirmModal } from "../components/users/DeleteUserConfirmModal";
 
 type FormMode = "create" | "edit";
 
@@ -29,6 +31,9 @@ export function UsersSettingsPage() {
 
   const [passwordReset, setPasswordReset] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function loadUsers() {
     setLoading(true);
@@ -120,6 +125,32 @@ export function UsersSettingsPage() {
     }
   }
 
+  async function handleDeleteUser() {
+    if (!deleteTarget) {
+      return;
+    }
+
+    setDeleting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      await deleteAdminUser(deleteTarget.id);
+      setSuccessMessage("Utilisateur supprimé");
+      setDeleteTarget(null);
+
+      if (selectedUserId === deleteTarget.id) {
+        resetForm();
+      }
+
+      await loadUsers();
+    } catch (error: any) {
+      setErrorMessage(error?.message || "Erreur suppression utilisateur");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="space-y-6 text-white">
       <div>
@@ -198,6 +229,14 @@ export function UsersSettingsPage() {
 
                     <button
                       type="button"
+                      onClick={() => setDeleteTarget(user)}
+                      className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400 transition hover:bg-red-500/20"
+                    >
+                      Supprimer
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => handleToggleActive(user)}
                       className="rounded-xl bg-white/[0.06] px-3 py-2 text-sm text-white transition hover:bg-white/[0.1]"
                     >
@@ -206,6 +245,15 @@ export function UsersSettingsPage() {
                   </div>
                 </div>
               ))}
+              <DeleteUserConfirmModal
+                isOpen={Boolean(deleteTarget)}
+                userLabel={
+                  deleteTarget ? `${deleteTarget.firstName} ${deleteTarget.lastName}` : undefined
+                }
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={handleDeleteUser}
+                isSubmitting={deleting}
+              />
             </div>
           )}
         </section>
@@ -283,6 +331,9 @@ export function UsersSettingsPage() {
                   }
                   className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
                 />
+                <p className="mt-1 text-xs text-admin-text-muted">
+                  12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.
+                </p>
               </div>
             ) : (
               <div>

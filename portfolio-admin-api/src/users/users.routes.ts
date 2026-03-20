@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdminAuth } from "../auth/auth.middleware";
 import {
   createAdminUser,
+  deleteAdminUser,
   editAdminUser,
   listAdminUsers,
   resetAdminUserPassword,
@@ -53,6 +54,13 @@ usersRouter.post("/", async (req, res) => {
       return res.status(400).json({
         success: false,
         errors: error.errors,
+      });
+    }
+
+    if (typeof error?.message === "string" && error.message.startsWith("WEAK_PASSWORD:")) {
+      return res.status(400).json({
+        success: false,
+        message: error.message.replace("WEAK_PASSWORD:", "").trim(),
       });
     }
 
@@ -108,6 +116,13 @@ usersRouter.patch("/:id", async (req, res) => {
       return res.status(409).json({
         success: false,
         message: "Cet email existe déjà",
+      });
+    }
+
+    if (typeof error?.message === "string" && error.message.startsWith("WEAK_PASSWORD:")) {
+      return res.status(400).json({
+        success: false,
+        message: error.message.replace("WEAK_PASSWORD:", "").trim(),
       });
     }
 
@@ -174,6 +189,13 @@ usersRouter.patch("/:id/active", async (req, res) => {
 
     const currentAdminUserId = req.session?.adminUser?.id;
 
+    if (!currentAdminUserId) {
+        return res.status(401).json({
+            success: false,
+            message: "Non authentifié",
+        });
+    }
+
     const user = await setAdminUserActiveStatus({
       id: params.id,
       isActive: body.isActive,
@@ -200,6 +222,48 @@ usersRouter.patch("/:id/active", async (req, res) => {
     }
 
     console.error("Erreur activation utilisateur :", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+    });
+  }
+});
+
+usersRouter.delete("/:id", async (req, res) => {
+  try {
+    const paramsSchema = z.object({
+      id: z.coerce.number().int().min(1),
+    });
+
+    const params = paramsSchema.parse(req.params);
+
+    const currentAdminUserId = req.session?.adminUser?.id;
+
+    if (!currentAdminUserId) {
+      return res.status(401).json({
+        success: false,
+        message: "Non authentifié",
+      });
+    }
+
+    await deleteAdminUser({
+      id: params.id,
+      currentAdminUserId,
+    });
+
+    return res.status(200).json({
+      success: true,
+    });
+  } catch (error: any) {
+    if (error?.message === "CANNOT_DELETE_SELF") {
+      return res.status(400).json({
+        success: false,
+        message: "Impossible de supprimer votre propre compte",
+      });
+    }
+
+    console.error("Erreur suppression utilisateur :", error);
 
     return res.status(500).json({
       success: false,
