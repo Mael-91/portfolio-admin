@@ -38,7 +38,7 @@ export const router = createBrowserRouter([
         element: <SettingsPage />,
       },
       {
-        path: "/settings/legal",
+        path: "/legal",
         element: <LegalDocumentsPage />,
       },
     ],
