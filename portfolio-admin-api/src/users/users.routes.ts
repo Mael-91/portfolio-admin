@@ -57,10 +57,10 @@ usersRouter.post("/", async (req, res) => {
       });
     }
 
-    if (typeof error?.message === "string" && error.message.startsWith("WEAK_PASSWORD:")) {
+    if (typeof error?.message === "string") {
       return res.status(400).json({
         success: false,
-        message: error.message.replace("WEAK_PASSWORD:", "").trim(),
+        message: error.message,
       });
     }
 
@@ -162,6 +162,13 @@ usersRouter.patch("/:id/password", async (req, res) => {
       return res.status(400).json({
         success: false,
         errors: error.errors,
+      });
+    }
+
+    if (typeof error?.message === "string") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
       });
     }
 

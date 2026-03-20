@@ -37,7 +37,7 @@ export async function createAdminUser(params: {
   const passwordErrors = validatePasswordStrength(params.password);
 
   if (passwordErrors.length > 0) {
-    throw new Error(`WEAK_PASSWORD:${passwordErrors.join(" ")}`);
+    throw new Error(passwordErrors.join(" "));
   }
 
   if (existing) {
@@ -112,7 +112,7 @@ export async function resetAdminUserPassword(params: {
   const passwordErrors = validatePasswordStrength(params.password);
 
   if (passwordErrors.length > 0) {
-    throw new Error(`WEAK_PASSWORD:${passwordErrors.join(" ")}`);
+    throw new Error(passwordErrors.join(" "));
   }
 
   if (!user) {
