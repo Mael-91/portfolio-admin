@@ -80,6 +80,10 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
         </div>
 
         <style>{`
+          .ProseMirror {
+            font-weight: 700;
+          }
+
           .ProseMirror h1 {
             font-size: 1.875rem;
             line-height: 2.25rem;
@@ -101,6 +105,7 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
           .ProseMirror p {
             margin: 0.75rem 0;
             color: rgba(255,255,255,0.92);
+            font-weight: 400 !important;
           }
 
           .ProseMirror strong {
@@ -110,6 +115,7 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
 
           .ProseMirror em {
             font-style: italic;
+            color: rgba(255,255,255,0.85);
           }
 
           .ProseMirror u {
