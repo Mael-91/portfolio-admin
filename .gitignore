@@ -33,3 +33,4 @@ coverage/
 *.tsbuildinfo
 *.local
 cookies.txt
+.sh
