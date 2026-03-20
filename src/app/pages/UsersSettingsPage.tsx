@@ -229,18 +229,18 @@ export function UsersSettingsPage() {
 
                     <button
                       type="button"
-                      onClick={() => setDeleteTarget(user)}
-                      className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400 transition hover:bg-red-500/20"
-                    >
-                      Supprimer
-                    </button>
-
-                    <button
-                      type="button"
                       onClick={() => handleToggleActive(user)}
                       className="rounded-xl bg-white/[0.06] px-3 py-2 text-sm text-white transition hover:bg-white/[0.1]"
                     >
                       {user.isActive ? "Désactiver" : "Activer"}
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(user)}
+                      className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400 transition hover:bg-red-500/20"
+                    >
+                      Supprimer
                     </button>
                   </div>
                 </div>
@@ -347,6 +347,9 @@ export function UsersSettingsPage() {
                   placeholder="Laisser vide pour ne pas changer"
                   className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none placeholder:text-admin-text-muted focus:border-white/20"
                 />
+                <p className="mt-1 text-xs text-admin-text-muted">
+                  12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.
+                </p>
               </div>
             )}
 
