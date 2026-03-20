@@ -16,6 +16,10 @@ const app = express();
 
 app.set("trust proxy", 1);
 
+if (env.nodeEnv === "production" && !env.sessionSecret) {
+  throw new Error("SESSION_SECRET manquant en production");
+}
+
 const MySQLStore = MySQLStoreFactory(session);
 
 const sessionStore = new MySQLStore({
@@ -35,6 +39,8 @@ const sessionStore = new MySQLStore({
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
   })
 );
 

@@ -4,22 +4,16 @@ import { z } from "zod";
 import { loginAdmin } from "./auth.service";
 import { env } from "../env";
 import { requireAdminAuth } from "./auth.middleware";
+import { loginRateLimit } from "./login-rate-limit";
 
 export const authRouter = Router();
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 const loginSchema = z.object({
   email: z.string().trim().email("Email invalide"),
   password: z.string().min(1, "Mot de passe requis"),
 });
 
-authRouter.post("/login", loginLimiter, async (req, res) => {
+authRouter.post("/login", loginRateLimit, async (req, res) => {
   try {
     const data = loginSchema.parse(req.body);
 

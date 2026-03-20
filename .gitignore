@@ -33,3 +33,5 @@ coverage/
 *.tsbuildinfo
 *.local
 cookies.txt
+backup-dashboard.sh
+restore-dashboard.sh
