@@ -31,18 +31,22 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
     },
     editorProps: {
       attributes: {
-        class: `
-          ProseMirror
-          min-h-[420px]
-          rounded-b-2xl
-          border border-t-0 border-white/10
-          bg-white/[0.02]
-          px-5 py-4
-          text-sm text-white
-          outline-none
-          max-w-none
-          focus:outline-none
-        `,
+        class: [
+          "ProseMirror",
+          "min-h-[420px]",
+          "rounded-b-2xl",
+          "border",
+          "border-t-0",
+          "border-white/10",
+          "bg-white/[0.02]",
+          "px-5",
+          "py-4",
+          "text-sm",
+          "text-white",
+          "outline-none",
+          "max-w-none",
+          "focus:outline-none",
+        ].join(" "),
       },
     },
   });
