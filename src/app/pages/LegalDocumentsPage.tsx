@@ -177,48 +177,6 @@ export function LegalDocumentsPage() {
           ) : (
             <>
               <LegalEditor content={editorContent} onChange={setEditorContent} />
-
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleSaveDraft}
-                  disabled={savingDraft}
-                  className="rounded-xl bg-white/[0.06] px-4 py-2 text-sm text-white transition hover:bg-white/[0.1]"
-                >
-                  {savingDraft ? "Enregistrement..." : "Enregistrer en brouillon"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowPublishModal(true)}
-                  disabled={publishing}
-                  className="rounded-xl bg-admin-accent px-4 py-2 text-sm text-white transition hover:brightness-110"
-                >
-                  Mettre à jour
-                </button>
-
-                {currentDownloadId ? (
-                  <a
-                    href={getLegalDownloadUrl(currentDownloadId)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-white/[0.06] px-4 py-2 text-sm text-white transition hover:bg-white/[0.1]"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                    >
-                      <path d="M12 3v12" />
-                      <path d="m7 10 5 5 5-5" />
-                      <path d="M5 21h14" />
-                    </svg>
-                    Télécharger
-                  </a>
-                ) : null}
-              </div>
             </>
           )}
         </section>
@@ -278,6 +236,53 @@ export function LegalDocumentsPage() {
                   </div>
                 ))
               )}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-white/[0.03] p-5">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-admin-text-muted">
+              Actions
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={savingDraft || editorContent === currentDocument?.content_html}
+                className="w-full rounded-xl bg-white/[0.06] px-4 py-2 text-sm text-white transition hover:bg-white/[0.1] cursor-pointer"
+              >
+                {savingDraft ? "Enregistrement..." : "Enregistrer en brouillon"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowPublishModal(true)}
+                disabled={publishing}
+                className="w-full rounded-xl bg-admin-accent px-4 py-2 text-sm text-white transition hover:brightness-110 cursor-pointer"
+              >
+                Mettre à jour
+              </button>
+
+              {currentDownloadId ? (
+                <a
+                  href={getLegalDownloadUrl(currentDownloadId)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-4 py-2 text-sm text-white transition hover:bg-white/[0.1]"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path d="M12 3v12" />
+                    <path d="m7 10 5 5 5-5" />
+                    <path d="M5 21h14" />
+                  </svg>
+                  Télécharger
+                </a>
+              ) : null}
             </div>
           </div>
         </aside>
