@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 
 type SidebarProps = {
   onLogout: () => void | Promise<void>;
@@ -17,13 +17,7 @@ const navItems: NavItem[] = [
     label: "Dashboard",
     href: "/",
     icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M3 10.5 12 3l9 7.5" />
         <path d="M5.25 9.75V21h5.25v-6h3v6h5.25V9.75" />
       </svg>
@@ -33,13 +27,7 @@ const navItems: NavItem[] = [
     label: "Demandes de contact",
     href: "/messages",
     icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M7 8h10" />
         <path d="M7 12h10" />
         <path d="M7 16h6" />
@@ -51,34 +39,12 @@ const navItems: NavItem[] = [
     label: "Documents légaux",
     href: "/legal",
     icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M8 7h8" />
         <path d="M8 11h8" />
         <path d="M8 15h5" />
         <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
         <path d="M14 3v5h5" />
-      </svg>
-    ),
-  },
-  {
-    label: "Paramètres",
-    href: "/settings",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5Z" />
-        <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a2 2 0 1 1-4 0v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a2 2 0 1 1 0-4h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a2 2 0 1 1 4 0v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H20a2 2 0 1 1 0 4h-.2a1 1 0 0 0-.9.6Z" />
       </svg>
     ),
   },
@@ -91,6 +57,15 @@ function cn(...classes: Array<string | false | null | undefined>) {
 function SidebarComponent({ onLogout }: SidebarProps) {
   const location = useLocation();
   const { unprocessedCount } = useMessageNotifications();
+
+  const isSettingsRoute = location.pathname.startsWith("/settings");
+  const [settingsOpen, setSettingsOpen] = useState(isSettingsRoute);
+
+  useEffect(() => {
+    if (isSettingsRoute) {
+      setSettingsOpen(true);
+    }
+  }, [isSettingsRoute]);
 
   return (
     <aside className="flex w-[250px] shrink-0 flex-col border-r border-white/6 bg-[#041126]">
@@ -147,6 +122,66 @@ function SidebarComponent({ onLogout }: SidebarProps) {
               </Link>
             );
           })}
+
+          {/* PARAMÈTRES DROPDOWN */}
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen((prev) => !prev)}
+              className={cn(
+                "group flex w-full items-center justify-between rounded-2xl px-4 py-3 text-[14px] font-medium transition",
+                isSettingsRoute
+                  ? "bg-white/8 text-white shadow-inner ring-1 ring-white/5"
+                  : "text-admin-text-soft hover:bg-white/5 hover:text-white"
+              )}
+            >
+              <span className="flex items-center gap-3">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5Z" />
+                  <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a2 2 0 1 1-4 0v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a2 2 0 1 1 0-4h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a2 2 0 1 1 4 0v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H20a2 2 0 1 1 0 4h-.2a1 1 0 0 0-.9.6Z" />
+                </svg>
+                Paramètres
+              </span>
+
+              <svg
+                viewBox="0 0 24 24"
+                className={cn("h-4 w-4 transition-transform", settingsOpen && "rotate-180")}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            {settingsOpen && (
+              <div className="ml-6 space-y-1 border-l border-white/6 pl-3">
+                <Link
+                  to="/settings"
+                  className={cn(
+                    "block rounded-xl px-3 py-2 text-sm transition",
+                    location.pathname === "/settings"
+                      ? "bg-white/8 text-white"
+                      : "text-admin-text-soft hover:bg-white/5 hover:text-white"
+                  )}
+                >
+                  RGPD
+                </Link>
+
+                <Link
+                  to="/settings/user"
+                  className={cn(
+                    "block rounded-xl px-3 py-2 text-sm transition",
+                    location.pathname === "/settings/user"
+                      ? "bg-white/8 text-white"
+                      : "text-admin-text-soft hover:bg-white/5 hover:text-white"
+                  )}
+                >
+                  Utilisateurs
+                </Link>
+              </div>
+            )}
+          </div>
         </nav>
       </div>
 
@@ -155,13 +190,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
           onClick={onLogout}
           className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[14px] font-medium text-admin-text-soft transition hover:bg-white/5 hover:text-white"
         >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M15 3h3a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-3" />
             <path d="M10 17l5-5-5-5" />
             <path d="M15 12H3" />

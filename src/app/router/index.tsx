@@ -7,6 +7,7 @@ import { ProtectedRoute } from "../components/ProtectedRoute";
 import { MessageDetailPage } from "../pages/MessageDetailPage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { LegalDocumentsPage } from "../pages/LegalDocumentsPage";
+import { UsersSettingsPage } from "../pages/UserSettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: "/legal",
         element: <LegalDocumentsPage />,
+      },
+      {
+        path: "/settings/users",
+        element: <UsersSettingsPage />,
       },
     ],
   },
