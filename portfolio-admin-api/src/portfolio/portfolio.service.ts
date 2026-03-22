@@ -40,6 +40,7 @@ export async function createPortfolioImage(params: {
   filePath: string;
   fileUrl: string;
   mimeType: string;
+  isActive?: boolean;
 }) {
   const displayOrder = await getNextPortfolioDisplayOrder();
 
@@ -52,7 +53,7 @@ export async function createPortfolioImage(params: {
     fileUrl: params.fileUrl,
     mimeType: params.mimeType,
     displayOrder,
-    isActive: true,
+    isActive: params.isActive ?? true,
   });
 
   const image = await findPortfolioImageById(id);

@@ -39,6 +39,7 @@ portfolioRouter.post("/", portfolioUpload.single("image"), async (req, res) => {
       caption: z.string().trim().min(1).max(255),
       altText: z.string().trim().min(1).max(255),
       description: z.string().trim().max(5000).optional(),
+      isActive: z.coerce.boolean().optional(),
     });
 
     const body = schema.parse(req.body);
@@ -61,6 +62,7 @@ portfolioRouter.post("/", portfolioUpload.single("image"), async (req, res) => {
       filePath,
       fileUrl,
       mimeType: req.file.mimetype,
+      isActive: body.isActive ?? true,
     });
 
     return res.status(201).json({
@@ -101,7 +103,7 @@ portfolioRouter.patch("/:id", async (req, res) => {
       caption: z.string().trim().min(1).max(255),
       altText: z.string().trim().min(1).max(255),
       description: z.string().trim().max(5000).optional(),
-      isActive: z.boolean(),
+      isActive: z.coerce.boolean().optional(),
     });
 
     const params = paramsSchema.parse(req.params);
@@ -112,7 +114,7 @@ portfolioRouter.patch("/:id", async (req, res) => {
       caption: body.caption,
       altText: body.altText,
       description: body.description,
-      isActive: body.isActive,
+      isActive: body.isActive ?? true,
     });
 
     return res.status(200).json({

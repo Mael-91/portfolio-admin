@@ -285,6 +285,7 @@ export function PortfolioImagesPage() {
       formData.append("caption", payload.caption);
       formData.append("altText", payload.altText);
       formData.append("description", payload.description);
+      formData.append("isActive", String(form.isActive));
 
       await createPortfolioImage(formData);
       setSuccessMessage("Photo ajoutée");
@@ -562,22 +563,44 @@ export function PortfolioImagesPage() {
               }`}
             />
 
-            <label>
-              <input
-                type="checkbox"
-                checked={form.isActive}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    isActive: e.target.checked,
-                  })
+            <label className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+              <span className="text-sm text-admin-text-soft">
+                Activer la photo sur le site
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((prev) => ({ ...prev, isActive: !prev.isActive }))
                 }
-              />
-              Active
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                  form.isActive ? "bg-green-500" : "bg-white/20"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                    form.isActive ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
             </label>
 
-            <button type="submit" disabled={savingForm}>
-              {selectedImage ? "Modifier" : "Ajouter"}
+            <button
+              type="submit"
+              disabled={savingForm}
+              className={`w-full rounded-2xl px-4 py-2.5 text-sm font-medium transition 
+                ${
+                  savingForm
+                    ? "bg-white/10 text-white/60 cursor-not-allowed"
+                    : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
+                }
+              `}
+            >
+              {savingForm
+                ? "Enregistrement..."
+                : selectedImage
+                ? "Enregistrer les modifications"
+                : "Ajouter la photo"}
             </button>
           </form>
         </div>
