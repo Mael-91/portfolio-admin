@@ -12,6 +12,9 @@ import { startRgpdCron } from "./rgpd/rgpd-cron";
 import { RGPDRouter } from "./rgpd/settings.routes";
 import { legalRouter } from "./legal/legal.routes";
 import { usersRouter } from "./users/users.routes";
+import { internalEventsRouter } from "./websocket/internal-events.routes";
+import { countUnprocessedMessages } from "./messages/messages.repository";
+import { startWebSocketServer } from "./websocket/ws-server";
 
 const app = express();
 
@@ -19,6 +22,10 @@ app.set("trust proxy", 1);
 
 if (env.nodeEnv === "production" && !env.sessionSecret) {
   throw new Error("SESSION_SECRET manquant en production");
+}
+
+if (env.nodeEnv === "production" && !env.internalEventsSecret) {
+  throw new Error("INTERNAL_EVENTS_SECRET manquant en production");
 }
 
 const MySQLStore = MySQLStoreFactory(session);
@@ -77,6 +84,7 @@ app.use("/api/messages", messagesRouter);
 app.use("/api/settings/rgpd", RGPDRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/legal/documents", legalRouter);
+app.use("/internal/events", internalEventsRouter);
 
 app.use((_req, res) => {
   res.status(404).json({
@@ -94,6 +102,10 @@ app.listen(env.port, async () => {
   } catch (error) {
     console.error("Erreur connexion MariaDB :", error);
   }
+});
+
+startWebSocketServer({
+  getUnprocessedCount: countUnprocessedMessages,
 });
 
 startRgpdCron();
