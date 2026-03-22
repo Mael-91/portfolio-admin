@@ -143,6 +143,9 @@ export function PortfolioImagesPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+
   /* ========================= */
   /* Load data */
   /* ========================= */
@@ -163,6 +166,50 @@ export function PortfolioImagesPage() {
   useEffect(() => {
     loadImages();
   }, []);
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [file]);
+
+  function handleFileSelect(nextFile: File | null) {
+  if (!nextFile) return;
+
+  if (!nextFile.type.startsWith("image/")) {
+    setErrorMessage("Veuillez sélectionner un fichier image valide.");
+    return;
+  }
+
+  setErrorMessage("");
+  setFile(nextFile);
+}
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    const droppedFile = e.dataTransfer.files?.[0] ?? null;
+    handleFileSelect(droppedFile);
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragOver(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragOver(false);
+  }
 
   /* ========================= */
   /* Helpers */
@@ -194,38 +241,63 @@ export function PortfolioImagesPage() {
   /* ========================= */
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  e.preventDefault();
 
-    setSavingForm(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+  setErrorMessage("");
+  setSuccessMessage("");
 
-    try {
-      if (selectedImage) {
-        await updatePortfolioImage(selectedImage.id, form);
-        setSuccessMessage("Photo mise à jour");
-      } else {
-        if (!file) throw new Error("Veuillez sélectionner une image");
-
-        const formData = new FormData();
-        formData.append("image", file);
-        formData.append("caption", form.caption);
-        formData.append("altText", form.altText);
-        formData.append("description", form.description);
-
-        await createPortfolioImage(formData);
-
-        setSuccessMessage("Photo ajoutée");
-      }
-
-      resetForm();
-      await loadImages();
-    } catch (err: any) {
-      setErrorMessage(err.message);
-    } finally {
-      setSavingForm(false);
-    }
+  if (!form.caption.trim()) {
+    setErrorMessage("Le champ caption est obligatoire.");
+    return;
   }
+
+  if (!form.altText.trim()) {
+    setErrorMessage("Le texte alternatif est obligatoire.");
+    return;
+  }
+
+  if (!form.description.trim()) {
+    setErrorMessage("La description est obligatoire.");
+    return;
+  }
+
+  if (!selectedImage && !file) {
+    setErrorMessage("Veuillez sélectionner une image.");
+    return;
+  }
+
+  setSavingForm(true);
+
+  try {
+    const payload = {
+      ...form,
+      altText: form.altText.trim() || form.caption.trim(),
+      caption: form.caption.trim(),
+      description: form.description.trim(),
+    };
+
+    if (selectedImage) {
+      await updatePortfolioImage(selectedImage.id, payload);
+      setSuccessMessage("Photo mise à jour");
+    } else {
+      const formData = new FormData();
+      formData.append("image", file as File);
+      formData.append("caption", payload.caption);
+      formData.append("altText", payload.altText);
+      formData.append("description", payload.description);
+
+      await createPortfolioImage(formData);
+      setSuccessMessage("Photo ajoutée");
+    }
+
+    resetForm();
+    await loadImages();
+  } catch (err: any) {
+    setErrorMessage(err.message || "Erreur lors de l'enregistrement");
+  } finally {
+    setSavingForm(false);
+  }
+}
 
   /* ========================= */
   /* Delete */
@@ -375,14 +447,81 @@ export function PortfolioImagesPage() {
         {/* FORM */}
         <div className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-3">
-            {!selectedImage && (
-              <input
-                type="file"
-                onChange={(e) =>
-                  setFile(e.target.files?.[0] ?? null)
-                }
-              />
-            )}
+            {!selectedImage ? (
+              <div className="space-y-3">
+                <label className="mb-1 block text-sm text-admin-text-soft">
+                  Image
+                </label>
+
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  className={`rounded-2xl border border-dashed p-4 text-center transition ${
+                    isDragOver
+                      ? "border-admin-accent bg-admin-accent/10"
+                      : "border-white/15 bg-white/[0.03]"
+                  }`}
+                >
+                  <input
+                    id="portfolio-image-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
+                  />
+
+                  <label
+                    htmlFor="portfolio-image-upload"
+                    className="flex cursor-pointer flex-col items-center gap-2"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-8 w-8 text-admin-text-soft"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="M12 16V4" />
+                      <path d="m7 9 5-5 5 5" />
+                      <path d="M4 20h16" />
+                    </svg>
+
+                    <div className="text-sm text-white">
+                      Glisse-dépose une image ici
+                    </div>
+
+                    <div className="text-xs text-admin-text-soft">
+                      ou clique pour sélectionner un fichier
+                    </div>
+                  </label>
+                </div>
+
+                {previewUrl ? (
+                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-xs text-admin-text-soft">
+                        Aperçu avant envoi
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => setFile(null)}
+                        className="cursor-pointer rounded-lg bg-red-500/10 px-2 py-1 text-xs text-red-400 transition hover:bg-red-500/20"
+                      >
+                        Retirer
+                      </button>
+                    </div>
+
+                    <img
+                      src={previewUrl}
+                      alt="Aperçu"
+                      className="w-full rounded-xl object-cover"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             <input
               value={form.caption}
@@ -390,6 +529,11 @@ export function PortfolioImagesPage() {
                 setForm({ ...form, caption: e.target.value })
               }
               placeholder="Caption"
+              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+                errorMessage && !form.caption.trim()
+                  ? "border-red-500"
+                  : "border-white/10 focus:border-white/20"
+              }`}
             />
 
             <input
@@ -397,7 +541,12 @@ export function PortfolioImagesPage() {
               onChange={(e) =>
                 setForm({ ...form, altText: e.target.value })
               }
-              placeholder="Alt"
+              placeholder="Texte alternatif"
+              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+                errorMessage && !form.altText.trim()
+                  ? "border-red-500"
+                  : "border-white/10 focus:border-white/20"
+              }`}
             />
 
             <textarea
@@ -406,6 +555,11 @@ export function PortfolioImagesPage() {
                 setForm({ ...form, description: e.target.value })
               }
               placeholder="Description"
+              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+                errorMessage && !form.description.trim()
+                  ? "border-red-500"
+                  : "border-white/10 focus:border-white/20"
+              }`}
             />
 
             <label>
