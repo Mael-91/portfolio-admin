@@ -256,11 +256,6 @@ export function PortfolioImagesPage() {
     return;
   }
 
-  if (!form.description.trim()) {
-    setErrorMessage("La description est obligatoire.");
-    return;
-  }
-
   if (!selectedImage && !file) {
     setErrorMessage("Veuillez sélectionner une image.");
     return;
@@ -274,6 +269,7 @@ export function PortfolioImagesPage() {
       altText: form.altText.trim() || form.caption.trim(),
       caption: form.caption.trim(),
       description: form.description.trim(),
+      isActive: form.isActive ?? true,
     };
 
     if (selectedImage) {
