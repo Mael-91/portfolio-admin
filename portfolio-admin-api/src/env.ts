@@ -42,4 +42,8 @@ export const env = {
 
   rgpdRetentionDays: Number(process.env.RGPD_RETENTION_DAYS || 180),
   rgpdPurgeCron: process.env.RGPD_PURGE_CRON || "0 3 * * *",
+
+  wsPort: Number(process.env.WS_PORT ?? (process.env.NODE_ENV === "production" ? 9860 : 9862)),
+  wsHost: process.env.WS_HOST ?? (process.env.NODE_ENV === "production" ? "127.0.0.1" : "0.0.0.0"),
+  internalEventsSecret: process.env.INTERNAL_EVENTS_SECRET ?? "",
 };
