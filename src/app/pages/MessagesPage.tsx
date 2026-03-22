@@ -8,8 +8,6 @@ import {
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
 
 const PAGE_SIZE = 10;
-//const ACTIVE_POLLING_INTERVAL_MS = 15000;
-//const BACKGROUND_POLLING_INTERVAL_MS = 30000;
 
 function getStatusLabel(status: ProcessingStatus): string {
   switch (status) {
