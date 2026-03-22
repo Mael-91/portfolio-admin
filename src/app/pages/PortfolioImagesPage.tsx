@@ -284,7 +284,7 @@ export function PortfolioImagesPage() {
       formData.append("image", file as File);
       formData.append("caption", payload.caption);
       formData.append("altText", payload.altText);
-      formData.append("description", payload.description);
+      formData.append("description", payload.description || "");
       formData.append("isActive", String(form.isActive));
 
       await createPortfolioImage(formData);
