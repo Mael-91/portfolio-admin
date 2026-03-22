@@ -8,6 +8,7 @@ import { MessageDetailPage } from "../pages/MessageDetailPage";
 import { RGPDPage } from "../pages/RGPDPage";
 import { LegalDocumentsPage } from "../pages/LegalDocumentsPage";
 import { UsersSettingsPage } from "../pages/UsersSettingsPage";
+import { PortfolioImagesPage } from "../pages/PortfolioImagesPage";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
       {
         path: "/settings/users",
         element: <UsersSettingsPage />,
+      },
+      {
+        path: "/portfolio-images",
+        element: <PortfolioImagesPage />,
       },
     ],
   },
