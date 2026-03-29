@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   fetchServicesContent,
   saveServicesContent,
@@ -7,7 +7,7 @@ import {
 } from "../services/servicesContent";
 import { LegalEditor } from "../components/editor/LegalEditor";
 import { useToast } from "../hooks/useToast";
-
+import { useAutoSave } from "../hooks/useAutoSave";
 
 type EditableCard = ServiceCard;
 
@@ -37,6 +37,7 @@ function Toggle({
 
 export function ServicesContentPage() {
   const { showToast } = useToast();
+
   const [activeTab, setActiveTab] = useState<ServiceType>("pro");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -47,56 +48,10 @@ export function ServicesContentPage() {
   const [cards, setCards] = useState<EditableCard[]>([]);
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
-  const [saveStatus, setSaveStatus] = useState<
-    "idle" | "dirty" | "saving" | "saved" | "error"
-  >("idle");
-
-  const hasInitializedRef = useRef(false);
-  const autosaveTimeoutRef = useRef<number | null>(null);
-  const lastSavedSnapshotRef = useRef("");
-  const isAutosavingRef = useRef(false);
-
-  async function load(serviceType: ServiceType) {
-    setLoading(true);
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    try {
-      const data = await fetchServicesContent(serviceType);
-      setIntroEnabled(data.section.introEnabled);
-      setIntroHtml(data.section.introHtml ?? "");
-      setCards(data.cards);
-      const snapshot = JSON.stringify({
-      activeTab: serviceType,
-      introEnabled: data.section.introEnabled,
-      introHtml: data.section.introHtml ?? "",
-      cards: data.cards.map((card: ServiceCard) => ({
-        id: card.id,
-        title: card.title,
-        bodyEnabled: card.bodyEnabled,
-        bodyHtml: card.bodyHtml,
-        bulletsEnabled: card.bulletsEnabled,
-        priceEnabled: card.priceEnabled,
-        priceLabel: card.priceLabel,
-        bullets: card.bullets,
-      })),
-    });
-
-    lastSavedSnapshotRef.current = snapshot;
-    hasInitializedRef.current = true;
-    setSaveStatus("idle");
-    } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur chargement prestations");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function buildSnapshot() {
-    return JSON.stringify({
-      activeTab,
+  const autoSavePayload = useMemo(
+    () => ({
+      serviceType: activeTab,
       introEnabled,
       introHtml,
       cards: cards.map((card) => ({
@@ -109,29 +64,50 @@ export function ServicesContentPage() {
         priceLabel: card.priceLabel,
         bullets: card.bullets,
       })),
-    });
-  }
+    }),
+    [activeTab, introEnabled, introHtml, cards]
+  );
 
-  useEffect(() => {
-    load(activeTab);
-  }, [activeTab]);
+  const { saveNow, markAsSaved } = useAutoSave({
+    value: autoSavePayload,
+    delay: 1000,
+    enabled: cards.length === 3,
+    onSave: async (payload) => {
+      try {
+        setErrorMessage("");
+        await saveServicesContent(payload);
+      } catch (error: any) {
+        const message =
+          error?.message || "Impossible d’enregistrer les prestations.";
 
-  function updateCard(cardId: number, updater: (card: EditableCard) => EditableCard) {
-    setCards((prev) =>
-      prev.map((card) => (card.id === cardId ? updater(card) : card))
-    );
-  }
+        setErrorMessage(message);
 
-  async function handleSave(options?: { silent?: boolean }) {
-    setSaving(true);
+        showToast({
+          title: "Erreur d’enregistrement",
+          description: message,
+          variant: "error",
+        });
+
+        throw error;
+      }
+    },
+  });
+
+  async function load(serviceType: ServiceType) {
+    setLoading(true);
     setErrorMessage("");
 
     try {
-      const payload = {
-        serviceType: activeTab,
-        introEnabled,
-        introHtml,
-        cards: cards.map((card) => ({
+      const data = await fetchServicesContent(serviceType);
+      setIntroEnabled(data.section.introEnabled);
+      setIntroHtml(data.section.introHtml ?? "");
+      setCards(data.cards);
+
+      markAsSaved({
+        serviceType,
+        introEnabled: data.section.introEnabled,
+        introHtml: data.section.introHtml ?? "",
+        cards: data.cards.map((card: ServiceCard) => ({
           id: card.id,
           title: card.title,
           bodyEnabled: card.bodyEnabled,
@@ -141,82 +117,55 @@ export function ServicesContentPage() {
           priceLabel: card.priceLabel,
           bullets: card.bullets,
         })),
-      };
-
-      await saveServicesContent(payload);
-
-      const snapshot = buildSnapshot();
-      lastSavedSnapshotRef.current = snapshot;
-
-      // ✅ Toast uniquement si manuel
-      if (!options?.silent) {
-        showToast({
-          title: "Prestations enregistrées",
-          description:
-            activeTab === "pro"
-              ? "Les prestations professionnelles ont été mises à jour."
-              : "Les prestations particuliers ont été mises à jour.",
-          variant: "success",
-        });
-      }
-    } catch (error: any) {
-      const message = error?.message || "Erreur sauvegarde prestations";
-
-      setErrorMessage(message);
-
-      // ✅ Toast toujours pour erreur
-      showToast({
-        title: "Erreur d’enregistrement",
-        description: message,
-        variant: "error",
       });
+    } catch (error: any) {
+      setErrorMessage(error?.message || "Erreur chargement prestations");
     } finally {
-      setSaving(false);
-      isAutosavingRef.current = false;
+      setLoading(false);
     }
   }
 
   useEffect(() => {
-    if (!hasInitializedRef.current) {
-      return;
+    load(activeTab);
+  }, [activeTab]);
+
+  function updateCard(
+    cardId: number,
+    updater: (card: EditableCard) => EditableCard
+  ) {
+    setCards((prev) =>
+      prev.map((card) => (card.id === cardId ? updater(card) : card))
+    );
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setErrorMessage("");
+
+    try {
+      await saveNow();
+
+      showToast({
+        title: "Prestations enregistrées",
+        description:
+          activeTab === "pro"
+            ? "Les prestations professionnelles ont été mises à jour."
+            : "Les prestations particuliers ont été mises à jour.",
+        variant: "success",
+      });
+
+      await load(activeTab);
+    } catch {
+      // géré dans le hook
+    } finally {
+      setSaving(false);
     }
-
-    const snapshot = buildSnapshot();
-    const hasChanges = snapshot !== lastSavedSnapshotRef.current;
-
-    if (!hasChanges) {
-      return;
-    }
-
-    setSaveStatus("dirty");
-
-    if (autosaveTimeoutRef.current) {
-      window.clearTimeout(autosaveTimeoutRef.current);
-    }
-
-    autosaveTimeoutRef.current = window.setTimeout(() => {
-      if (isAutosavingRef.current) {
-        return;
-      }
-
-      isAutosavingRef.current = true;
-      setSaveStatus("saving");
-      handleSave({ silent: true });
-    }, 1200);
-
-    return () => {
-      if (autosaveTimeoutRef.current) {
-        window.clearTimeout(autosaveTimeoutRef.current);
-      }
-    };
-  }, [activeTab, introEnabled, introHtml, cards]);
+  }
 
   return (
     <div className="space-y-6 text-white">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Prestations
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Prestations</h1>
         <p className="mt-1 text-sm text-admin-text-soft">
           Configure les contenus des onglets Professionnels et Particuliers.
         </p>
@@ -324,7 +273,9 @@ export function ServicesContentPage() {
 
                 <div
                   className={`overflow-hidden transition-all duration-300 ${
-                    card.bodyEnabled ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+                    card.bodyEnabled
+                      ? "max-h-[1000px] opacity-100"
+                      : "max-h-0 opacity-0 pointer-events-none"
                   }`}
                 >
                   <div className="pt-2">
@@ -404,7 +355,9 @@ export function ServicesContentPage() {
 
                 <div
                   className={`overflow-hidden transition-all duration-300 ${
-                    card.priceEnabled ? "max-h-40 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+                    card.priceEnabled
+                      ? "max-h-40 opacity-100"
+                      : "max-h-0 opacity-0 pointer-events-none"
                   }`}
                 >
                   <div className="pt-2">
@@ -419,7 +372,7 @@ export function ServicesContentPage() {
                           priceLabel: e.target.value,
                         }))
                       }
-                      placeholder='Ex: À partir de 250€ / session'
+                      placeholder="Ex: À partir de 250€ / session"
                       className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
                     />
                   </div>
@@ -431,12 +384,12 @@ export function ServicesContentPage() {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={() => handleSave({ silent: false })}
+              onClick={handleSave}
               disabled={saving}
               className={`rounded-2xl px-5 py-2.5 text-sm font-medium transition ${
                 saving
-                  ? "bg-white/10 text-white/60 cursor-not-allowed"
-                  : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98] animate-pulse"
+                  ? "cursor-not-allowed bg-white/10 text-white/60"
+                  : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
               }`}
             >
               {saving ? "Enregistrement..." : "Enregistrer les prestations"}
