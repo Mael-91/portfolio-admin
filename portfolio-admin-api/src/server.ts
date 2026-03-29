@@ -17,6 +17,7 @@ import { countUnprocessedMessages } from "./messages/messages.repository";
 import { startWebSocketServer } from "./websocket/ws-server";
 import { portfolioRouter } from "./portfolio/portfolio.routes";
 import path from "node:path";
+import { servicesContentRouter } from "./services-content/services.routes";
 
 const app = express();
 
@@ -89,6 +90,7 @@ app.use("/api/legal/documents", legalRouter);
 app.use("/internal/events", internalEventsRouter);
 app.use("/api/portfolio-images", portfolioRouter);
 app.use("/uploads/portfolio-images",express.static(path.resolve(process.cwd(), "storage", "portfolio-images")));
+app.use("/api/services-content", servicesContentRouter);
 
 app.use((_req, res) => {
   res.status(404).json({
