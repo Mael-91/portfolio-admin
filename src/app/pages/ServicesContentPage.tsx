@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   fetchServicesContent,
   saveServicesContent,
@@ -49,6 +49,15 @@ export function ServicesContentPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "dirty" | "saving" | "saved" | "error"
+  >("idle");
+
+  const hasInitializedRef = useRef(false);
+  const autosaveTimeoutRef = useRef<number | null>(null);
+  const lastSavedSnapshotRef = useRef("");
+  const isAutosavingRef = useRef(false);
+
   async function load(serviceType: ServiceType) {
     setLoading(true);
     setErrorMessage("");
@@ -59,11 +68,48 @@ export function ServicesContentPage() {
       setIntroEnabled(data.section.introEnabled);
       setIntroHtml(data.section.introHtml ?? "");
       setCards(data.cards);
+      const snapshot = JSON.stringify({
+      activeTab: serviceType,
+      introEnabled: data.section.introEnabled,
+      introHtml: data.section.introHtml ?? "",
+      cards: data.cards.map((card: ServiceCard) => ({
+        id: card.id,
+        title: card.title,
+        bodyEnabled: card.bodyEnabled,
+        bodyHtml: card.bodyHtml,
+        bulletsEnabled: card.bulletsEnabled,
+        priceEnabled: card.priceEnabled,
+        priceLabel: card.priceLabel,
+        bullets: card.bullets,
+      })),
+    });
+
+    lastSavedSnapshotRef.current = snapshot;
+    hasInitializedRef.current = true;
+    setSaveStatus("idle");
     } catch (error: any) {
       setErrorMessage(error?.message || "Erreur chargement prestations");
     } finally {
       setLoading(false);
     }
+  }
+
+  function buildSnapshot() {
+    return JSON.stringify({
+      activeTab,
+      introEnabled,
+      introHtml,
+      cards: cards.map((card) => ({
+        id: card.id,
+        title: card.title,
+        bodyEnabled: card.bodyEnabled,
+        bodyHtml: card.bodyHtml,
+        bulletsEnabled: card.bulletsEnabled,
+        priceEnabled: card.priceEnabled,
+        priceLabel: card.priceLabel,
+        bullets: card.bullets,
+      })),
+    });
   }
 
   useEffect(() => {
@@ -76,13 +122,16 @@ export function ServicesContentPage() {
     );
   }
 
-  async function handleSave() {
+  async function handleSave(options?: { silent?: boolean }) {
     setSaving(true);
     setErrorMessage("");
-    setSuccessMessage("");
+
+    if (!options?.silent) {
+      setSaveStatus("saving");
+    }
 
     try {
-      await saveServicesContent({
+      const payload = {
         serviceType: activeTab,
         introEnabled,
         introHtml,
@@ -96,29 +145,74 @@ export function ServicesContentPage() {
           priceLabel: card.priceLabel,
           bullets: card.bullets,
         })),
-      });
+      };
 
-      showToast({
-        title: "Prestations enregistrées",
-        description:
-          activeTab === "pro"
-            ? "Les prestations professionnelles ont été mises à jour."
-            : "Les prestations particuliers ont été mises à jour.",
-        variant: "success",
-      });
+      await saveServicesContent(payload);
 
-      await load(activeTab);
+      const snapshot = buildSnapshot();
+      lastSavedSnapshotRef.current = snapshot;
+      setSaveStatus("saved");
+
+      if (!options?.silent) {
+        showToast({
+          title: "Prestations enregistrées",
+          description:
+            activeTab === "pro"
+              ? "Les prestations professionnelles ont été mises à jour."
+              : "Les prestations particuliers ont été mises à jour.",
+          variant: "success",
+        });
+      }
     } catch (error: any) {
+      const message = error?.message || "Erreur sauvegarde prestations";
+      setErrorMessage(message);
+      setSaveStatus("error");
+
       showToast({
         title: "Erreur d’enregistrement",
-        description:
-          error?.message || "Impossible d’enregistrer les prestations.",
+        description: message,
         variant: "error",
       });
     } finally {
       setSaving(false);
+      isAutosavingRef.current = false;
     }
   }
+
+  useEffect(() => {
+    if (!hasInitializedRef.current) {
+      return;
+    }
+
+    const snapshot = buildSnapshot();
+    const hasChanges = snapshot !== lastSavedSnapshotRef.current;
+
+    if (!hasChanges) {
+      return;
+    }
+
+    setSaveStatus("dirty");
+
+    if (autosaveTimeoutRef.current) {
+      window.clearTimeout(autosaveTimeoutRef.current);
+    }
+
+    autosaveTimeoutRef.current = window.setTimeout(() => {
+      if (isAutosavingRef.current) {
+        return;
+      }
+
+      isAutosavingRef.current = true;
+      setSaveStatus("saving");
+      handleSave({ silent: true });
+    }, 1200);
+
+    return () => {
+      if (autosaveTimeoutRef.current) {
+        window.clearTimeout(autosaveTimeoutRef.current);
+      }
+    };
+  }, [activeTab, introEnabled, introHtml, cards]);
 
   return (
     <div className="space-y-6 text-white">
@@ -157,6 +251,13 @@ export function ServicesContentPage() {
         </button>
       </div>
 
+      <div className="text-xs text-admin-text-soft">
+        {saveStatus === "dirty" && "Modifications non enregistrées"}
+        {saveStatus === "saving" && "Enregistrement..."}
+        {saveStatus === "saved" && "Enregistré"}
+        {saveStatus === "error" && "Erreur d’enregistrement"}
+      </div>
+
       {errorMessage ? (
         <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {errorMessage}
@@ -175,7 +276,17 @@ export function ServicesContentPage() {
               <Toggle checked={introEnabled} onChange={setIntroEnabled} />
             </div>
 
-            <LegalEditor content={introHtml} onChange={setIntroHtml} />
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                introEnabled
+                  ? "max-h-[1000px] opacity-100"
+                  : "max-h-0 opacity-0 pointer-events-none"
+              }`}
+            >
+              <div className="pt-2">
+                <LegalEditor content={introHtml} onChange={setIntroHtml} />
+              </div>
+            </div>
           </section>
 
           <div className="space-y-6">
@@ -330,7 +441,7 @@ export function ServicesContentPage() {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => handleSave({ silent: false })}
               disabled={saving}
               className={`rounded-2xl px-5 py-2.5 text-sm font-medium transition ${
                 saving
