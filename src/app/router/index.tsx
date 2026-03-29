@@ -9,6 +9,7 @@ import { RGPDPage } from "../pages/RGPDPage";
 import { LegalDocumentsPage } from "../pages/LegalDocumentsPage";
 import { UsersSettingsPage } from "../pages/UsersSettingsPage";
 import { PortfolioImagesPage } from "../pages/PortfolioImagesPage";
+import { ServicesContentPage } from "../pages/ServicesContentPage";
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +52,10 @@ export const router = createBrowserRouter([
         path: "/portfolio-images",
         element: <PortfolioImagesPage />,
       },
+      {
+        path: "/prestations",
+        element: <ServicesContentPage />,
+      }
     ],
   },
 ]);
