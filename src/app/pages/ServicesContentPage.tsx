@@ -126,10 +126,6 @@ export function ServicesContentPage() {
     setSaving(true);
     setErrorMessage("");
 
-    if (!options?.silent) {
-      setSaveStatus("saving");
-    }
-
     try {
       const payload = {
         serviceType: activeTab,
@@ -151,8 +147,8 @@ export function ServicesContentPage() {
 
       const snapshot = buildSnapshot();
       lastSavedSnapshotRef.current = snapshot;
-      setSaveStatus("saved");
 
+      // ✅ Toast uniquement si manuel
       if (!options?.silent) {
         showToast({
           title: "Prestations enregistrées",
@@ -165,9 +161,10 @@ export function ServicesContentPage() {
       }
     } catch (error: any) {
       const message = error?.message || "Erreur sauvegarde prestations";
-      setErrorMessage(message);
-      setSaveStatus("error");
 
+      setErrorMessage(message);
+
+      // ✅ Toast toujours pour erreur
       showToast({
         title: "Erreur d’enregistrement",
         description: message,
@@ -249,13 +246,6 @@ export function ServicesContentPage() {
         >
           Particuliers
         </button>
-      </div>
-
-      <div className="text-xs text-admin-text-soft">
-        {saveStatus === "dirty" && "Modifications non enregistrées"}
-        {saveStatus === "saving" && "Enregistrement..."}
-        {saveStatus === "saved" && "Enregistré"}
-        {saveStatus === "error" && "Erreur d’enregistrement"}
       </div>
 
       {errorMessage ? (
@@ -446,7 +436,7 @@ export function ServicesContentPage() {
               className={`rounded-2xl px-5 py-2.5 text-sm font-medium transition ${
                 saving
                   ? "bg-white/10 text-white/60 cursor-not-allowed"
-                  : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
+                  : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98] animate-pulse"
               }`}
             >
               {saving ? "Enregistrement..." : "Enregistrer les prestations"}
