@@ -15,6 +15,8 @@ import { usersRouter } from "./users/users.routes";
 import { internalEventsRouter } from "./websocket/internal-events.routes";
 import { countUnprocessedMessages } from "./messages/messages.repository";
 import { startWebSocketServer } from "./websocket/ws-server";
+import { portfolioRouter } from "./portfolio/portfolio.routes";
+import path from "node:path";
 
 const app = express();
 
@@ -85,6 +87,8 @@ app.use("/api/settings/rgpd", RGPDRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/legal/documents", legalRouter);
 app.use("/internal/events", internalEventsRouter);
+app.use("/api/portfolio-images", portfolioRouter);
+app.use("/uploads/portfolio-images",express.static(path.resolve(process.cwd(), "storage", "portfolio-images")));
 
 app.use((_req, res) => {
   res.status(404).json({

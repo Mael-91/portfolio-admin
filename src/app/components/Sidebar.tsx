@@ -36,6 +36,23 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    label: "Portfolio",
+    href: "/portfolio-images",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <rect x="3" y="5" width="18" height="14" rx="2.5" />
+        <path d="m7 14 3-3 3 3 4-4 2 2" />
+        <circle cx="8.5" cy="9" r="1.2" />
+      </svg>
+    ),
+  },
+  {
     label: "Documents légaux",
     href: "/legal",
     icon: (
