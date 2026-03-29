@@ -6,6 +6,7 @@ import {
   type ServiceType,
 } from "../services/servicesContent";
 import { LegalEditor } from "../components/editor/LegalEditor";
+import { useToast } from "../hooks/useToast";
 
 
 type EditableCard = ServiceCard;
@@ -35,6 +36,7 @@ function Toggle({
 }
 
 export function ServicesContentPage() {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<ServiceType>("pro");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -96,10 +98,23 @@ export function ServicesContentPage() {
         })),
       });
 
-      setSuccessMessage("Prestations enregistrées");
+      showToast({
+        title: "Prestations enregistrées",
+        description:
+          activeTab === "pro"
+            ? "Les prestations professionnelles ont été mises à jour."
+            : "Les prestations particuliers ont été mises à jour.",
+        variant: "success",
+      });
+
       await load(activeTab);
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur sauvegarde prestations");
+      showToast({
+        title: "Erreur d’enregistrement",
+        description:
+          error?.message || "Impossible d’enregistrer les prestations.",
+        variant: "error",
+      });
     } finally {
       setSaving(false);
     }
@@ -143,14 +158,8 @@ export function ServicesContentPage() {
       </div>
 
       {errorMessage ? (
-        <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {errorMessage}
-        </div>
-      ) : null}
-
-      {successMessage ? (
-        <div className="rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-400">
-          {successMessage}
         </div>
       ) : null}
 
@@ -212,15 +221,23 @@ export function ServicesContentPage() {
                   />
                 </div>
 
-                <LegalEditor
-                  content={card.bodyHtml}
-                  onChange={(value) =>
-                    updateCard(card.id, (current) => ({
-                      ...current,
-                      bodyHtml: value,
-                    }))
-                  }
-                />
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    card.bodyEnabled ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <div className="pt-2">
+                    <LegalEditor
+                      content={card.bodyHtml}
+                      onChange={(value) =>
+                        updateCard(card.id, (current) => ({
+                          ...current,
+                          bodyHtml: value,
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-admin-text-soft">
@@ -284,21 +301,27 @@ export function ServicesContentPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="mb-1 block text-sm text-admin-text-soft">
-                    Libellé du prix
-                  </label>
-                  <input
-                    value={card.priceLabel}
-                    onChange={(e) =>
-                      updateCard(card.id, (current) => ({
-                        ...current,
-                        priceLabel: e.target.value,
-                      }))
-                    }
-                    placeholder='Ex: À partir de 250€ / session'
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
-                  />
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    card.priceEnabled ? "max-h-40 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <div className="pt-2">
+                    <label className="mb-1 block text-sm text-admin-text-soft">
+                      Libellé du prix
+                    </label>
+                    <input
+                      value={card.priceLabel}
+                      onChange={(e) =>
+                        updateCard(card.id, (current) => ({
+                          ...current,
+                          priceLabel: e.target.value,
+                        }))
+                      }
+                      placeholder='Ex: À partir de 250€ / session'
+                      className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                    />
+                  </div>
                 </div>
               </section>
             ))}
