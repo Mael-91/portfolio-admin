@@ -3,9 +3,11 @@ import { requireAdminAuth } from "../auth/auth.middleware";
 import {
   getAppSettings,
   updateAppSettings,
-  purgeOldMessages,
   getRgpdStats,
 } from "./settings.service";
+import { countUnprocessedMessages } from "../messages/messages.repository";
+import { broadcastRgpdPurge } from "../websocket/ws-server";
+import { runRgpdPurgeNow } from "./settings.service";
 
 export const RGPDRouter = Router();
 
@@ -70,9 +72,15 @@ RGPDRouter.patch("/", async (req, res) => {
 
 // POST purge
 RGPDRouter.post("/purge-now", async (_req, res) => {
-  const result = await purgeOldMessages();
+  const result = await runRgpdPurgeNow();
+  const unprocessedCount = await countUnprocessedMessages();
 
-  res.json({
+  broadcastRgpdPurge({
+    unprocessedCount,
+    deletedCount: result.deleted,
+  });
+
+  return res.status(200).json({
     success: true,
     ...result,
   });

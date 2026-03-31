@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { env } from "../../env";
+import { useMessageNotifications } from "../hooks/useMessageNotifications";
 
 export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -15,6 +16,8 @@ export function RGPDPage() {
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const { refreshSignal } = useMessageNotifications();
 
   async function loadAll() {
     try {
@@ -138,6 +141,12 @@ export function RGPDPage() {
 
     return () => clearTimeout(timeout);
   }, [retentionDays, autoPurgeEnabled, purgeHour]);
+
+  useEffect(() => {
+    if (refreshSignal === 0) return;
+
+    loadAll();
+  }, [refreshSignal]);
 
   if (loading) {
     return <div className="text-sm text-admin-text-soft">Chargement...</div>;

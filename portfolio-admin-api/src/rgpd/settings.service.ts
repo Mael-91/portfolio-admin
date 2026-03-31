@@ -112,6 +112,23 @@ export async function purgeOldMessages() {
   return purgeExpiredMessages(settings.retentionDays);
 }
 
+export async function runRgpdPurgeNow() {
+  const settings = await getAppSettings();
+
+  const result = await purgeOldMessages();
+
+  const now = new Date();
+  const sqlDate = now.toISOString().slice(0, 19).replace("T", " ");
+
+  await updateRgpdLastRunAt(sqlDate);
+
+  return {
+    deleted: result.deleted,
+    retentionDays: settings.retentionDays,
+    executedAt: sqlDate,
+  };
+}
+
 export async function runScheduledRgpdPurgeIfDue() {
   const settings = await getAppSettings();
 
@@ -129,14 +146,13 @@ export async function runScheduledRgpdPurgeIfDue() {
     return { ran: false, reason: "already_ran_today" as const };
   }
 
-  const result = await purgeExpiredMessages(settings.retentionDays);
-
-  await updateRgpdLastRunAt(toSqlDateTime(now));
+  const result = await runRgpdPurgeNow();
 
   return {
     ran: true,
     reason: "executed" as const,
     deleted: result.deleted,
+    executedAt: result.executedAt,
   };
 }
 

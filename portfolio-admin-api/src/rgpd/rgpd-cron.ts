@@ -1,4 +1,6 @@
 import { runScheduledRgpdPurgeIfDue } from "./settings.service";
+import { countUnprocessedMessages } from "../messages/messages.repository";
+import { broadcastRgpdPurge } from "../websocket/ws-server";
 
 let rgpdInterval: NodeJS.Timeout | null = null;
 let rgpdCronStarted = false;
@@ -15,6 +17,13 @@ export async function startRgpdCron() {
       const result = await runScheduledRgpdPurgeIfDue();
 
       if (result.ran) {
+        const unprocessedCount = await countUnprocessedMessages();
+
+        broadcastRgpdPurge({
+          unprocessedCount,
+          deletedCount: result.deleted,
+        });
+
         console.log(
           `[RGPD] purge exécutée : ${result.deleted} message(s) supprimé(s)`
         );
