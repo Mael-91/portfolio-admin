@@ -490,14 +490,9 @@ export function PortfolioImagesPage() {
                       <span className="text-xs text-admin-text-soft">
                         Aperçu avant envoi
                       </span>
-
-                      <button
-                        type="button"
-                        onClick={() => setFile(null)}
-                        className="cursor-pointer rounded-lg bg-red-500/10 px-2 py-1 text-xs text-red-400 transition hover:bg-red-500/20"
-                      >
+                      <Button variant="dangerSoft" size="sm" type="button" onClick={() => setFile(null)}>
                         Retirer
-                      </button>
+                      </Button>
                     </div>
 
                     <img
@@ -571,23 +566,22 @@ export function PortfolioImagesPage() {
               </button>
             </label>
 
-            <button
-              type="submit"
+            <Button variant="primary" size="md" type="submit"
               disabled={savingForm}
-              className={`w-full rounded-2xl px-4 py-2.5 text-sm font-medium transition 
+              className={`w-full 
                 ${
                   savingForm
                     ? "bg-white/10 text-white/60 cursor-not-allowed"
                     : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
                 }
               `}
-            >
-              {savingForm
+              >
+                {savingForm
                 ? "Enregistrement..."
                 : selectedImage
                 ? "Enregistrer les modifications"
                 : "Ajouter la photo"}
-            </button>
+              </Button>
           </form>
         </div>
       </div>
