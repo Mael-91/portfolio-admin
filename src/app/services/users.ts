@@ -40,7 +40,7 @@ export async function createAdminUser(payload: {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Erreur création utilisateur");
+    throw new Error(extractApiErrorMessage(data, "Erreur création utilisateur"));
   }
 
   return data;
@@ -133,4 +133,19 @@ export async function updateAdminUserActiveStatus(
   }
 
   return data;
+}
+
+function extractApiErrorMessage(data: any, fallback: string) {
+  if (typeof data?.message === "string" && data.message.trim()) {
+    return data.message;
+  }
+
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    return data.errors
+      .map((error: any) => error?.message)
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  return fallback;
 }

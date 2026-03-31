@@ -51,7 +51,13 @@ usersRouter.post("/", async (req, res) => {
       user,
     });
   } catch (error: any) {
+    console.error("RAW USER ERROR:", error);
     if (error?.name === "ZodError") {
+      console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
       return res.status(400).json({
         success: false,
         errors: error.errors,
@@ -59,6 +65,11 @@ usersRouter.post("/", async (req, res) => {
     }
 
     if (isAppError(error)) {
+      console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
       return res.status(error.statusCode).json({
         success: false,
         code: error.code,
@@ -67,7 +78,11 @@ usersRouter.post("/", async (req, res) => {
     }
 
     console.error("Erreur création utilisateur :", error);
-
+    console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
     return res.status(500).json({
       success: false,
       message: "Erreur serveur",
@@ -100,7 +115,13 @@ usersRouter.patch("/:id", async (req, res) => {
       user,
     });
   } catch (error: any) {
+    console.error("RAW USER ERROR:", error);
     if (error?.name === "ZodError") {
+      console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
       return res.status(400).json({
         success: false,
         errors: error.errors,
@@ -108,6 +129,11 @@ usersRouter.patch("/:id", async (req, res) => {
     }
 
     if (isAppError(error)) {
+      console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
       return res.status(error.statusCode).json({
         success: false,
         code: error.code,
@@ -116,7 +142,11 @@ usersRouter.patch("/:id", async (req, res) => {
     }
 
     console.error("Erreur update utilisateur :", error);
-
+    console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
     return res.status(500).json({
       success: false,
       message: "Erreur serveur",
@@ -147,7 +177,13 @@ usersRouter.patch("/:id/password", async (req, res) => {
       user,
     });
   } catch (error: any) {
+    console.error("RAW USER ERROR:", error);
     if (error?.name === "ZodError") {
+      console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
       return res.status(400).json({
         success: false,
         errors: error.errors,
@@ -155,6 +191,11 @@ usersRouter.patch("/:id/password", async (req, res) => {
     }
 
     if (isAppError(error)) {
+      console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
       return res.status(error.statusCode).json({
         success: false,
         code: error.code,
@@ -163,7 +204,11 @@ usersRouter.patch("/:id/password", async (req, res) => {
     }
 
     console.error("Erreur reset password utilisateur :", error);
-
+    console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
     return res.status(500).json({
       success: false,
       message: "Erreur serveur",
@@ -204,7 +249,13 @@ usersRouter.patch("/:id/active", async (req, res) => {
       user,
     });
   } catch (error: any) {
+    console.error("RAW USER ERROR:", error);
     if (error?.name === "ZodError") {
+      console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
       return res.status(400).json({
         success: false,
         errors: error.errors,
@@ -212,6 +263,11 @@ usersRouter.patch("/:id/active", async (req, res) => {
     }
 
     if (isAppError(error)) {
+      console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
       return res.status(error.statusCode).json({
         success: false,
         code: error.code,
@@ -220,7 +276,11 @@ usersRouter.patch("/:id/active", async (req, res) => {
     }
 
     console.error("Erreur activation utilisateur :", error);
-
+    console.log("Sending app error response", {
+        statusCode: error.statusCode,
+        code: error.code,
+        message: error.message,
+      });
     return res.status(500).json({
       success: false,
       message: "Erreur serveur",
