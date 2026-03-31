@@ -335,7 +335,7 @@ export function MessageDetailPage() {
                         });
                       }
                     }}
-                    title="Copier" className={`relative flex items-center justify-centerh-8 w-8rounded-lgbordertransition-all duration-200active:scale-90 ${copiedField === "email" ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/[0.03] border-white/10 text-admin-text-soft hover:bg-white/[0.08] hover:text-white"}`}
+                    title="Copier" className={`relative flex items-center justify-centerh-8 w-8 rounded-lg border transition-all duration-200 active:scale-90 cursor-pointer ${copiedField === "email" ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/[0.03] border-white/10 text-admin-text-soft hover:bg-white/[0.08] hover:text-white"}`}
                   >
                     {/* COPY ICON */}
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-0 scale-75" : "opacity-100 scale-100" }`}>
@@ -446,7 +446,7 @@ export function MessageDetailPage() {
                         });
                       }
                     }}
-                    title="Copier" className={`relative flex items-center justify-centerh-8 w-8rounded-lgbordertransition-all duration-200active:scale-90 ${copiedField === "messageText" ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/[0.03] border-white/10 text-admin-text-soft hover:bg-white/[0.08] hover:text-white"}`}
+                    title="Copier" className={`relative flex items-center justify-centerh-8 w-8 rounded-lg border transition-all duration-200 active:scale-90 cursor-pointer ${copiedField === "messageText" ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/[0.03] border-white/10 text-admin-text-soft hover:bg-white/[0.08] hover:text-white"}`}
                   >
                     {/* COPY ICON */}
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`h-4 w-4 transition-all duration-200 ${copiedField === "messageText" ? "opacity-0 scale-75" : "opacity-100 scale-100" }`}>

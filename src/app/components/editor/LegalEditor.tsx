@@ -46,6 +46,7 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
           "outline-none",
           "max-w-none",
           "focus:outline-none",
+          "font-normal",
         ].join(" "),
       },
     },
@@ -97,7 +98,7 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
 
             .ProseMirror strong,
             .ProseMirror b {
-                font-weight: 700 !important;
+                font-weight: 600 !important;
                 color: #ffffff;
             }
 

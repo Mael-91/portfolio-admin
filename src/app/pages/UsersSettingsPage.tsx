@@ -9,6 +9,7 @@ import {
   type AdminUser,
 } from "../services/users";
 import { DeleteUserConfirmModal } from "../components/users/DeleteUserConfirmModal";
+import { Button } from "../components/ui/Button";
 
 type FormMode = "create" | "edit";
 
@@ -219,13 +220,9 @@ export function UsersSettingsPage() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleEditUser(user)}
-                      className="rounded-xl bg-white/[0.06] px-3 py-2 text-sm text-white transition hover:bg-white/[0.1]"
-                    >
+                    <Button variant="primary" size="md" onClick={() => handleEditUser(user)}>
                       Modifier
-                    </button>
+                    </Button>
 
                     <button
                       type="button"
