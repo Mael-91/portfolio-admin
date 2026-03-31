@@ -220,7 +220,7 @@ export function UsersSettingsPage() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Button variant="primary" size="md" onClick={() => handleEditUser(user)}>
+                    <Button variant="secondary" size="md" onClick={() => handleEditUser(user)}>
                       Modifier
                     </Button>
 
