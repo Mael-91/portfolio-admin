@@ -9,7 +9,6 @@ import {
   resetAdminUserPassword,
   setAdminUserActiveStatus,
 } from "./users.service";
-import { isAppError } from "../common/app-error";
 import { handleRouteError } from "../common/handle-route-error";
 
 export const usersRouter = Router();
@@ -61,8 +60,8 @@ usersRouter.patch("/:id", async (req, res) => {
 
     const bodySchema = z.object({
       email: z.string().trim().email(),
-      firstName: z.string().trim().min(1).max(100),
-      lastName: z.string().trim().min(1).max(100),
+      firstName: z.string().trim().min(1, "Le prénom est requis").max(100),
+      lastName: z.string().trim().min(1, "Le nom de famille est requis").max(100),
     });
 
     const params = paramsSchema.parse(req.params);
