@@ -226,7 +226,7 @@ export function UsersSettingsPage() {
                     <Button variant="secondary" size="md" onClick={() => handleToggleActive(user)}>
                       {user.isActive ? "Désactiver" : "Activer"}
                     </Button>
-                    <Button variant="danger" size="md" onClick={() => setDeleteTarget(user)}>
+                    <Button variant="dangerSoft" size="md" onClick={() => setDeleteTarget(user)}>
                       Supprimer
                     </Button>
                   </div>
