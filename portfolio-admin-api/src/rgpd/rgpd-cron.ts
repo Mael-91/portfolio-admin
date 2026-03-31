@@ -12,7 +12,6 @@ export async function startRgpdCron() {
   }
 
   rgpdCronStarted = true;
-  console.log("[RGPD] scheduler démarré");
 
   const tick = async () => {
     try {
