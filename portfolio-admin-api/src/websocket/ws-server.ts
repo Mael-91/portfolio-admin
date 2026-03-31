@@ -104,4 +104,6 @@ export function broadcastRgpdPurge(payload: {
   for (const client of clients) {
     safeSend(client, message);
   }
+
+  console.log("[WS] RGPD PURGE BROADCAST", payload);
 }

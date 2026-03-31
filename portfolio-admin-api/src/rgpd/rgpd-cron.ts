@@ -7,10 +7,12 @@ let rgpdCronStarted = false;
 
 export async function startRgpdCron() {
   if (rgpdCronStarted) {
+    console.log("[RGPD] cron déjà démarré, skip");
     return;
   }
 
   rgpdCronStarted = true;
+  console.log("[RGPD] scheduler démarré");
 
   const tick = async () => {
     try {
@@ -40,4 +42,5 @@ export async function startRgpdCron() {
   }, 60_000);
 
   console.log("[RGPD] scheduler démarré");
+  console.log("[RGPD] startRgpdCron appelé");
 }
