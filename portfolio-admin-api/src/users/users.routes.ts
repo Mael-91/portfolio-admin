@@ -36,10 +36,10 @@ usersRouter.get("/", async (_req, res) => {
 usersRouter.post("/", async (req, res) => {
   try {
     const schema = z.object({
-      email: z.string().trim().email(),
-      firstName: z.string().trim().min(1).max(100),
-      lastName: z.string().trim().min(1).max(100),
-      password: z.string().min(8).max(100),
+      email: z.string().trim().email("L'email doit être valide"),
+      firstName: z.string().trim().min(1, "Le prénom est requis").max(100),
+      lastName: z.string().trim().min(1, "Le nom de famille est requis").max(100),
+      password: z.string().min(1, "Le mot de passe est requis").max(100),
     });
 
     const body = schema.parse(req.body);
@@ -52,24 +52,17 @@ usersRouter.post("/", async (req, res) => {
     });
   } catch (error: any) {
     console.error("RAW USER ERROR:", error);
-    if (error?.name === "ZodError") {
-      console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
+    if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
-        errors: error.errors,
+        message:
+          error.issues?.map((issue) => issue.message).join(" ") ||
+          "Données invalides.",
+        errors: error.issues,
       });
     }
 
     if (isAppError(error)) {
-      console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
       return res.status(error.statusCode).json({
         success: false,
         code: error.code,
@@ -161,7 +154,7 @@ usersRouter.patch("/:id/password", async (req, res) => {
     });
 
     const bodySchema = z.object({
-      password: z.string().min(8).max(100),
+      password: z.string().min(1, "Le mot de passe est requis").max(100),
     });
 
     const params = paramsSchema.parse(req.params);
@@ -178,15 +171,13 @@ usersRouter.patch("/:id/password", async (req, res) => {
     });
   } catch (error: any) {
     console.error("RAW USER ERROR:", error);
-    if (error?.name === "ZodError") {
-      console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
+    if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
-        errors: error.errors,
+        message:
+          error.issues?.map((issue) => issue.message).join(" ") ||
+          "Données invalides.",
+        errors: error.issues,
       });
     }
 
