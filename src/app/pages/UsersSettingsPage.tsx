@@ -340,7 +340,7 @@ export function UsersSettingsPage() {
               </div>
             )}
 
-            <Button variant="primary" size="md" type="submit" disabled={saving} >
+            <Button variant="primary" size="md" type="submit" disabled={saving} className="w-full">
               {saving
                 ? "Enregistrement..."
                 : formMode === "create"
