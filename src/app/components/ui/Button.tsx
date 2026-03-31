@@ -32,7 +32,7 @@ export function Button({
         variant === "secondary" &&
           "bg-white/[0.06] text-white hover:bg-white/[0.1]",
         variant === "danger" &&
-          "bg-red-500/10 text-white hover:bg-red-500/20",
+          "bg-red-500/10 text-white text-red-400 hover:bg-red-500/20",
         variant === "ghost" &&
           "text-admin-text-soft hover:bg-white/5 hover:text-white",
 
