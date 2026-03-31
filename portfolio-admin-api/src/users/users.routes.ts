@@ -10,6 +10,7 @@ import {
   setAdminUserActiveStatus,
 } from "./users.service";
 import { isAppError } from "../common/app-error";
+import { handleRouteError } from "../common/handle-route-error";
 
 export const usersRouter = Router();
 
@@ -26,10 +27,7 @@ usersRouter.get("/", async (_req, res) => {
   } catch (error) {
     console.error("Erreur liste utilisateurs :", error);
 
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur de récupération de la liste utilisateurs");
   }
 });
 
@@ -51,35 +49,7 @@ usersRouter.post("/", async (req, res) => {
       user,
     });
   } catch (error: any) {
-    console.error("RAW USER ERROR:", error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error.issues?.map((issue) => issue.message).join(" ") ||
-          "Données invalides.",
-        errors: error.issues,
-      });
-    }
-
-    if (isAppError(error)) {
-      return res.status(error.statusCode).json({
-        success: false,
-        code: error.code,
-        message: error.message,
-      });
-    }
-
-    console.error("Erreur création utilisateur :", error);
-    console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "création utilisateur");
   }
 });
 
@@ -108,42 +78,7 @@ usersRouter.patch("/:id", async (req, res) => {
       user,
     });
   } catch (error: any) {
-    console.error("RAW USER ERROR:", error);
-    if (error?.name === "ZodError") {
-      console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    if (isAppError(error)) {
-      console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-      return res.status(error.statusCode).json({
-        success: false,
-        code: error.code,
-        message: error.message,
-      });
-    }
-
-    console.error("Erreur update utilisateur :", error);
-    console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur mise à jour utilisateur");
   }
 });
 
@@ -170,40 +105,7 @@ usersRouter.patch("/:id/password", async (req, res) => {
       user,
     });
   } catch (error: any) {
-    console.error("RAW USER ERROR:", error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error.issues?.map((issue) => issue.message).join(" ") ||
-          "Données invalides.",
-        errors: error.issues,
-      });
-    }
-
-    if (isAppError(error)) {
-      console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-      return res.status(error.statusCode).json({
-        success: false,
-        code: error.code,
-        message: error.message,
-      });
-    }
-
-    console.error("Erreur reset password utilisateur :", error);
-    console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur mise à jour mot de passe");
   }
 });
 
@@ -240,42 +142,7 @@ usersRouter.patch("/:id/active", async (req, res) => {
       user,
     });
   } catch (error: any) {
-    console.error("RAW USER ERROR:", error);
-    if (error?.name === "ZodError") {
-      console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    if (isAppError(error)) {
-      console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-      return res.status(error.statusCode).json({
-        success: false,
-        code: error.code,
-        message: error.message,
-      });
-    }
-
-    console.error("Erreur activation utilisateur :", error);
-    console.log("Sending app error response", {
-        statusCode: error.statusCode,
-        code: error.code,
-        message: error.message,
-      });
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur activation utilisateur");
   }
 });
 
@@ -305,26 +172,6 @@ usersRouter.delete("/:id", async (req, res) => {
       success: true,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    if (isAppError(error)) {
-      return res.status(error.statusCode).json({
-        success: false,
-        code: error.code,
-        message: error.message,
-      });
-    }
-
-    console.error("Erreur suppression utilisateur :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur suppression utilisateur");
   }
 });
