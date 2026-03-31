@@ -4,7 +4,7 @@ import { env } from "../../env";
 export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
   const [autoPurgeEnabled, setAutoPurgeEnabled] = useState(true);
-  const [purgeHour, setPurgeHour] = useState(3);
+  const [purgeHour, setPurgeHour] = useState("03:00");
 
   const [toDelete, setToDelete] = useState(0);
 
@@ -222,11 +222,9 @@ export function RGPDPage() {
             Heure de purge (0 - 23)
           </label>
           <input
-            type="number"
-            min={0}
-            max={23}
+            type="time"
             value={purgeHour}
-            onChange={(e) => setPurgeHour(Number(e.target.value))}
+            onChange={(e) => setPurgeHour(e.target.value)}
             className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
           />
         </div>
