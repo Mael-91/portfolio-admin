@@ -9,6 +9,7 @@ import {
   updatePortfolioImage,
   updatePortfolioImageOrder,
 } from "./portfolio.repository";
+import { AppError } from "../common/app-error";
 
 function sanitizeImage(row: any) {
   return {
@@ -59,7 +60,11 @@ export async function createPortfolioImage(params: {
   const image = await findPortfolioImageById(id);
 
   if (!image) {
-    throw new Error("PORTFOLIO_IMAGE_NOT_FOUND_AFTER_CREATE");
+    throw new AppError({
+      code: "PORTFOLIO_IMAGE_NOT_FOUND_AFTER_CREATE",
+      message: "L'image du portfolio n'a pas été trouvée après sa création.",
+      statusCode: 404,
+    });
   }
 
   return sanitizeImage(image);
@@ -75,7 +80,11 @@ export async function editPortfolioImage(params: {
   const existing = await findPortfolioImageById(params.id);
 
   if (!existing) {
-    throw new Error("PORTFOLIO_IMAGE_NOT_FOUND");
+    throw new AppError({
+      code: "PORTFOLIO_IMAGE_NOT_FOUND",
+      message: "L'image du portfolio n'a pas été trouvée après sa mise à jour.",
+      statusCode: 404,
+    });
   }
 
   await updatePortfolioImage({
@@ -89,7 +98,11 @@ export async function editPortfolioImage(params: {
   const updated = await findPortfolioImageById(params.id);
 
   if (!updated) {
-    throw new Error("PORTFOLIO_IMAGE_NOT_FOUND");
+    throw new AppError({
+      code: "PORTFOLIO_IMAGE_NOT_FOUND",
+      message: "L'image du portfolio n'a pas été trouvée après sa mise à jour.",
+      statusCode: 404,
+    });
   }
 
   return sanitizeImage(updated);
@@ -104,7 +117,11 @@ export async function removePortfolioImage(id: number) {
   const existing = await findPortfolioImageById(id);
 
   if (!existing) {
-    throw new Error("PORTFOLIO_IMAGE_NOT_FOUND");
+    throw new AppError({
+      code: "PORTFOLIO_IMAGE_NOT_FOUND",
+      message: "L'image du portfolio n'a pas été trouvée",
+      statusCode: 404,
+    });
   }
 
   await deletePortfolioImageById(id);
