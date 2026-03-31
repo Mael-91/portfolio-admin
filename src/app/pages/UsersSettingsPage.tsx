@@ -340,17 +340,13 @@ export function UsersSettingsPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full rounded-xl bg-admin-accent px-4 py-2 text-sm text-white transition hover:brightness-110 disabled:opacity-60"
-            >
+            <Button variant="primary" size="md" type="submit" disabled={saving} >
               {saving
                 ? "Enregistrement..."
                 : formMode === "create"
                 ? "Créer l'utilisateur"
                 : "Enregistrer les modifications"}
-            </button>
+            </Button>
           </form>
         </aside>
       </div>
