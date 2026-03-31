@@ -69,7 +69,7 @@ function SortablePortfolioCard({
         />
 
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
-          <Button variant="secondary" size="sm" className="cursor-grab active:cursor-grabbing" 
+          <Button variant="secondary" size="sm" className="cursor-grab active:cursor-grabbing bg-black/50" 
             type="button"
             {...attributes}
             {...listeners}
@@ -93,7 +93,7 @@ function SortablePortfolioCard({
         <div className="font-medium text-white">{image.caption}</div>
 
         <div className="mt-1 flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => onEdit(image)} className="bg-black/50">Modifier</Button>
+          <Button variant="secondary" size="sm" onClick={() => onEdit(image)}>Modifier</Button>
 
           <Button variant="dangerSoft" size="sm" onClick={() => onDelete(image)}>Supprimer</Button>
         </div>
