@@ -28,7 +28,7 @@ RGPDRouter.patch("/", async (req, res) => {
   if (
     typeof retentionDays !== "number" ||
     typeof autoPurgeEnabled !== "boolean" ||
-    typeof purgeHour !== "number"
+    typeof purgeHour !== "string"
   ) {
     return res.status(400).json({
       success: false,
@@ -36,7 +36,23 @@ RGPDRouter.patch("/", async (req, res) => {
     });
   }
 
-  if (purgeHour < 0 || purgeHour > 23) {
+  if (!/^\d{2}:\d{2}$/.test(purgeHour)) {
+    return res.status(400).json({
+      success: false,
+      message: "Heure de purge invalide",
+    });
+  }
+
+  const [hours, minutes] = purgeHour.split(":").map(Number);
+
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
     return res.status(400).json({
       success: false,
       message: "Heure de purge invalide",

@@ -1,48 +1,34 @@
-import {
-  purgeOldMessages,
-  getAppSettings,
-} from "./settings.service";
+import { runScheduledRgpdPurgeIfDue } from "./settings.service";
 
-function msUntilNextRun(hour: number) {
-  const now = new Date();
-  const next = new Date();
-
-  next.setHours(hour, 0, 0, 0);
-
-  if (next <= now) {
-    next.setDate(next.getDate() + 1);
-  }
-
-  return next.getTime() - now.getTime();
-}
+let rgpdInterval: NodeJS.Timeout | null = null;
+let rgpdCronStarted = false;
 
 export async function startRgpdCron() {
-  async function scheduleNextRun() {
-    const settings = await getAppSettings();
-
-    const delay = msUntilNextRun(settings.purgeHour);
-
-    console.log(
-      `Prochaine purge RGPD à ${settings.purgeHour}:00 dans ${
-        Math.round(delay / 1000 / 60)
-      } minutes`
-    );
-
-    setTimeout(async () => {
-      const currentSettings = await getAppSettings();
-
-      if (currentSettings.autoPurgeEnabled) {
-        const result = await purgeOldMessages();
-
-        console.log(
-          `RGPD purge exécutée (${currentSettings.purgeHour}h) :`,
-          result.deleted
-        );
-      }
-
-      scheduleNextRun(); // 🔁 recalcul dynamique
-    }, delay);
+  if (rgpdCronStarted) {
+    return;
   }
 
-  scheduleNextRun();
+  rgpdCronStarted = true;
+
+  const tick = async () => {
+    try {
+      const result = await runScheduledRgpdPurgeIfDue();
+
+      if (result.ran) {
+        console.log(
+          `[RGPD] purge exécutée : ${result.deleted} message(s) supprimé(s)`
+        );
+      }
+    } catch (error) {
+      console.error("[RGPD] Erreur scheduler :", error);
+    }
+  };
+
+  await tick();
+
+  rgpdInterval = setInterval(() => {
+    void tick();
+  }, 60_000);
+
+  console.log("[RGPD] scheduler démarré");
 }

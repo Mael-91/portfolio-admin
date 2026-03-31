@@ -1,7 +1,7 @@
 import { db } from "../db/db";
 
 export async function getSettings() {
-  const [rows] = await db.execute<any[]>(
+  const [rows]: any = await db.execute(
     `SELECT key_name, value FROM app_settings`
   );
 
