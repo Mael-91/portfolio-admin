@@ -12,6 +12,12 @@ type BroadcastPayload =
       unprocessedCount: number;
       diff?: number;
       timestamp: string;
+    }
+  | {
+      type: "rgpd:purge";
+      unprocessedCount: number;
+      deletedCount: number;
+      timestamp: string;
     };
 
 let wss: WebSocketServer | null = null;
@@ -76,6 +82,22 @@ export function broadcastNewMessage(payload: {
     type: "message:new",
     unprocessedCount: payload.unprocessedCount,
     diff: payload.diff,
+    timestamp: new Date().toISOString(),
+  };
+
+  for (const client of clients) {
+    safeSend(client, message);
+  }
+}
+
+export function broadcastRgpdPurge(payload: {
+  unprocessedCount: number;
+  deletedCount: number;
+}) {
+  const message: BroadcastPayload = {
+    type: "rgpd:purge",
+    unprocessedCount: payload.unprocessedCount,
+    deletedCount: payload.deletedCount,
     timestamp: new Date().toISOString(),
   };
 

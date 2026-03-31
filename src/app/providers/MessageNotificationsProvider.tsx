@@ -28,6 +28,12 @@ type WsMessage =
       unprocessedCount: number;
       diff?: number;
       timestamp: string;
+    }
+  | {
+      type: "rgpd:purge";
+      unprocessedCount: number;
+      deletedCount: number;
+      timestamp: string;
     };
 
 export function MessageNotificationsProvider({
@@ -99,6 +105,30 @@ export function MessageNotificationsProvider({
 
               return prev;
             });
+          }
+
+          if (data.type === "rgpd:purge") {
+            previousCountRef.current = data.unprocessedCount;
+
+            setUnprocessedCount((prev) => {
+              if (prev !== data.unprocessedCount) {
+                setRefreshSignal((value) => value + 1);
+                return data.unprocessedCount;
+              }
+
+              return prev;
+            });
+
+            showToast({
+              title: "Purge RGPD effectuée",
+              description:
+                data.deletedCount === 1
+                  ? "1 message a été supprimé automatiquement."
+                  : `${data.deletedCount} messages ont été supprimés automatiquement.`,
+              variant: "info",
+            });
+
+            return;
           }
         } catch (error) {
           console.error("WebSocket parse error:", error);
