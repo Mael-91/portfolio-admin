@@ -9,6 +9,7 @@ import {
   resetAdminUserPassword,
   setAdminUserActiveStatus,
 } from "./users.service";
+import { isAppError } from "../common/app-error";
 
 export const usersRouter = Router();
 
@@ -57,17 +58,11 @@ usersRouter.post("/", async (req, res) => {
       });
     }
 
-    if (typeof error?.message === "string") {
-      return res.status(400).json({
+    if (isAppError(error)) {
+      return res.status(error.statusCode).json({
         success: false,
+        code: error.code,
         message: error.message,
-      });
-    }
-
-    if (error?.message === "EMAIL_ALREADY_EXISTS") {
-      return res.status(409).json({
-        success: false,
-        message: "Cet email existe déjà",
       });
     }
 
@@ -112,17 +107,11 @@ usersRouter.patch("/:id", async (req, res) => {
       });
     }
 
-    if (error?.message === "EMAIL_ALREADY_EXISTS") {
-      return res.status(409).json({
+    if (isAppError(error)) {
+      return res.status(error.statusCode).json({
         success: false,
-        message: "Cet email existe déjà",
-      });
-    }
-
-    if (typeof error?.message === "string" && error.message.startsWith("WEAK_PASSWORD:")) {
-      return res.status(400).json({
-        success: false,
-        message: error.message.replace("WEAK_PASSWORD:", "").trim(),
+        code: error.code,
+        message: error.message,
       });
     }
 
@@ -165,9 +154,10 @@ usersRouter.patch("/:id/password", async (req, res) => {
       });
     }
 
-    if (typeof error?.message === "string") {
-      return res.status(400).json({
+    if (isAppError(error)) {
+      return res.status(error.statusCode).json({
         success: false,
+        code: error.code,
         message: error.message,
       });
     }
@@ -221,10 +211,11 @@ usersRouter.patch("/:id/active", async (req, res) => {
       });
     }
 
-    if (error?.message === "CANNOT_DISABLE_SELF") {
-      return res.status(400).json({
+    if (isAppError(error)) {
+      return res.status(error.statusCode).json({
         success: false,
-        message: "Impossible de désactiver votre propre compte",
+        code: error.code,
+        message: error.message,
       });
     }
 
@@ -263,10 +254,18 @@ usersRouter.delete("/:id", async (req, res) => {
       success: true,
     });
   } catch (error: any) {
-    if (error?.message === "CANNOT_DELETE_SELF") {
+    if (error?.name === "ZodError") {
       return res.status(400).json({
         success: false,
-        message: "Impossible de supprimer votre propre compte",
+        errors: error.errors,
+      });
+    }
+
+    if (isAppError(error)) {
+      return res.status(error.statusCode).json({
+        success: false,
+        code: error.code,
+        message: error.message,
       });
     }
 

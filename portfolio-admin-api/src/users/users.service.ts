@@ -9,6 +9,7 @@ import {
   updateAdminUserPassword,
   deleteAdminUserById
 } from "./users.repository";
+import { AppError } from "../common/app-error";
 
 function sanitizeUser(user: any) {
   return {
@@ -34,14 +35,23 @@ export async function createAdminUser(params: {
   lastName: string;
 }) {
   const existing = await findAdminUserByEmail(params.email);
+
+  if (existing) {
+    throw new AppError({
+      code: "EMAIL_ALREADY_EXISTS",
+      message: "Cet email existe déjà.",
+      statusCode: 409,
+    });
+  }
+
   const passwordErrors = validatePasswordStrength(params.password);
 
   if (passwordErrors.length > 0) {
-    throw new Error(passwordErrors.join(" "));
-  }
-
-  if (existing) {
-    throw new Error("EMAIL_ALREADY_EXISTS");
+    throw new AppError({
+      code: "WEAK_PASSWORD",
+      message: passwordErrors.join(" "),
+      statusCode: 400,
+    });
   }
 
   const passwordHash = await bcrypt.hash(params.password, 12);
@@ -56,7 +66,11 @@ export async function createAdminUser(params: {
   const user = await findAdminUserById(id);
 
   if (!user) {
-    throw new Error("USER_NOT_FOUND_AFTER_CREATE");
+    throw new AppError({
+      code: "USER_NOT_FOUND_AFTER_CREATE",
+      message: "Utilisateur introuvable après création.",
+      statusCode: 500,
+    });
   }
 
   return sanitizeUser(user);
@@ -67,13 +81,21 @@ export async function deleteAdminUser(params: {
   currentAdminUserId: number;
 }) {
   if (params.id === params.currentAdminUserId) {
-    throw new Error("CANNOT_DELETE_SELF");
+    throw new AppError({
+      code: "CANNOT_DELETE_SELF",
+      message: "Impossible de supprimer votre propre compte.",
+      statusCode: 400,
+    });
   }
 
   const user = await findAdminUserById(params.id);
 
   if (!user) {
-    throw new Error("USER_NOT_FOUND");
+    throw new AppError({
+      code: "USER_NOT_FOUND",
+      message: "Utilisateur introuvable.",
+      statusCode: 404,
+    });
   }
 
   await deleteAdminUserById(params.id);
@@ -87,21 +109,39 @@ export async function editAdminUser(params: {
   firstName: string;
   lastName: string;
 }) {
+  const user = await findAdminUserById(params.id);
+
+  if (!user) {
+    throw new AppError({
+      code: "USER_NOT_FOUND",
+      message: "Utilisateur introuvable.",
+      statusCode: 404,
+    });
+  }
+
   const existing = await findAdminUserByEmail(params.email);
 
   if (existing && existing.id !== params.id) {
-    throw new Error("EMAIL_ALREADY_EXISTS");
+    throw new AppError({
+      code: "EMAIL_ALREADY_EXISTS",
+      message: "Cet email existe déjà.",
+      statusCode: 409,
+    });
   }
 
   await updateAdminUser(params);
 
-  const user = await findAdminUserById(params.id);
+  const updated = await findAdminUserById(params.id);
 
-  if (!user) {
-    throw new Error("USER_NOT_FOUND");
+  if (!updated) {
+    throw new AppError({
+      code: "USER_NOT_FOUND",
+      message: "Utilisateur introuvable.",
+      statusCode: 404,
+    });
   }
 
-  return sanitizeUser(user);
+  return sanitizeUser(updated);
 }
 
 export async function resetAdminUserPassword(params: {
@@ -109,14 +149,23 @@ export async function resetAdminUserPassword(params: {
   password: string;
 }) {
   const user = await findAdminUserById(params.id);
+
+  if (!user) {
+    throw new AppError({
+      code: "USER_NOT_FOUND",
+      message: "Utilisateur introuvable.",
+      statusCode: 404,
+    });
+  }
+
   const passwordErrors = validatePasswordStrength(params.password);
 
   if (passwordErrors.length > 0) {
-    throw new Error(passwordErrors.join(" "));
-  }
-
-  if (!user) {
-    throw new Error("USER_NOT_FOUND");
+    throw new AppError({
+      code: "WEAK_PASSWORD",
+      message: passwordErrors.join(" "),
+      statusCode: 400,
+    });
   }
 
   const passwordHash = await bcrypt.hash(params.password, 12);
@@ -129,7 +178,11 @@ export async function resetAdminUserPassword(params: {
   const updated = await findAdminUserById(params.id);
 
   if (!updated) {
-    throw new Error("USER_NOT_FOUND");
+    throw new AppError({
+      code: "USER_NOT_FOUND",
+      message: "Utilisateur introuvable.",
+      statusCode: 404,
+    });
   }
 
   return sanitizeUser(updated);
@@ -141,13 +194,21 @@ export async function setAdminUserActiveStatus(params: {
   currentAdminUserId: number;
 }) {
   if (params.id === params.currentAdminUserId && !params.isActive) {
-    throw new Error("CANNOT_DISABLE_SELF");
+    throw new AppError({
+      code: "CANNOT_DISABLE_SELF",
+      message: "Impossible de désactiver votre propre compte.",
+      statusCode: 400,
+    });
   }
 
   const user = await findAdminUserById(params.id);
 
   if (!user) {
-    throw new Error("USER_NOT_FOUND");
+    throw new AppError({
+      code: "USER_NOT_FOUND",
+      message: "Utilisateur introuvable.",
+      statusCode: 404,
+    });
   }
 
   await updateAdminUserActiveStatus({
@@ -158,7 +219,11 @@ export async function setAdminUserActiveStatus(params: {
   const updated = await findAdminUserById(params.id);
 
   if (!updated) {
-    throw new Error("USER_NOT_FOUND");
+    throw new AppError({
+      code: "USER_NOT_FOUND",
+      message: "Utilisateur introuvable.",
+      statusCode: 404,
+    });
   }
 
   return sanitizeUser(updated);
