@@ -26,6 +26,7 @@ import {
 
 import { DeletePortfolioImageModal } from "../components/portfolio/DeletePortfolioImageModal";
 import { env } from "../../env";
+import { Button } from "../components/ui/Button";
 
 /* ========================= */
 /* Utils */
@@ -68,14 +69,13 @@ function SortablePortfolioCard({
         />
 
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
-          <button
+          <Button variant="secondary" size="sm" className="cursor-grab active:cursor-grabbing" 
             type="button"
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing rounded-lg bg-black/50 px-3 py-1.5 text-xs text-white"
           >
             Déplacer
-          </button>
+          </Button>
 
           <span
             className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
@@ -93,19 +93,9 @@ function SortablePortfolioCard({
         <div className="font-medium text-white">{image.caption}</div>
 
         <div className="mt-1 flex gap-2">
-          <button
-            onClick={() => onEdit(image)}
-            className="cursor-pointer rounded-xl bg-white/[0.06] px-3 py-1.5 text-xs text-white hover:bg-white/[0.1]"
-          >
-            Modifier
-          </button>
+          <Button variant="secondary" size="sm" onClick={() => onEdit(image)}>Modifier</Button>
 
-          <button
-            onClick={() => onDelete(image)}
-            className="cursor-pointer rounded-xl bg-red-500/10 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/20"
-          >
-            Supprimer
-          </button>
+          <Button variant="dangerSoft" size="sm" onClick={() => onDelete(image)}>Supprimer</Button>
         </div>
       </figcaption>
     </figure>
