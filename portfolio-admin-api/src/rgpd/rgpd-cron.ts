@@ -41,5 +41,4 @@ export async function startRgpdCron() {
   }, 60_000);
 
   console.log("[RGPD] scheduler démarré");
-  console.log("[RGPD] startRgpdCron appelé");
 }
