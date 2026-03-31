@@ -1,4 +1,5 @@
 import { env } from "../../env";
+import { extractApiErrorMessage } from "./ApiErrorMessage";
 
 export type PortfolioImage = {
   id: number;
@@ -37,7 +38,7 @@ export async function createPortfolioImage(formData: FormData) {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Erreur création image");
+    throw new Error(extractApiErrorMessage(data, "Erreur création image"));
   }
 
   return data;
@@ -64,7 +65,7 @@ export async function updatePortfolioImage(
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Erreur modification image");
+    throw new Error(extractApiErrorMessage(data, "Erreur modification image"));
   }
 
   return data;
@@ -85,7 +86,7 @@ export async function reorderPortfolioImages(
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Erreur réorganisation images");
+    throw new Error(extractApiErrorMessage(data, "Erreur réorganisation images"));
   }
 
   return data;
@@ -100,7 +101,7 @@ export async function deletePortfolioImage(id: number) {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Erreur suppression image");
+    throw new Error(extractApiErrorMessage(data, "Erreur suppression image"));
   }
 
   return data;

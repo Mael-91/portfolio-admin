@@ -1,5 +1,6 @@
 import { env } from "../../env";
 import { apiFetch } from "./api";
+import { extractApiErrorMessage } from "./ApiErrorMessage";
 
 export type ProcessingStatus = "unprocessed" | "in_progress" | "processed";
 
@@ -118,7 +119,7 @@ export async function fetchUnprocessedMessagesCount(): Promise<number> {
   });
 
   if (!response.ok) {
-    throw new Error("Erreur récupération compteur messages");
+    throw new Error(extractApiErrorMessage(await response.json(), "Erreur chargement nombre messages non traités"));
   }
 
   const data = await response.json();

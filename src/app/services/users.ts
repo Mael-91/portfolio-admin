@@ -1,4 +1,5 @@
 import { env } from "../../env";
+import { extractApiErrorMessage } from "./ApiErrorMessage";
 
 export type AdminUser = {
   id: number;
@@ -16,7 +17,7 @@ export async function fetchAdminUsers() {
   });
 
   if (!res.ok) {
-    throw new Error("Erreur récupération utilisateurs");
+    throw new Error(extractApiErrorMessage(await res.json(), "Erreur récupération utilisateurs"));
   }
 
   return res.json();
@@ -133,19 +134,4 @@ export async function updateAdminUserActiveStatus(
   }
 
   return data;
-}
-
-function extractApiErrorMessage(data: any, fallback: string) {
-  if (typeof data?.message === "string" && data.message.trim()) {
-    return data.message;
-  }
-
-  if (Array.isArray(data?.errors) && data.errors.length > 0) {
-    return data.errors
-      .map((error: any) => error?.message)
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  return fallback;
 }
