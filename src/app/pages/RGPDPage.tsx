@@ -268,7 +268,7 @@ export function RGPDPage() {
       <div className="rounded-2xl bg-red-500/10 p-5">
         <h2 className="text-sm font-semibold text-red-400">Action critique</h2>
 
-        <Button variant="danger" size="md" onClick={() => setShowModal(true)}>Purger maintenant</Button>
+        <Button variant="danger" size="md" onClick={() => setShowModal(true)} className="mt-3">Purger maintenant</Button>
       </div>
 
       {showModal && (
