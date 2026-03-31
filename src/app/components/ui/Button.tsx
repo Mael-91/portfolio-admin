@@ -28,11 +28,11 @@ export function Button({
 
         // variants
         variant === "primary" &&
-          "bg-admin-accent text-white hover:opacity-90",
+          "bg-admin-accent text-white hover:brightness-110 disabled:opacity-60",
         variant === "secondary" &&
-          "bg-white/10 text-white hover:bg-white/20 hover:bg-white/[0.1]",
+          "bg-white/[0.06] text-white hover:bg-white/[0.1]",
         variant === "danger" &&
-          "bg-red-500 text-white hover:bg-red-600",
+          "bg-red-500/10 text-white hover:bg-red-500/20",
         variant === "ghost" &&
           "text-admin-text-soft hover:bg-white/5 hover:text-white",
 

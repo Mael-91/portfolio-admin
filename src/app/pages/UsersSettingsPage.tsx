@@ -223,22 +223,12 @@ export function UsersSettingsPage() {
                     <Button variant="secondary" size="md" onClick={() => handleEditUser(user)}>
                       Modifier
                     </Button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleToggleActive(user)}
-                      className="rounded-xl bg-white/[0.06] px-3 py-2 text-sm text-white transition hover:bg-white/[0.1]"
-                    >
+                    <Button variant="secondary" size="md" onClick={() => handleToggleActive(user)}>
                       {user.isActive ? "Désactiver" : "Activer"}
-                    </button>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget(user)}
-                      className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400 transition hover:bg-red-500/20"
-                    >
+                    </Button>
+                    <Button variant="danger" size="md" onClick={() => setDeleteTarget(user)}>
                       Supprimer
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
