@@ -1,3 +1,4 @@
+import { AppError } from "../common/app-error";
 import { db } from "../db/db";
 import {
   deleteBulletsByCardId,
@@ -35,7 +36,11 @@ export async function getServicesContent(serviceType: ServiceType) {
   const section = await findSectionByType(serviceType);
 
   if (!section) {
-    throw new Error("SERVICE_SECTION_NOT_FOUND");
+    throw new AppError({
+      code: "SERVICE_SECTION_NOT_FOUND",
+      message: "La section de services n'a pas été trouvée.",
+      statusCode: 404,
+    });
   }
 
   const cards = await findCardsBySectionId(section.id);
@@ -73,7 +78,11 @@ export async function saveServicesContent(params: {
   const section = await findSectionByType(params.serviceType);
 
   if (!section) {
-    throw new Error("SERVICE_SECTION_NOT_FOUND");
+    throw new AppError({
+      code: "SERVICE_SECTION_NOT_FOUND",
+      message: "La section de services n'a pas été trouvée.",
+      statusCode: 404,
+    });
   }
 
   const connection = await db.getConnection();

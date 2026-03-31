@@ -1,4 +1,5 @@
 import { env } from "../../env";
+import { extractApiErrorMessage } from "./ApiErrorMessage";
 
 export type ServiceType = "pro" | "private";
 
@@ -32,7 +33,7 @@ export async function fetchServicesContent(serviceType: ServiceType) {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Erreur chargement prestations");
+    throw new Error(extractApiErrorMessage(data, "Erreur chargement prestations"));
   }
 
   return data;
@@ -65,7 +66,7 @@ export async function saveServicesContent(payload: {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Erreur sauvegarde prestations");
+    throw new Error(extractApiErrorMessage(data, "Erreur sauvegarde prestations"));
   }
 
   return data;

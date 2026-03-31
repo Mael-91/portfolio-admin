@@ -5,6 +5,7 @@ import {
   getServicesContent,
   saveServicesContent,
 } from "./services.service";
+import { handleRouteError } from "../common/handle-route-error";
 
 export const servicesContentRouter = Router();
 
@@ -26,19 +27,7 @@ servicesContentRouter.get("/", async (req, res) => {
       ...payload,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    console.error("Erreur récupération prestations :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans la récupération du contenu des services");
   }
 });
 
@@ -86,18 +75,6 @@ servicesContentRouter.put("/", async (req, res) => {
       ...payload,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    console.error("Erreur sauvegarde prestations :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans la sauvegarde du contenu des services");
   }
 });

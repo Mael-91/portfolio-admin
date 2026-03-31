@@ -9,6 +9,7 @@ import {
   setMessageProcessingStatus,
 } from "./messages.service";
 import { exportMessageRgpdByEmail } from "./messages.service";
+import { handleRouteError } from "../common/handle-route-error";
 
 export const messagesRouter = Router();
 
@@ -34,19 +35,7 @@ messagesRouter.get("/", async (req, res) => {
       ...result,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    console.error("Erreur liste messages :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans le chargement des messages");
   }
 });
 
@@ -64,12 +53,7 @@ messagesRouter.get("/new-count", async (req, res) => {
       ...result,
     });
   } catch (error) {
-    console.error("Erreur new-count messages :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans le chargement du nombre de nouveaux messages");
   }
 });
 
@@ -82,12 +66,7 @@ messagesRouter.get("/count-unprocessed", async (_req, res) => {
       ...result,
     });
   } catch (error) {
-    console.error("Erreur compteur messages :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur récupération compteur",
-    });
+    return handleRouteError(res, error, "Erreur dans le chargement du nombre de messages non traités");
   }
 });
 
@@ -122,19 +101,7 @@ messagesRouter.post("/:id/export-rgpd", async (req, res) => {
       email: result.email,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    console.error("Erreur export RGPD :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans l'export RGPD");
   }
 });
 
@@ -155,12 +122,7 @@ messagesRouter.get("/:id", async (req, res) => {
       message,
     });
   } catch (error) {
-    console.error("Erreur détail message :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans le chargement du détail du message");
   }
 });
 
@@ -183,18 +145,6 @@ messagesRouter.patch("/:id/processing-status", async (req, res) => {
       message,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    console.error("Erreur update processing status :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans la mise à jour du statut de traitement du message");
   }
 });

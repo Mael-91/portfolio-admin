@@ -10,6 +10,7 @@ import {
   reorderPortfolioImages,
 } from "./portfolio.service";
 import { portfolioUpload } from "./portfolio.upload";
+import { handleRouteError } from "../common/handle-route-error";
 
 export const portfolioRouter = Router();
 
@@ -24,12 +25,7 @@ portfolioRouter.get("/", async (_req, res) => {
       images,
     });
   } catch (error) {
-    console.error("Erreur liste portfolio :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans le chargement des images du portfolio");
   }
 });
 
@@ -70,26 +66,7 @@ portfolioRouter.post("/", portfolioUpload.single("image"), async (req, res) => {
       image,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    if (error?.message === "UNSUPPORTED_FILE_TYPE") {
-      return res.status(400).json({
-        success: false,
-        message: "Format de fichier non supporté",
-      });
-    }
-
-    console.error("Erreur création image portfolio :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans la création de l'image du portfolio");
   }
 });
 
@@ -122,19 +99,7 @@ portfolioRouter.patch("/:id", async (req, res) => {
       image,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    console.error("Erreur update image portfolio :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans la mise à jour de l'image du portfolio");
   }
 });
 
@@ -158,19 +123,7 @@ portfolioRouter.patch("/reorder/all", async (req, res) => {
       images,
     });
   } catch (error: any) {
-    if (error?.name === "ZodError") {
-      return res.status(400).json({
-        success: false,
-        errors: error.errors,
-      });
-    }
-
-    console.error("Erreur reorder portfolio :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans le réordonnancement des images du portfolio");
   }
 });
 
@@ -188,11 +141,6 @@ portfolioRouter.delete("/:id", async (req, res) => {
       success: true,
     });
   } catch (error: any) {
-    console.error("Erreur suppression image portfolio :", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur",
-    });
+    return handleRouteError(res, error, "Erreur dans la suppression de l'image du portfolio");
   }
 });
