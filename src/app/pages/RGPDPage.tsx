@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { env } from "../../env";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
+import { Button } from "../components/ui/Button";
 
 export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -267,12 +268,7 @@ export function RGPDPage() {
       <div className="rounded-2xl bg-red-500/10 p-5">
         <h2 className="text-sm font-semibold text-red-400">Action critique</h2>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="mt-3 rounded-xl bg-red-500 px-4 py-2 text-sm"
-        >
-          Purger maintenant
-        </button>
+        <Button variant="danger" size="md" onClick={() => setShowModal(true)}>Purger maintenant</Button>
       </div>
 
       {showModal && (
