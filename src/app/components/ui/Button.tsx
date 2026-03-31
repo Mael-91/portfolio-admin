@@ -17,7 +17,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center rounded-xl font-medium transition cursor-pointer hover:bg-white/[0.1]",
+        "inline-flex items-center justify-center rounded-xl font-medium transition cursor-pointer",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent focus-visible:ring-offset-2",
         "disabled:opacity-50 disabled:cursor-not-allowed",
 
@@ -30,7 +30,7 @@ export function Button({
         variant === "primary" &&
           "bg-admin-accent text-white hover:opacity-90",
         variant === "secondary" &&
-          "bg-white/10 text-white hover:bg-white/20",
+          "bg-white/10 text-white hover:bg-white/20 hover:bg-white/[0.1]",
         variant === "danger" &&
           "bg-red-500 text-white hover:bg-red-600",
         variant === "ghost" &&
