@@ -18,8 +18,8 @@ export function Button({
     <button
       className={cn(
         "inline-flex items-center justify-center rounded-xl font-medium transition cursor-pointer",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent focus-visible:ring-offset-2 hover:bg-white/[0.1]",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-admin-accent focus-visible:ring-offset-2",
+        "disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/[0.1]",
 
         // sizes
         size === "sm" && "px-3 py-1.5 text-sm",
