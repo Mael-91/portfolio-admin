@@ -545,13 +545,9 @@ export function MessageDetailPage() {
             <h2 className="text-base font-semibold text-white">Actions</h2>
 
             <div className="mt-5 space-y-3">
-              <button
-                type="button"
-                onClick={() => setIsExportModalOpen(true)}
-                className="w-full rounded-2xl bg-admin-accent px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110"
-              >
+              <Button size="lg" align="center" className="w-full rounded-2xl px-4 font-semibold" type="button" onClick={() => setIsExportModalOpen(true)}>
                 Export RGPD
-              </button>
+              </Button>
             </div>
           </div>
         </aside>
