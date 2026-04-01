@@ -8,6 +8,8 @@ import {
 import { LegalEditor } from "../components/editor/LegalEditor";
 import { useToast } from "../hooks/useToast";
 import { useAutoSave } from "../hooks/useAutoSave";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 type EditableCard = ServiceCard;
 
@@ -172,29 +174,30 @@ export function ServicesContentPage() {
       </div>
 
       <div className="flex gap-3">
-        <button
+        <Button
+          variant="secondary"
           type="button"
           onClick={() => setActiveTab("pro")}
-          className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-2xl font-medium ${
             activeTab === "pro"
               ? "bg-white/8 text-white shadow-inner ring-1 ring-white/5"
               : "text-admin-text-soft hover:bg-white/5 hover:text-white"
           }`}
         >
           Professionnels
-        </button>
-
-        <button
+        </Button>
+        <Button
+          variant="secondary"
           type="button"
           onClick={() => setActiveTab("private")}
-          className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-2xl font-medium ${
             activeTab === "private"
               ? "bg-white/8 text-white shadow-inner ring-1 ring-white/5"
               : "text-admin-text-soft hover:bg-white/5 hover:text-white"
           }`}
         >
           Particuliers
-        </button>
+        </Button>
       </div>
 
       {errorMessage ? (
@@ -244,7 +247,7 @@ export function ServicesContentPage() {
                   <label className="mb-1 block text-sm text-admin-text-soft">
                     Titre
                   </label>
-                  <input
+                  <Input
                     value={card.title}
                     onChange={(e) =>
                       updateCard(card.id, (current) => ({
@@ -252,7 +255,8 @@ export function ServicesContentPage() {
                         title: e.target.value,
                       }))
                     }
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                    placeholder="Titre de la carte"
+                    className="px-3 outline-none"
                   />
                 </div>
 
@@ -308,7 +312,7 @@ export function ServicesContentPage() {
 
                 <div className="space-y-2">
                   {card.bullets.map((bullet, index) => (
-                    <input
+                    <Input
                       key={`${card.id}-${index}`}
                       value={bullet}
                       onChange={(e) =>
@@ -320,11 +324,11 @@ export function ServicesContentPage() {
                         }))
                       }
                       placeholder={`Puces ${index + 1}`}
-                      className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                      className="px-3 outline-none"
                     />
                   ))}
 
-                  <button
+                  <Button variant="secondary"
                     type="button"
                     onClick={() =>
                       updateCard(card.id, (current) => ({
@@ -332,10 +336,9 @@ export function ServicesContentPage() {
                         bullets: [...current.bullets, ""],
                       }))
                     }
-                    className="rounded-xl bg-white/[0.06] px-3 py-2 text-sm text-white transition hover:bg-white/[0.1]"
                   >
                     Ajouter une puce
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -364,7 +367,7 @@ export function ServicesContentPage() {
                     <label className="mb-1 block text-sm text-admin-text-soft">
                       Libellé du prix
                     </label>
-                    <input
+                    <Input
                       value={card.priceLabel}
                       onChange={(e) =>
                         updateCard(card.id, (current) => ({
@@ -373,7 +376,7 @@ export function ServicesContentPage() {
                         }))
                       }
                       placeholder="Ex: À partir de 250€ / session"
-                      className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                      className="px-3 outline-none"
                     />
                   </div>
                 </div>
@@ -394,6 +397,19 @@ export function ServicesContentPage() {
             >
               {saving ? "Enregistrement..." : "Enregistrer les prestations"}
             </button>
+            <Button
+              size="lg"
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className={`rounded-2xl py-2.5 text-sm font-medium  ${
+                saving
+                  ? "cursor-not-allowed bg-white/10 text-white/60"
+                  : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
+              }`}
+            >
+              {saving ? "Enregistrement..." : "Enregistrer les prestations"}
+            </Button>
           </div>
         </>
       )}
