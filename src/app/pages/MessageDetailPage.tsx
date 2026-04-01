@@ -452,7 +452,7 @@ export function MessageDetailPage() {
                   className={`transition-all duration-200 active:scale-90 ${copiedField === "message" ? "text-green-400" : "text-admin-text-soft hover:text-white"}`}
                 >
                   {/* COPY ICON */}
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`absolute h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-0 scale-75" : "opacity-100 scale-100"}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`absolute h-4 w-4 transition-all duration-200 ${copiedField === "message" ? "opacity-0 scale-75" : "opacity-100 scale-100"}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25h3A2.25 2.25 0 0021 15V5.25A2.25 2.25 0 0018.75 3h-9.5A2.25 2.25 0 007 5.25v3"/>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h-3A2.25 2.25 0 003.75 9.75v9.75A2.25 2.25 0 006 21.75h9.75A2.25 2.25 0 0018 19.5v-9.75A2.25 2.25 0 0015.75 7.5H9z"/>
                   </svg>
