@@ -202,7 +202,9 @@ export function RGPDPage() {
             Prochaine purge automatique
           </p>
           {toDelete === 0 ? (
-            "Aucun message à supprimer"
+            <>
+              <span className="mt-1 text-sm">Aucun message à supprimer</span>
+            </>
           ) : (
             <>
               <p className="mt-1 text-sm font-semibold">
