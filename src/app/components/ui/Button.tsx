@@ -40,7 +40,7 @@ export function Button({
         variant === "dangerSoft" &&
           "bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300",
         variant === "icon" &&
-          "bg-transparent border-none w-auto h-auto hover:bg-white/[0.1] rounded-lg",
+          "bg-transparent border-none hover:bg-white/[0.1] rounded-lg",
 
         className,
 
