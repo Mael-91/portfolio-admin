@@ -9,6 +9,8 @@ import {
   type AdminUser,
 } from "../services/users";
 import { DeleteUserConfirmModal } from "../components/users/DeleteUserConfirmModal";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 type FormMode = "create" | "edit";
 
@@ -219,29 +221,15 @@ export function UsersSettingsPage() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleEditUser(user)}
-                      className="rounded-xl bg-white/[0.06] px-3 py-2 text-sm text-white transition hover:bg-white/[0.1]"
-                    >
+                    <Button variant="secondary" size="md" onClick={() => handleEditUser(user)}>
                       Modifier
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleToggleActive(user)}
-                      className="rounded-xl bg-white/[0.06] px-3 py-2 text-sm text-white transition hover:bg-white/[0.1]"
-                    >
+                    </Button>
+                    <Button variant="secondary" size="md" onClick={() => handleToggleActive(user)}>
                       {user.isActive ? "Désactiver" : "Activer"}
-                    </button>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget(user)}
-                      className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-400 transition hover:bg-red-500/20"
-                    >
+                    </Button>
+                    <Button variant="dangerSoft" size="md" onClick={() => setDeleteTarget(user)}>
                       Supprimer
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -267,13 +255,13 @@ export function UsersSettingsPage() {
             </h2>
 
             {formMode === "edit" ? (
-              <button
+              <Button
                 type="button"
                 onClick={resetForm}
-                className="text-xs text-admin-text-soft transition hover:text-white"
+                className="text-admin-soft"
               >
                 Annuler
-              </button>
+              </Button>
             ) : null}
           </div>
 
@@ -282,12 +270,12 @@ export function UsersSettingsPage() {
               <label className="mb-1 block text-sm text-admin-text-soft">
                 Prénom
               </label>
-              <input
+              <Input 
                 value={form.firstName}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, firstName: e.target.value }))
                 }
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                className="px-3 outline-none"
               />
             </div>
 
@@ -295,12 +283,12 @@ export function UsersSettingsPage() {
               <label className="mb-1 block text-sm text-admin-text-soft">
                 Nom
               </label>
-              <input
+              <Input 
                 value={form.lastName}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, lastName: e.target.value }))
                 }
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                className="px-3 outline-none"
               />
             </div>
 
@@ -308,13 +296,13 @@ export function UsersSettingsPage() {
               <label className="mb-1 block text-sm text-admin-text-soft">
                 Email
               </label>
-              <input
+              <Input 
                 type="email"
                 value={form.email}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, email: e.target.value }))
                 }
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                className="px-3 outline-none"
               />
             </div>
 
@@ -323,13 +311,13 @@ export function UsersSettingsPage() {
                 <label className="mb-1 block text-sm text-admin-text-soft">
                   Mot de passe
                 </label>
-                <input
+                <Input 
                   type="password"
                   value={form.password}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, password: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                  className="px-3 outline-none"
                 />
                 <p className="mt-1 text-xs text-admin-text-muted">
                   12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.
@@ -340,12 +328,12 @@ export function UsersSettingsPage() {
                 <label className="mb-1 block text-sm text-admin-text-soft">
                   Nouveau mot de passe
                 </label>
-                <input
+                <Input 
                   type="password"
                   value={passwordReset}
                   onChange={(e) => setPasswordReset(e.target.value)}
                   placeholder="Laisser vide pour ne pas changer"
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none placeholder:text-admin-text-muted focus:border-white/20"
+                  className="px-3 outline-none placeholder:text-admin-text-muted"
                 />
                 <p className="mt-1 text-xs text-admin-text-muted">
                   12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.
@@ -353,17 +341,13 @@ export function UsersSettingsPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full rounded-xl bg-admin-accent px-4 py-2 text-sm text-white transition hover:brightness-110 disabled:opacity-60"
-            >
+            <Button type="submit" disabled={saving} className="w-full">
               {saving
                 ? "Enregistrement..."
                 : formMode === "create"
                 ? "Créer l'utilisateur"
                 : "Enregistrer les modifications"}
-            </button>
+            </Button>
           </form>
         </aside>
       </div>

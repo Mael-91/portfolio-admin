@@ -11,6 +11,7 @@ import {
 } from "../services/legal";
 import { LegalEditor } from "../components/editor/LegalEditor";
 import { ConfirmLegalPublishModal } from "../components/legal/ConfirmLegalPublishModal";
+import { Button } from "../components/ui/Button";
 
 type LegalTypeItem = {
   value: LegalDocumentType;
@@ -152,18 +153,15 @@ export function LegalDocumentsPage() {
               const active = type.value === selectedType;
 
               return (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => setSelectedType(type.value)}
-                  className={`w-full rounded-xl px-4 py-3 text-left text-sm transition cursor-pointer ${
+                <Button align="left" key={type.value} type="button" onClick={() => setSelectedType(type.value)}
+                className={`w-full text-left ${
                     active
                       ? "bg-admin-accent text-white"
                       : "bg-white/[0.03] text-admin-text-soft hover:bg-white/[0.06] hover:text-white"
                   }`}
                 >
                   {type.label}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -244,23 +242,21 @@ export function LegalDocumentsPage() {
             </p>
 
             <div className="mt-4 flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={handleSaveDraft}
-                disabled={savingDraft || editorContent === currentDocument?.content_html}
-                className="w-full rounded-xl bg-white/[0.06] px-4 py-2 text-sm text-white transition hover:bg-white/[0.1] cursor-pointer"
+              <Button variant="secondary" type="button"
+              onClick={handleSaveDraft}
+              disabled={savingDraft || editorContent === currentDocument?.content_html}
+              className="w-full text-left"
               >
                 {savingDraft ? "Enregistrement..." : "Enregistrer en brouillon"}
-              </button>
-
-              <button
+              </Button>
+              <Button 
                 type="button"
                 onClick={() => setShowPublishModal(true)}
                 disabled={publishing}
-                className="w-full rounded-xl bg-admin-accent px-4 py-2 text-sm text-white transition hover:brightness-110 cursor-pointer"
+                className="w-full"
               >
                 Mettre à jour
-              </button>
+              </Button>
 
               {currentDownloadId ? (
                 <a

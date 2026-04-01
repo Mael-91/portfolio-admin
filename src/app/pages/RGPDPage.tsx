@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { env } from "../../env";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Switch } from "../components/ui/Switch";
 
 export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -66,21 +69,29 @@ export function RGPDPage() {
   }
 
   async function saveSettings() {
-    try {
-      await fetch(`${env.apiBaseUrl}/api/settings/rgpd`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          retentionDays,
-          autoPurgeEnabled,
-          purgeHour,
-        }),
-      });
-    } catch (error) {
-      console.error("Erreur sauvegarde settings:", error);
+  try {
+    const res = await fetch(`${env.apiBaseUrl}/api/settings/rgpd`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        retentionDays,
+        autoPurgeEnabled,
+        purgeHour,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur sauvegarde des paramètres");
     }
+
+    await refreshStats(retentionDays);
+  } catch (error) {
+    console.error("Erreur sauvegarde des paramètres:", error);
   }
+}
 
   async function confirmPurge() {
     try {
@@ -105,24 +116,12 @@ export function RGPDPage() {
   }, []);
 
   useEffect(() => {
-    if (loading) return;
-
-    const timeout = setTimeout(() => {
-      saveSettings();
-    }, 600);
-
-    return () => clearTimeout(timeout);
-  }, [retentionDays, autoPurgeEnabled, purgeHour, loading]);
-
-  useEffect(() => {
-    if (loading) return;
-
-    const timeout = setTimeout(() => {
-      refreshStats(retentionDays);
-    }, 250);
-
-    return () => clearTimeout(timeout);
-  }, [retentionDays, loading]);
+  if (loading) return;
+  const timeout = setTimeout(() => {
+    refreshStats(retentionDays);
+  }, 250);
+  return () => clearTimeout(timeout);
+}, [retentionDays, purgeHour, loading]);
 
   useEffect(() => {
     if (loading) return;
@@ -203,7 +202,9 @@ export function RGPDPage() {
             Prochaine purge automatique
           </p>
           <p className="mt-1 text-sm font-semibold">
-            {nextDeletionDate
+            {toDelete === 0
+              ? "Aucun message à supprimer"
+              : nextDeletionDate
               ? new Date(nextDeletionDate).toLocaleString()
               : "Aucune donnée"}
           </p>
@@ -217,12 +218,12 @@ export function RGPDPage() {
           <label className="text-sm text-admin-text-soft">
             Durée de conservation (jours)
           </label>
-          <input
+          <Input
             type="number"
             min={1}
             value={retentionDays}
             onChange={(e) => setRetentionDays(Number(e.target.value))}
-            className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
+            className="mt-1 bg-admin-panel-3/60 p-2"
           />
         </div>
 
@@ -230,11 +231,11 @@ export function RGPDPage() {
           <label className="text-sm text-admin-text-soft">
             Heure de purge (0 - 23)
           </label>
-          <input
+          <Input
             type="time"
             value={purgeHour}
             onChange={(e) => setPurgeHour(e.target.value)}
-            className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
+            className="mt-1 bg-admin-panel-3/60 p-2"
           />
         </div>
 
@@ -245,34 +246,14 @@ export function RGPDPage() {
               Active ou désactive l’exécution quotidienne
             </p>
           </div>
-
-          <button
-            type="button"
-            role="switch"
-            aria-checked={autoPurgeEnabled}
-            onClick={() => setAutoPurgeEnabled((prev) => !prev)}
-            className={`relative inline-flex h-7 w-12 items-center rounded-full transition ${
-              autoPurgeEnabled ? "bg-admin-accent" : "bg-white/15"
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                autoPurgeEnabled ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
+          <Switch checked={autoPurgeEnabled} onChange={setAutoPurgeEnabled} />
         </div>
       </div>
 
       <div className="rounded-2xl bg-red-500/10 p-5">
         <h2 className="text-sm font-semibold text-red-400">Action critique</h2>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="mt-3 rounded-xl bg-red-500 px-4 py-2 text-sm"
-        >
-          Purger maintenant
-        </button>
+        <Button variant="danger" size="md" onClick={() => setShowModal(true)} className="mt-3">Purger maintenant</Button>
       </div>
 
       {showModal && (
@@ -287,19 +268,20 @@ export function RGPDPage() {
             </p>
 
             <div className="mt-5 flex justify-end gap-3">
-              <button
+              <Button 
                 onClick={() => setShowModal(false)}
-                className="rounded-xl bg-white/10 px-4 py-2 text-sm"
+                className="px-4 py-2"
               >
                 Annuler
-              </button>
+              </Button>
 
-              <button
+              <Button 
+                variant="danger"
                 onClick={confirmPurge}
-                className="rounded-xl bg-red-500 px-4 py-2 text-sm"
+                className="px-4 py-2"
               >
                 Confirmer
-              </button>
+              </Button>
             </div>
           </div>
         </div>

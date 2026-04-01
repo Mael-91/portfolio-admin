@@ -26,6 +26,9 @@ import {
 
 import { DeletePortfolioImageModal } from "../components/portfolio/DeletePortfolioImageModal";
 import { env } from "../../env";
+import { Button } from "../components/ui/Button";
+import { Input, Textarea } from "../components/ui/Input";
+import { Switch } from "../components/ui/Switch";
 
 /* ========================= */
 /* Utils */
@@ -68,14 +71,13 @@ function SortablePortfolioCard({
         />
 
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
-          <button
+          <Button variant="secondary" size="sm" className="cursor-grab active:cursor-grabbing bg-black/50" 
             type="button"
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing rounded-lg bg-black/50 px-3 py-1.5 text-xs text-white"
           >
             Déplacer
-          </button>
+          </Button>
 
           <span
             className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
@@ -93,19 +95,9 @@ function SortablePortfolioCard({
         <div className="font-medium text-white">{image.caption}</div>
 
         <div className="mt-1 flex gap-2">
-          <button
-            onClick={() => onEdit(image)}
-            className="cursor-pointer rounded-xl bg-white/[0.06] px-3 py-1.5 text-xs text-white hover:bg-white/[0.1]"
-          >
-            Modifier
-          </button>
+          <Button variant="secondary" size="sm" onClick={() => onEdit(image)}>Modifier</Button>
 
-          <button
-            onClick={() => onDelete(image)}
-            className="cursor-pointer rounded-xl bg-red-500/10 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/20"
-          >
-            Supprimer
-          </button>
+          <Button variant="dangerSoft" size="sm" onClick={() => onDelete(image)}>Supprimer</Button>
         </div>
       </figcaption>
     </figure>
@@ -500,14 +492,9 @@ export function PortfolioImagesPage() {
                       <span className="text-xs text-admin-text-soft">
                         Aperçu avant envoi
                       </span>
-
-                      <button
-                        type="button"
-                        onClick={() => setFile(null)}
-                        className="cursor-pointer rounded-lg bg-red-500/10 px-2 py-1 text-xs text-red-400 transition hover:bg-red-500/20"
-                      >
+                      <Button variant="dangerSoft" size="sm" type="button" onClick={() => setFile(null)}>
                         Retirer
-                      </button>
+                      </Button>
                     </div>
 
                     <img
@@ -520,39 +507,37 @@ export function PortfolioImagesPage() {
               </div>
             ) : null}
 
-            <input
+            <Input
               value={form.caption}
               onChange={(e) =>
                 setForm({ ...form, caption: e.target.value })
               }
               placeholder="Caption"
-              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+              className={`outline-none ${
                 errorMessage && !form.caption.trim()
                   ? "border-red-500"
                   : "border-white/10 focus:border-white/20"
               }`}
             />
-
-            <input
+            <Input 
               value={form.altText}
               onChange={(e) =>
-                setForm({ ...form, altText: e.target.value })
+                  setForm({ ...form, altText: e.target.value })
               }
               placeholder="Texte alternatif"
-              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+              className={`outline-none ${
                 errorMessage && !form.altText.trim()
                   ? "border-red-500"
                   : "border-white/10 focus:border-white/20"
               }`}
             />
-
-            <textarea
+            <Textarea
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
               placeholder="Description"
-              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+              className={`bg-white/[0.03] outline-none ${
                 errorMessage && !form.description.trim()
                   ? "border-red-500"
                   : "border-white/10 focus:border-white/20"
@@ -563,41 +548,25 @@ export function PortfolioImagesPage() {
               <span className="text-sm text-admin-text-soft">
                 Activer la photo sur le site
               </span>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setForm((prev) => ({ ...prev, isActive: !prev.isActive }))
-                }
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                  form.isActive ? "bg-green-500" : "bg-white/20"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    form.isActive ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
+              <Switch checked={form.isActive} onChange={(checked) => setForm((prev) => ({ ...prev, isActive: checked })) } />
             </label>
 
-            <button
-              type="submit"
+            <Button type="submit"
               disabled={savingForm}
-              className={`w-full rounded-2xl px-4 py-2.5 text-sm font-medium transition 
+              className={`w-full 
                 ${
                   savingForm
                     ? "bg-white/10 text-white/60 cursor-not-allowed"
                     : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
                 }
               `}
-            >
-              {savingForm
+              >
+                {savingForm
                 ? "Enregistrement..."
                 : selectedImage
                 ? "Enregistrer les modifications"
                 : "Ajouter la photo"}
-            </button>
+              </Button>
           </form>
         </div>
       </div>
