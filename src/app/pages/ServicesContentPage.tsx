@@ -10,32 +10,9 @@ import { useToast } from "../hooks/useToast";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
+import { Switch } from "../components/ui/Switch";
 
 type EditableCard = ServiceCard;
-
-function Toggle({
-  checked,
-  onChange,
-}: {
-  checked: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-        checked ? "bg-green-500" : "bg-white/20"
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 rounded-full bg-white transition ${
-          checked ? "translate-x-6" : "translate-x-1"
-        }`}
-      />
-    </button>
-  );
-}
 
 export function ServicesContentPage() {
   const { showToast } = useToast();
@@ -215,7 +192,7 @@ export function ServicesContentPage() {
           <section className="rounded-2xl bg-white/[0.03] p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold">Texte d’introduction</h2>
-              <Toggle checked={introEnabled} onChange={setIntroEnabled} />
+              <Switch checked={introEnabled} onChange={setIntroEnabled} />
             </div>
 
             <div
@@ -264,15 +241,12 @@ export function ServicesContentPage() {
                   <span className="text-sm text-admin-text-soft">
                     Afficher le texte
                   </span>
-                  <Toggle
-                    checked={card.bodyEnabled}
-                    onChange={(value) =>
+                  <Switch checked={card.bodyEnabled} onChange={(value) =>
                       updateCard(card.id, (current) => ({
                         ...current,
                         bodyEnabled: value,
-                      }))
-                    }
-                  />
+                      }))} 
+                    />
                 </div>
 
                 <div
@@ -299,15 +273,12 @@ export function ServicesContentPage() {
                   <span className="text-sm text-admin-text-soft">
                     Afficher la liste à puces
                   </span>
-                  <Toggle
-                    checked={card.bulletsEnabled}
-                    onChange={(value) =>
+                  <Switch checked={card.bulletsEnabled} onChange={(value) =>
                       updateCard(card.id, (current) => ({
                         ...current,
                         bulletsEnabled: value,
-                      }))
-                    }
-                  />
+                      }))} 
+                    />
                 </div>
 
                 <div className="space-y-2">
@@ -345,15 +316,12 @@ export function ServicesContentPage() {
                   <span className="text-sm text-admin-text-soft">
                     Afficher le prix
                   </span>
-                  <Toggle
-                    checked={card.priceEnabled}
-                    onChange={(value) =>
+                  <Switch checked={card.priceEnabled} onChange={(value) =>
                       updateCard(card.id, (current) => ({
                         ...current,
                         priceEnabled: value,
-                      }))
-                    }
-                  />
+                      }))} 
+                    />
                 </div>
 
                 <div
@@ -385,18 +353,6 @@ export function ServicesContentPage() {
           </div>
 
           <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className={`rounded-2xl px-5 py-2.5 text-sm font-medium transition ${
-                saving
-                  ? "cursor-not-allowed bg-white/10 text-white/60"
-                  : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
-              }`}
-            >
-              {saving ? "Enregistrement..." : "Enregistrer les prestations"}
-            </button>
             <Button
               size="lg"
               type="button"
