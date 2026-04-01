@@ -40,11 +40,11 @@ export function Button({
         variant === "dangerSoft" &&
           "bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300",
 
-        className
+        className,
 
-        align === "center && justify-center",
-        align === "left && justify-start",
-        align === "right && justify-end",
+        align === "center" && "justify-center",
+        align === "left" && "justify-start",
+        align === "right" && "justify-end",
       )}
       {...props}
     >
