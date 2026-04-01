@@ -431,12 +431,12 @@ export function MessageDetailPage() {
 
               <Button variant="icon" size="icon"
                   onClick={async () => {
-                    const success = await copyToClipboard(message.email);
+                    const success = await copyToClipboard(message.messageText);
                     if (success) {
-                      setCopiedField("email");
+                      setCopiedField("message");
                       showToast({
                         title: "Copié",
-                        description: "Adresse email copiée",
+                        description: "Message copié",
                         variant: "success",
                       });
                       setTimeout(() => setCopiedField(null), 1500);
@@ -449,7 +449,7 @@ export function MessageDetailPage() {
                     }
                   }}
                   title="copier"
-                  className={`transition-all duration-200 active:scale-90 ${copiedField === "email" ? "text-green-400" : "text-admin-text-soft hover:text-white"}`}
+                  className={`transition-all duration-200 active:scale-90 ${copiedField === "message" ? "text-green-400" : "text-admin-text-soft hover:text-white"}`}
                 >
                   {/* COPY ICON */}
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`absolute h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-0 scale-75" : "opacity-100 scale-100"}`}>
@@ -458,7 +458,7 @@ export function MessageDetailPage() {
                   </svg>
 
                   {/* SUCCESS ICON */}
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`absolute h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`absolute h-4 w-4 transition-all duration-200 ${copiedField === "message" ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
                   </svg>
                 </Button>
