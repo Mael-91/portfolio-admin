@@ -201,9 +201,16 @@ export function RGPDPage() {
           <p className="text-xs text-admin-text-muted uppercase">
             Prochaine purge automatique
           </p>
+          <p className="mt-1 text-sm font-semibold">
+            {toDelete === 0
+              ? "Aucun message à supprimer"
+              : nextDeletionDate
+              ? new Date(nextDeletionDate).toLocaleString()
+              : "Aucune donnée"}
+          </p>
           {toDelete === 0 ? (
             <>
-              <span className="mt-1 text-sm">Aucun message à supprimer</span>
+              <p className="mt-1 text-sm">Aucun message à supprimer</p>
             </>
           ) : (
             <>
