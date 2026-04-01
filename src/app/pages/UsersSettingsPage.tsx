@@ -10,6 +10,7 @@ import {
 } from "../services/users";
 import { DeleteUserConfirmModal } from "../components/users/DeleteUserConfirmModal";
 import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 type FormMode = "create" | "edit";
 
@@ -269,12 +270,12 @@ export function UsersSettingsPage() {
               <label className="mb-1 block text-sm text-admin-text-soft">
                 Prénom
               </label>
-              <input
+              <Input 
                 value={form.firstName}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, firstName: e.target.value }))
                 }
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                className="px-3 outline-none"
               />
             </div>
 
@@ -288,6 +289,13 @@ export function UsersSettingsPage() {
                   setForm((prev) => ({ ...prev, lastName: e.target.value }))
                 }
                 className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+              />
+              <Input 
+                value={form.lastName}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, lastName: e.target.value }))
+                }
+                className="px-3 outline-none"
               />
             </div>
 
@@ -303,6 +311,14 @@ export function UsersSettingsPage() {
                 }
                 className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
               />
+              <Input 
+                type="email"
+                value={form.email}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, email: e.target.value }))
+                }
+                className="px-3 outline-none"
+              />
             </div>
 
             {formMode === "create" ? (
@@ -310,13 +326,13 @@ export function UsersSettingsPage() {
                 <label className="mb-1 block text-sm text-admin-text-soft">
                   Mot de passe
                 </label>
-                <input
+                <Input 
                   type="password"
                   value={form.password}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, password: e.target.value }))
                   }
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
+                  className="px-3 outline-none"
                 />
                 <p className="mt-1 text-xs text-admin-text-muted">
                   12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.
@@ -327,12 +343,12 @@ export function UsersSettingsPage() {
                 <label className="mb-1 block text-sm text-admin-text-soft">
                   Nouveau mot de passe
                 </label>
-                <input
+                <Input 
                   type="password"
                   value={passwordReset}
                   onChange={(e) => setPasswordReset(e.target.value)}
                   placeholder="Laisser vide pour ne pas changer"
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none placeholder:text-admin-text-muted focus:border-white/20"
+                  className="px-3 outline-none placeholder:text-admin-text-muted"
                 />
                 <p className="mt-1 text-xs text-admin-text-muted">
                   12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.

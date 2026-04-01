@@ -512,7 +512,7 @@ export function PortfolioImagesPage() {
                 setForm({ ...form, caption: e.target.value })
               }
               placeholder="Caption"
-              className={`bg-white/[0.03] outline-none ${
+              className={`outline-none ${
                 errorMessage && !form.caption.trim()
                   ? "border-red-500"
                   : "border-white/10 focus:border-white/20"
@@ -524,7 +524,7 @@ export function PortfolioImagesPage() {
                   setForm({ ...form, altText: e.target.value })
               }
               placeholder="Texte alternatif"
-              className={`bg-white/[0.03] outline-none ${
+              className={`outline-none ${
                 errorMessage && !form.altText.trim()
                   ? "border-red-500"
                   : "border-white/10 focus:border-white/20"
