@@ -255,13 +255,13 @@ export function UsersSettingsPage() {
             </h2>
 
             {formMode === "edit" ? (
-              <button
+              <Button
                 type="button"
                 onClick={resetForm}
-                className="text-xs text-admin-text-soft transition hover:text-white"
+                className="text-admin-soft"
               >
                 Annuler
-              </button>
+              </Button>
             ) : null}
           </div>
 
@@ -341,7 +341,7 @@ export function UsersSettingsPage() {
               </div>
             )}
 
-            <Button variant="primary" size="md" type="submit" disabled={saving} className="w-full">
+            <Button type="submit" disabled={saving} className="w-full">
               {saving
                 ? "Enregistrement..."
                 : formMode === "create"

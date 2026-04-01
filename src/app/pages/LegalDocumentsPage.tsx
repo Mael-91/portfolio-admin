@@ -153,7 +153,7 @@ export function LegalDocumentsPage() {
               const active = type.value === selectedType;
 
               return (
-                <Button variant="primary" size="md" align="left" key={type.value} type="button" onClick={() => setSelectedType(type.value)}
+                <Button align="left" key={type.value} type="button" onClick={() => setSelectedType(type.value)}
                 className={`w-full text-left ${
                     active
                       ? "bg-admin-accent text-white"
@@ -242,14 +242,15 @@ export function LegalDocumentsPage() {
             </p>
 
             <div className="mt-4 flex flex-col gap-3">
-              <Button variant="secondary" size="md" type="button"
+              <Button variant="secondary" type="button"
               onClick={handleSaveDraft}
               disabled={savingDraft || editorContent === currentDocument?.content_html}
               className="w-full text-left"
               >
                 {savingDraft ? "Enregistrement..." : "Enregistrer en brouillon"}
               </Button>
-              <Button variant="primary" size="md" type="button"
+              <Button 
+                type="button"
                 onClick={() => setShowPublishModal(true)}
                 disabled={publishing}
                 className="w-full"

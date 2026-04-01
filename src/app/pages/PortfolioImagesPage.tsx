@@ -565,7 +565,7 @@ export function PortfolioImagesPage() {
               </Button>
             </label>
 
-            <Button variant="primary" size="md" type="submit"
+            <Button type="submit"
               disabled={savingForm}
               className={`w-full 
                 ${

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { env } from "../../env";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
 import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 
 export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -218,12 +219,12 @@ export function RGPDPage() {
           <label className="text-sm text-admin-text-soft">
             Durée de conservation (jours)
           </label>
-          <input
+          <Input
             type="number"
             min={1}
             value={retentionDays}
             onChange={(e) => setRetentionDays(Number(e.target.value))}
-            className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
+            className="mt-1 bg-admin-panel-3/60 p-2"
           />
         </div>
 
@@ -231,11 +232,11 @@ export function RGPDPage() {
           <label className="text-sm text-admin-text-soft">
             Heure de purge (0 - 23)
           </label>
-          <input
+          <Input
             type="time"
             value={purgeHour}
             onChange={(e) => setPurgeHour(e.target.value)}
-            className="mt-1 w-full rounded-xl bg-admin-panel-3/60 p-2"
+            className="mt-1 bg-admin-panel-3/60 p-2"
           />
         </div>
 
@@ -247,12 +248,12 @@ export function RGPDPage() {
             </p>
           </div>
 
-          <button
+          <Button
             type="button"
             role="switch"
             aria-checked={autoPurgeEnabled}
             onClick={() => setAutoPurgeEnabled((prev) => !prev)}
-            className={`relative inline-flex h-7 w-12 items-center rounded-full transition ${
+            className={`relative inline-flex h-7 w-12 rounded-full ${
               autoPurgeEnabled ? "bg-admin-accent" : "bg-white/15"
             }`}
           >
@@ -261,7 +262,7 @@ export function RGPDPage() {
                 autoPurgeEnabled ? "translate-x-6" : "translate-x-1"
               }`}
             />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -283,19 +284,20 @@ export function RGPDPage() {
             </p>
 
             <div className="mt-5 flex justify-end gap-3">
-              <button
+              <Button 
                 onClick={() => setShowModal(false)}
-                className="rounded-xl bg-white/10 px-4 py-2 text-sm"
+                className="px-4 py-2"
               >
                 Annuler
-              </button>
+              </Button>
 
-              <button
+              <Button 
+                variant="danger"
                 onClick={confirmPurge}
-                className="rounded-xl bg-red-500 px-4 py-2 text-sm"
+                className="px-4 py-2"
               >
                 Confirmer
-              </button>
+              </Button>
             </div>
           </div>
         </div>
