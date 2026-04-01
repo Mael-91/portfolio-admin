@@ -69,21 +69,29 @@ export function RGPDPage() {
   }
 
   async function saveSettings() {
-    try {
-      await fetch(`${env.apiBaseUrl}/api/settings/rgpd`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          retentionDays,
-          autoPurgeEnabled,
-          purgeHour,
-        }),
-      });
-    } catch (error) {
-      console.error("Erreur sauvegarde settings:", error);
+  try {
+    const res = await fetch(`${env.apiBaseUrl}/api/settings/rgpd`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        retentionDays,
+        autoPurgeEnabled,
+        purgeHour,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur sauvegarde des paramètres");
     }
+
+    await refreshStats(retentionDays);
+  } catch (error) {
+    console.error("Erreur sauvegarde des paramètres:", error);
   }
+}
 
   async function confirmPurge() {
     try {
@@ -108,24 +116,12 @@ export function RGPDPage() {
   }, []);
 
   useEffect(() => {
-    if (loading) return;
-
-    const timeout = setTimeout(() => {
-      saveSettings();
-    }, 600);
-
-    return () => clearTimeout(timeout);
-  }, [retentionDays, autoPurgeEnabled, purgeHour, loading]);
-
-  useEffect(() => {
-    if (loading) return;
-
-    const timeout = setTimeout(() => {
-      refreshStats(retentionDays);
-    }, 250);
-
-    return () => clearTimeout(timeout);
-  }, [retentionDays, loading]);
+  if (loading) return;
+  const timeout = setTimeout(() => {
+    refreshStats(retentionDays);
+  }, 250);
+  return () => clearTimeout(timeout);
+}, [retentionDays, purgeHour, loading]);
 
   useEffect(() => {
     if (loading) return;
