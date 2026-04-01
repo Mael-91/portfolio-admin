@@ -340,13 +340,13 @@ export function MessageDetailPage() {
                     className={`transition-all duration-200 active:scale-90 ${copiedField === "email" ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/[0.03] border-white/10 text-admin-text-soft hover:bg-white/[0.08] hover:text-white"}`}
                     >
                       {/* COPY ICON */}
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-0 scale-75" : "opacity-100 scale-100" }`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`absolute h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-0 scale-75" : "opacity-100 scale-100"}`}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25h3A2.25 2.25 0 0021 15V5.25A2.25 2.25 0 0018.75 3h-9.5A2.25 2.25 0 007 5.25v3"/>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h-3A2.25 2.25 0 003.75 9.75v9.75A2.25 2.25 0 006 21.75h9.75A2.25 2.25 0 0018 19.5v-9.75A2.25 2.25 0 0015.75 7.5H9z"/>
                       </svg>
 
                       {/* SUCCESS ICON */}
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`absolute h-4 w-4transition-all duration-200 ${copiedField === "email" ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`absolute h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
                       </svg>
                     </Button>
@@ -452,7 +452,7 @@ export function MessageDetailPage() {
                   className={`transition-all duration-200 active:scale-90 ${copiedField === "email" ? "bg-green-500/20 border-green-500/30 text-green-400" : "bg-white/[0.03] border-white/10 text-admin-text-soft hover:bg-white/[0.08] hover:text-white"}`}
                 >
                   {/* COPY ICON */}
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-0 scale-75" : "opacity-100 scale-100" }`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`absolute h-4 w-4 transition-all duration-200 ${copiedField === "email" ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25h3A2.25 2.25 0 0021 15V5.25A2.25 2.25 0 0018.75 3h-9.5A2.25 2.25 0 007 5.25v3"/>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h-3A2.25 2.25 0 003.75 9.75v9.75A2.25 2.25 0 006 21.75h9.75A2.25 2.25 0 0018 19.5v-9.75A2.25 2.25 0 0015.75 7.5H9z"/>
                   </svg>

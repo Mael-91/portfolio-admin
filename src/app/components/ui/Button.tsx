@@ -27,7 +27,7 @@ export function Button({
         size === "sm" && "px-3 py-1.5 text-sm",
         size === "md" && "px-4 py-2 text-sm",
         size === "lg" && "px-5 py-3 text-base",
-        size === "icon" && "",
+        size === "icon" && "h-8 w-8 p-0",
 
         // variants
         variant === "primary" &&
@@ -41,7 +41,7 @@ export function Button({
         variant === "dangerSoft" &&
           "bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300",
         variant === "icon" &&
-          "bg-transparent border-none hover:bg-white/[0.1] rounded-lg",
+          "relative bg-transparent border-none hover:bg-white/[0.1] rounded-lg",
 
         className,
 
