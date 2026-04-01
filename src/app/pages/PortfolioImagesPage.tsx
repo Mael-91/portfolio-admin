@@ -28,6 +28,7 @@ import { DeletePortfolioImageModal } from "../components/portfolio/DeletePortfol
 import { env } from "../../env";
 import { Button } from "../components/ui/Button";
 import { Input, Textarea } from "../components/ui/Input";
+import { Switch } from "../components/ui/Switch";
 
 /* ========================= */
 /* Utils */
@@ -547,22 +548,7 @@ export function PortfolioImagesPage() {
               <span className="text-sm text-admin-text-soft">
                 Activer la photo sur le site
               </span>
-
-              <Button variant="ghost" size="sm" 
-                type="button" 
-                onClick={() => 
-                  setForm((prev) => ({ ...prev, isActive: !prev.isActive }))
-                }
-                className={`relative h-6 w-11 rounded-full 
-                  form.isActive ? "bg-green-500" : "bg-white/20"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    form.isActive ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </Button>
+              <Switch checked={form.isActive} onChange={(checked) => setForm((prev) => ({ ...prev, isActive: checked })) } />
             </label>
 
             <Button type="submit"
