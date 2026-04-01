@@ -283,13 +283,6 @@ export function UsersSettingsPage() {
               <label className="mb-1 block text-sm text-admin-text-soft">
                 Nom
               </label>
-              <input
-                value={form.lastName}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, lastName: e.target.value }))
-                }
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
-              />
               <Input 
                 value={form.lastName}
                 onChange={(e) =>
@@ -303,14 +296,6 @@ export function UsersSettingsPage() {
               <label className="mb-1 block text-sm text-admin-text-soft">
                 Email
               </label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, email: e.target.value }))
-                }
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/20"
-              />
               <Input 
                 type="email"
                 value={form.email}
