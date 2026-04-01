@@ -429,7 +429,7 @@ export function MessageDetailPage() {
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-base font-semibold text-white">Message</h2>
 
-              <Button variant="icon" size="sm"
+              <Button variant="icon"
                   onClick={async () => {
                     const success = await copyToClipboard(message.email);
                     if (success) {
