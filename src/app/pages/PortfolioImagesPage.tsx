@@ -27,6 +27,7 @@ import {
 import { DeletePortfolioImageModal } from "../components/portfolio/DeletePortfolioImageModal";
 import { env } from "../../env";
 import { Button } from "../components/ui/Button";
+import { Input, Textarea } from "../components/ui/Input";
 
 /* ========================= */
 /* Utils */
@@ -505,39 +506,37 @@ export function PortfolioImagesPage() {
               </div>
             ) : null}
 
-            <input
+            <Input
               value={form.caption}
               onChange={(e) =>
                 setForm({ ...form, caption: e.target.value })
               }
               placeholder="Caption"
-              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+              className={`bg-white/[0.03] outline-none ${
                 errorMessage && !form.caption.trim()
                   ? "border-red-500"
                   : "border-white/10 focus:border-white/20"
               }`}
             />
-
-            <input
+            <Input 
               value={form.altText}
               onChange={(e) =>
-                setForm({ ...form, altText: e.target.value })
+                  setForm({ ...form, altText: e.target.value })
               }
               placeholder="Texte alternatif"
-              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+              className={`bg-white/[0.03] outline-none ${
                 errorMessage && !form.altText.trim()
                   ? "border-red-500"
                   : "border-white/10 focus:border-white/20"
               }`}
             />
-
-            <textarea
+            <Textarea
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
               placeholder="Description"
-              className={`w-full rounded-xl border bg-white/[0.03] px-3 py-2 text-sm text-white outline-none ${
+              className={`bg-white/[0.03] outline-none ${
                 errorMessage && !form.description.trim()
                   ? "border-red-500"
                   : "border-white/10 focus:border-white/20"
@@ -549,12 +548,12 @@ export function PortfolioImagesPage() {
                 Activer la photo sur le site
               </span>
 
-              <button
-                type="button"
-                onClick={() =>
+              <Button variant="ghost" size="sm" 
+                type="button" 
+                onClick={() => 
                   setForm((prev) => ({ ...prev, isActive: !prev.isActive }))
                 }
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                className={`relative h-6 w-11 rounded-full 
                   form.isActive ? "bg-green-500" : "bg-white/20"
                 }`}
               >
@@ -563,7 +562,7 @@ export function PortfolioImagesPage() {
                     form.isActive ? "translate-x-6" : "translate-x-1"
                   }`}
                 />
-              </button>
+              </Button>
             </label>
 
             <Button variant="primary" size="md" type="submit"

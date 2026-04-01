@@ -153,7 +153,7 @@ export function LegalDocumentsPage() {
               const active = type.value === selectedType;
 
               return (
-                <Button variant="primary" size="md" key={type.value} type="button" onClick={() => setSelectedType(type.value)}
+                <Button variant="primary" size="md" align="left" key={type.value} type="button" onClick={() => setSelectedType(type.value)}
                 className={`w-full text-left ${
                     active
                       ? "bg-admin-accent text-white"

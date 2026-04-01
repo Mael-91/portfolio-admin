@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "danger" | "ghost" | "dangerSoft";
   size?: "sm" | "md" | "lg";
+  align?: "center" | "left" | "right";
   isLoading?: boolean;
 };
 
@@ -10,6 +11,7 @@ export function Button({
   className,
   variant = "primary",
   size = "md",
+  align = "center",
   isLoading = false,
   children,
   ...props
@@ -39,6 +41,10 @@ export function Button({
           "bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300",
 
         className
+
+        align === "center && justify-center",
+        align === "left && justify-start",
+        align === "right && justify-end",
       )}
       {...props}
     >
