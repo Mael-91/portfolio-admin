@@ -208,19 +208,6 @@ export function RGPDPage() {
               ? new Date(nextDeletionDate).toLocaleString()
               : "Aucune donnée"}
           </p>
-          {toDelete === 0 ? (
-            <>
-              <p className="mt-1 text-sm">Aucun message à supprimer</p>
-            </>
-          ) : (
-            <>
-              <p className="mt-1 text-sm font-semibold">
-                {nextDeletionDate
-                  ? new Date(nextDeletionDate).toLocaleString()
-                  : "Aucune donnée"}
-              </p>
-            </>
-          )}
         </div>
       </div>
 
