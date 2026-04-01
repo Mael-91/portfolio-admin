@@ -3,6 +3,7 @@ import { env } from "../../env";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
+import { Switch } from "../components/ui/Switch";
 
 export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -247,22 +248,7 @@ export function RGPDPage() {
               Active ou désactive l’exécution quotidienne
             </p>
           </div>
-
-          <Button
-            type="button"
-            role="switch"
-            aria-checked={autoPurgeEnabled}
-            onClick={() => setAutoPurgeEnabled((prev) => !prev)}
-            className={`relative inline-flex h-7 w-12 rounded-full ${
-              autoPurgeEnabled ? "bg-admin-accent" : "bg-white/15"
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                autoPurgeEnabled ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </Button>
+          <Switch checked={autoPurgeEnabled} onChange={setAutoPurgeEnabled} />
         </div>
       </div>
 
