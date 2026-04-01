@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "danger" | "ghost" | "dangerSoft" | "icon";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "icon";
   align?: "center" | "left" | "right";
   isLoading?: boolean;
 };
@@ -27,6 +27,7 @@ export function Button({
         size === "sm" && "px-3 py-1.5 text-sm",
         size === "md" && "px-4 py-2 text-sm",
         size === "lg" && "px-5 py-3 text-base",
+        size === "icon" && "",
 
         // variants
         variant === "primary" &&

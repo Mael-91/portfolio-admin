@@ -317,7 +317,7 @@ export function MessageDetailPage() {
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                   <p className="text-sm text-admin-text">{message.email}</p>
-                  <Button variant="icon" size="sm"
+                  <Button variant="icon" size="icon"
                     onClick={async () => {
                       const success = await copyToClipboard(message.email);
                       if (success) {
@@ -429,7 +429,7 @@ export function MessageDetailPage() {
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-base font-semibold text-white">Message</h2>
 
-              <Button variant="icon"
+              <Button variant="icon" size="icon"
                   onClick={async () => {
                     const success = await copyToClipboard(message.email);
                     if (success) {
