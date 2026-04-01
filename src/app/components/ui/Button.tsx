@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger" | "ghost" | "dangerSoft";
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "dangerSoft" | "icon";
   size?: "sm" | "md" | "lg";
   align?: "center" | "left" | "right";
   isLoading?: boolean;
@@ -39,6 +39,8 @@ export function Button({
           "text-admin-text-soft hover:bg-white/5 hover:text-white",
         variant === "dangerSoft" &&
           "bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300",
+        variant === "icon" &&
+          "p-2 bg-transparent border-none w-auto h-auto hover:bg-white/[0.1] rounded-lg",
 
         className,
 

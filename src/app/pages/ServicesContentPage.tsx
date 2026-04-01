@@ -192,7 +192,7 @@ export function ServicesContentPage() {
           <section className="rounded-2xl bg-white/[0.03] p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold">Texte d’introduction</h2>
-              <Switch checked={introEnabled} onChange={setIntroEnabled} />
+              <Switch variant="success" checked={introEnabled} onChange={setIntroEnabled} />
             </div>
 
             <div
@@ -241,7 +241,7 @@ export function ServicesContentPage() {
                   <span className="text-sm text-admin-text-soft">
                     Afficher le texte
                   </span>
-                  <Switch checked={card.bodyEnabled} onChange={(value) =>
+                  <Switch variant="success" checked={card.bodyEnabled} onChange={(value) =>
                       updateCard(card.id, (current) => ({
                         ...current,
                         bodyEnabled: value,
@@ -273,7 +273,7 @@ export function ServicesContentPage() {
                   <span className="text-sm text-admin-text-soft">
                     Afficher la liste à puces
                   </span>
-                  <Switch checked={card.bulletsEnabled} onChange={(value) =>
+                  <Switch variant="success" checked={card.bulletsEnabled} onChange={(value) =>
                       updateCard(card.id, (current) => ({
                         ...current,
                         bulletsEnabled: value,
@@ -316,7 +316,7 @@ export function ServicesContentPage() {
                   <span className="text-sm text-admin-text-soft">
                     Afficher le prix
                   </span>
-                  <Switch checked={card.priceEnabled} onChange={(value) =>
+                  <Switch variant="success" checked={card.priceEnabled} onChange={(value) =>
                       updateCard(card.id, (current) => ({
                         ...current,
                         priceEnabled: value,
