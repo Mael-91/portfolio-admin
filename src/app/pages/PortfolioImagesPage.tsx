@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -120,7 +120,7 @@ export function PortfolioImagesPage() {
     useState<PortfolioImage | null>(null);
 
   const [savingForm, setSavingForm] = useState(false);
-  const [savingOrder, setSavingOrder] = useState(false);
+  const [, setSavingOrder] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
@@ -351,18 +351,6 @@ export function PortfolioImagesPage() {
       setSavingOrder(false);
     }
   }
-
-  /* ========================= */
-  /* Derived */
-  /* ========================= */
-
-  const activeImages = useMemo(
-    () =>
-      images
-        .filter((i) => i.isActive)
-        .sort((a, b) => a.displayOrder - b.displayOrder),
-    [images]
-  );
 
   /* ========================= */
   /* Render */
