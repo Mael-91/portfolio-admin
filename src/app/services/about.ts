@@ -70,3 +70,20 @@ export async function uploadAboutImage(file: File) {
 
   return data;
 }
+
+export async function cleanupOrphanAboutImages() {
+  const res = await fetch(`${env.apiBaseUrl}/api/about/cleanup-orphans`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(
+      extractApiErrorMessage(data, "Erreur nettoyage images orphelines")
+    );
+  }
+
+  return data;
+}

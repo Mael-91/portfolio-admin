@@ -5,6 +5,7 @@ import { handleRouteError } from "../common/handle-route-error";
 import { fetchAboutContent, saveAboutContent } from "./about.service";
 import { aboutUpload } from "./about.upload";
 import { deleteAboutImageIfExists } from "./about.file";
+import { cleanupOrphanAboutImages } from "./about.cleanup";
 
 export const aboutRouter = Router();
 
@@ -82,3 +83,16 @@ aboutRouter.post(
     }
   }
 );
+
+aboutRouter.post("/cleanup-orphans", async (_req, res) => {
+  try {
+    const result = await cleanupOrphanAboutImages();
+
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    return handleRouteError(res, error, "nettoyage images orphelines à propos");
+  }
+});

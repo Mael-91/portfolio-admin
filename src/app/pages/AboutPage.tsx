@@ -5,6 +5,7 @@ import { Input } from "../components/ui/Input";
 import { useToast } from "../hooks/useToast";
 import { env } from "../../env";
 import {
+  cleanupOrphanAboutImages,
   fetchAboutContent,
   saveAboutContent,
   uploadAboutImage,
@@ -37,6 +38,7 @@ export function AboutPage() {
   const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [form, setForm] = useState<AboutForm>(emptyForm);
+  const [cleaningOrphans, setCleaningOrphans] = useState(false);
 
   async function loadData() {
     setLoading(true);
@@ -122,6 +124,39 @@ export function AboutPage() {
     }
   }
 
+  async function handleCleanupOrphans() {
+    setCleaningOrphans(true);
+    setErrorMessage("");
+
+    try {
+      const data = await cleanupOrphanAboutImages();
+
+      showToast({
+        title: "Nettoyage terminé",
+        description:
+          data.deletedCount > 0
+            ? `${data.deletedCount} image${data.deletedCount > 1 ? "s" : ""} orpheline${data.deletedCount > 1 ? "s" : ""} supprimée${data.deletedCount > 1 ? "s" : ""}.`
+            : "Aucune image orpheline à supprimer.",
+        variant: "success",
+      });
+
+      await loadData();
+    } catch (error: any) {
+      const message =
+        error?.message || "Erreur lors du nettoyage des images orphelines.";
+
+      setErrorMessage(message);
+
+      showToast({
+        title: "Erreur",
+        description: message,
+        variant: "error",
+      });
+    } finally {
+      setCleaningOrphans(false);
+    }
+  }
+
   const imagePreviewUrl = useMemo(
     () => resolveAssetUrl(form.imageUrl),
     [form.imageUrl]
@@ -147,6 +182,28 @@ export function AboutPage() {
             Gère le texte et la photo de la section À propos du site vitrine.
           </p>
         </div>
+
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          isLoading={saving}
+          disabled={saving}
+        >
+          {saving ? "Enregistrement..." : "Enregistrer"}
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Button
+          variant="secondary"
+          onClick={handleCleanupOrphans}
+          isLoading={cleaningOrphans}
+          disabled={cleaningOrphans}
+        >
+          {cleaningOrphans
+            ? "Nettoyage..."
+            : "Nettoyer les images orphelines"}
+        </Button>
 
         <Button
           variant="primary"
