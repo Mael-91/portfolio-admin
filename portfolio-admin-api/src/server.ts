@@ -91,7 +91,7 @@ app.use("/api/users", usersRouter);
 app.use("/api/legal/documents", legalRouter);
 app.use("/internal/events", internalEventsRouter);
 app.use("/api/portfolio-images", portfolioRouter);
-app.use("/uploads/portfolio-images",express.static(getStorageBasePath()));
+app.use("/uploads/portfolio-images",express.static(getStorageBasePath("portfolio-images")));
 app.use("/api/services-content", servicesContentRouter);
 
 app.use((_req, res) => {
