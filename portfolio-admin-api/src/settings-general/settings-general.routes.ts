@@ -34,9 +34,6 @@ settingsGeneralRouter.put("/", async (req, res) => {
     const schema = z.object({
       siteName: z.string().trim().max(255),
       siteDescription: z.string().trim().max(5000),
-      siteBackgroundColor: z.string().trim().min(1).max(20),
-      siteButtonColor: z.string().trim().min(1).max(20),
-      siteButtonHoverColor: z.string().trim().min(1).max(20),
       siteLogoUrl: z.string().trim().max(500),
       siteSidebarLogoUrl: z.string().trim().max(500),
     });

@@ -10,13 +10,11 @@ import {
 } from "../services/settingsGeneral";
 import { useToast } from "../hooks/useToast";
 import { env } from "../../env";
+import { useGeneralSettings } from "../context/GeneralSettingsContext";
 
 type GeneralSettingsForm = {
   siteName: string;
   siteDescription: string;
-  siteBackgroundColor: string;
-  siteButtonColor: string;
-  siteButtonHoverColor: string;
   siteLogoUrl: string;
   siteSidebarLogoUrl: string;
 };
@@ -31,9 +29,6 @@ type StorageUsage = {
 const emptyForm: GeneralSettingsForm = {
   siteName: "",
   siteDescription: "",
-  siteBackgroundColor: "#041126",
-  siteButtonColor: "#2563eb",
-  siteButtonHoverColor: "#1d4ed8",
   siteLogoUrl: "",
   siteSidebarLogoUrl: "",
 };
@@ -77,6 +72,8 @@ export function SettingsGeneralPage() {
   const [showPreviews, setShowPreviews] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const { refreshSettings } = useGeneralSettings();
+
   async function loadData() {
     setLoading(true);
     setErrorMessage("");
@@ -87,9 +84,6 @@ export function SettingsGeneralPage() {
       setForm({
         siteName: data.settings.siteName ?? "",
         siteDescription: data.settings.siteDescription ?? "",
-        siteBackgroundColor: data.settings.siteBackgroundColor ?? "#041126",
-        siteButtonColor: data.settings.siteButtonColor ?? "#2563eb",
-        siteButtonHoverColor: data.settings.siteButtonHoverColor ?? "#1d4ed8",
         siteLogoUrl: data.settings.siteLogoUrl ?? "",
         siteSidebarLogoUrl: data.settings.siteSidebarLogoUrl ?? "",
       });
@@ -119,6 +113,7 @@ export function SettingsGeneralPage() {
 
     try {
       await saveSettingsGeneral(form);
+      await refreshSettings();
 
       showToast({
         title: "Paramètres enregistrés",
@@ -160,6 +155,7 @@ export function SettingsGeneralPage() {
 
     try {
       const data = await uploadGeneralLogo(file);
+      await refreshSettings();
 
       setForm((prev) => ({
         ...prev,
@@ -285,105 +281,6 @@ export function SettingsGeneralPage() {
           <Card>
             <div className="space-y-5">
               <div>
-                <h2 className="text-base font-semibold text-white">
-                  Couleurs
-                </h2>
-                <p className="mt-1 text-sm text-admin-text-soft">
-                  Personnalise les couleurs principales du site.
-                </p>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <label className="text-sm text-admin-text-soft">
-                    Background
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={form.siteBackgroundColor}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          siteBackgroundColor: e.target.value,
-                        }))
-                      }
-                      className="h-11 w-14 cursor-pointer rounded-xl border border-white/10 bg-transparent p-1"
-                    />
-                    <Input
-                      value={form.siteBackgroundColor}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          siteBackgroundColor: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm text-admin-text-soft">
-                    Bouton
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={form.siteButtonColor}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          siteButtonColor: e.target.value,
-                        }))
-                      }
-                      className="h-11 w-14 cursor-pointer rounded-xl border border-white/10 bg-transparent p-1"
-                    />
-                    <Input
-                      value={form.siteButtonColor}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          siteButtonColor: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm text-admin-text-soft">
-                    Bouton hover
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={form.siteButtonHoverColor}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          siteButtonHoverColor: e.target.value,
-                        }))
-                      }
-                      className="h-11 w-14 cursor-pointer rounded-xl border border-white/10 bg-transparent p-1"
-                    />
-                    <Input
-                      value={form.siteButtonHoverColor}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          siteButtonHoverColor: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="space-y-5">
-              <div>
                 <h2 className="text-base font-semibold text-white">Logos</h2>
                 <p className="mt-1 text-sm text-admin-text-soft">
                   Téléverse le logo principal du site et celui de la sidebar.
@@ -488,37 +385,6 @@ export function SettingsGeneralPage() {
 
               {showPreviews ? (
                 <div className="space-y-5">
-                  <div className="space-y-2">
-                    <p className="text-sm text-admin-text-soft">
-                      Background
-                    </p>
-                    <div
-                      className="h-20 rounded-2xl border border-white/10"
-                      style={{ backgroundColor: form.siteBackgroundColor }}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-sm text-admin-text-soft">Bouton</p>
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        className="rounded-xl px-4 py-2 text-sm font-medium text-white"
-                        style={{ backgroundColor: form.siteButtonColor }}
-                      >
-                        Bouton normal
-                      </button>
-
-                      <button
-                        type="button"
-                        className="rounded-xl px-4 py-2 text-sm font-medium text-white"
-                        style={{ backgroundColor: form.siteButtonHoverColor }}
-                      >
-                        Hover
-                      </button>
-                    </div>
-                  </div>
-
                   <div className="space-y-3">
                     <p className="text-sm text-admin-text-soft">
                       Logo du site

@@ -1,6 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
 import { memo, useEffect, useState } from "react";
+import { env } from "../../env";
+import { useGeneralSettings } from "../context/GeneralSettingsContext";
 
 type SidebarProps = {
   onLogout: () => void | Promise<void>;
@@ -84,6 +86,12 @@ const navItems: NavItem[] = [
   },
 ];
 
+function resolveAssetUrl(url: string) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${env.apiBaseUrl}${url}`;
+}
+
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
@@ -95,6 +103,8 @@ function SidebarComponent({ onLogout }: SidebarProps) {
   const isSettingsRoute = location.pathname.startsWith("/settings");
   const [settingsOpen, setSettingsOpen] = useState(isSettingsRoute);
 
+  const { settings } = useGeneralSettings();
+
   useEffect(() => {
     if (isSettingsRoute) {
       setSettingsOpen(true);
@@ -104,11 +114,19 @@ function SidebarComponent({ onLogout }: SidebarProps) {
   return (
     <aside className="flex w-[250px] shrink-0 flex-col border-r border-white/6 bg-[#041126]">
       <div className="flex h-20 items-center px-7">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-admin-accent-soft text-admin-accent ring-1 ring-white/5">
-          <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current">
-            <path d="M3.2 14.4c2.7-3 5.2-4.4 7.5-4.4 2 0 3.7.9 5.1 2.6 1.1 1.3 2.3 2 3.7 2 1 0 2-.3 3-.8-.9 1.9-2 3.3-3.4 4.2-1.1.7-2.3 1.1-3.7 1.1-2 0-3.8-.9-5.3-2.6-1.2-1.4-2.5-2.1-4-2.1-1 0-2 .2-2.9.6ZM4.5 8.7C6.5 5.6 9.1 4 12.2 4c1.6 0 3 .4 4.1 1.1 1 .7 1.9 1.8 2.8 3.2-1.5-.5-2.8-.8-4-.8-2.6 0-4.9.8-7 2.3-1.2.9-2.4 2-3.6 3.4.1-1.7.8-3.1 2-4.5Z" />
-          </svg>
-        </div>
+        {settings.siteSidebarLogoUrl ? (
+          <img
+            src={settings.siteSidebarLogoUrl}
+            alt={settings.siteName || "Logo dashboard"}
+            className="max-h-12 max-w-[160px] object-contain"
+          />
+        ) : (
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-admin-accent-soft text-admin-accent ring-1 ring-white/5">
+            <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current">
+              <path d="M3.2 14.4c2.7-3 5.2-4.4 7.5-4.4 2 0 3.7.9 5.1 2.6 1.1 1.3 2.3 2 3.7 2 1 0 2-.3 3-.8-.9 1.9-2 3.3-3.4 4.2-1.1.7-2.3 1.1-3.7 1.1-2 0-3.8-.9-5.3-2.6-1.2-1.4-2.5-2.1-4-2.1-1 0-2 .2-2.9.6ZM4.5 8.7C6.5 5.6 9.1 4 12.2 4c1.6 0 3 .4 4.1 1.1 1 .7 1.9 1.8 2.8 3.2-1.5-.5-2.8-.8-4-.8-2.6 0-4.9.8-7 2.3-1.2.9-2.4 2-3.6 3.4.1-1.7.8-3.1 2-4.5Z" />
+            </svg>
+          </div>
+        )}
       </div>
 
       <div className="px-5 pt-8">

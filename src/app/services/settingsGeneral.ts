@@ -17,9 +17,6 @@ export async function fetchSettingsGeneral() {
 export async function saveSettingsGeneral(payload: {
   siteName: string;
   siteDescription: string;
-  siteBackgroundColor: string;
-  siteButtonColor: string;
-  siteButtonHoverColor: string;
   siteLogoUrl: string;
   siteSidebarLogoUrl: string;
 }) {
