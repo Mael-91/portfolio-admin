@@ -119,7 +119,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
           <img
             src={sidebarLogoUrl}
             alt={settings.siteName || "Logo dashboard"}
-            className="max-h-12 max-w-[160px] object-contain"
+            className="max-h-12 max-w-[160px] object-cover rounded-full"
           />
         ) : (
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-admin-accent-soft text-admin-accent ring-1 ring-white/5">
