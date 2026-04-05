@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { fetchSettingsGeneral } from "../services/settingsGeneral";
+import { env } from "../../env";
 
 export type GeneralSettings = {
   siteName: string;
@@ -48,6 +49,26 @@ function applySeo(settings: GeneralSettings) {
   }
 
   metaDescription.content = settings.siteDescription || "";
+
+  const faviconUrl = settings.siteLogoUrl
+    ? settings.siteLogoUrl.startsWith("http")
+      ? settings.siteLogoUrl
+      : `${env.apiBaseUrl}${settings.siteLogoUrl}`
+    : "";
+
+  let favicon = document.querySelector(
+    'link[rel="icon"]'
+  ) as HTMLLinkElement | null;
+
+  if (!favicon) {
+    favicon = document.createElement("link");
+    favicon.rel = "icon";
+    document.head.appendChild(favicon);
+  }
+
+  if (faviconUrl) {
+    favicon.href = faviconUrl;
+  }
 }
 
 export function GeneralSettingsProvider({

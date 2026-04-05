@@ -86,11 +86,15 @@ const navItems: NavItem[] = [
   },
 ];
 
+const { settings } = useGeneralSettings();
+
 function resolveAssetUrl(url: string) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   return `${env.apiBaseUrl}${url}`;
 }
+
+const sidebarLogoUrl = resolveAssetUrl(settings.siteSidebarLogoUrl);
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -114,7 +118,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
   return (
     <aside className="flex w-[250px] shrink-0 flex-col border-r border-white/6 bg-[#041126]">
       <div className="flex h-20 items-center px-7">
-        {settings.siteSidebarLogoUrl ? (
+        {sidebarLogoUrl ? (
           <img
             src={settings.siteSidebarLogoUrl}
             alt={settings.siteName || "Logo dashboard"}

@@ -95,7 +95,7 @@ app.use("/api/portfolio-images", portfolioRouter);
 app.use("/uploads/portfolio-images",express.static(getStoragePath(STORAGE_FOLDER.portfolio)));
 app.use("/api/services-content", servicesContentRouter);
 app.use("/api/settings/general", settingsGeneralRouter);
-app.use("/uploads/logos", express.static(getStoragePath("logos")));
+app.use("/uploads/logos", express.static(getStoragePath(STORAGE_FOLDER.logos)));
 
 app.use((_req, res) => {
   res.status(404).json({
