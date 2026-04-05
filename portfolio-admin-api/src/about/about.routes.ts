@@ -26,12 +26,16 @@ aboutRouter.put("/", async (req, res) => {
   try {
     const schema = z.object({
       textHtml: z.string(),
-      imageAlt: z.string().trim().max(255),
-      imageUrl: z.string().trim().max(500),
+      imageAlt: z.string(),
+      imageUrl: z.string().optional(),
     });
 
     const body = schema.parse(req.body);
-    const about = await saveAboutContent(body);
+    const about = await saveAboutContent({
+      textHtml: body.textHtml,
+      imageUrl: body.imageUrl ?? "",
+      imageAlt: body.imageAlt ?? "",
+    });
 
     return res.status(200).json({
       success: true,
