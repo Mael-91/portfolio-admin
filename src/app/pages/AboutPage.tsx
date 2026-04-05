@@ -182,26 +182,27 @@ export function AboutPage() {
             Gère le texte et la photo de la section À propos du site vitrine.
           </p>
         </div>
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="secondary"
+            onClick={handleCleanupOrphans}
+            isLoading={cleaningOrphans}
+            disabled={cleaningOrphans}
+          >
+            {cleaningOrphans
+              ? "Nettoyage..."
+              : "Nettoyer les images orphelines"}
+          </Button>
 
-        <Button
-          variant="secondary"
-          onClick={handleCleanupOrphans}
-          isLoading={cleaningOrphans}
-          disabled={cleaningOrphans}
-        >
-          {cleaningOrphans
-            ? "Nettoyage..."
-            : "Nettoyer les images orphelines"}
-        </Button>
-
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          isLoading={saving}
-          disabled={saving}
-        >
-          {saving ? "Enregistrement..." : "Enregistrer"}
-        </Button>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            isLoading={saving}
+            disabled={saving}
+          >
+            {saving ? "Enregistrement..." : "Enregistrer"}
+          </Button>
+        </div>
       </div>
 
       {errorMessage ? (
