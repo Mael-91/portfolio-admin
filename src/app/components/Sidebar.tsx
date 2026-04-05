@@ -72,6 +72,22 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    label: "À propos",
+    href: "/about",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <circle cx="12" cy="8" r="3.25" />
+        <path d="M5 20a7 7 0 0 1 14 0" />
+      </svg>
+    ),
+  },
+  {
     label: "Documents légaux",
     href: "/legal",
     icon: (
