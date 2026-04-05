@@ -2,9 +2,9 @@ import fs from "fs";
 import multer from "multer";
 import path from "path";
 import { randomUUID } from "crypto";
-import { getStoragePath } from "../common/storagePath";
+import { getStoragePath, STORAGE_FOLDER } from "../common/storagePath";
 
-const aboutDir = getStoragePath("about");
+const aboutDir = getStoragePath(STORAGE_FOLDER.about);
 
 if (!fs.existsSync(aboutDir)) {
   fs.mkdirSync(aboutDir, { recursive: true });
