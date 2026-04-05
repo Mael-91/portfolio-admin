@@ -1,11 +1,11 @@
 import fs from "fs";
-import { getStoragePath } from "./storagePath";
+import { getStoragePath, STORAGE_FOLDER } from "./storagePath";
 
 export function ensureStorageFolders() {
   const folders = [
-    "portfolio-images",
-    "legal-documents",
-    "logos",
+    STORAGE_FOLDER.portfolio,
+    STORAGE_FOLDER.legal,
+    STORAGE_FOLDER.logos,
   ];
 
   for (const folder of folders) {

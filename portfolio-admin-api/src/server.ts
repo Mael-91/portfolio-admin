@@ -18,7 +18,7 @@ import { startWebSocketServer } from "./websocket/ws-server";
 import { portfolioRouter } from "./portfolio/portfolio.routes";
 import path from "node:path";
 import { servicesContentRouter } from "./services-content/services.routes";
-import { getStorageBasePath } from "./common/storagePath";
+import { getStorageBasePath, getStoragePath, STORAGE_FOLDER } from "./common/storagePath";
 import { ensureStorageFolders } from "./common/ensureStorageFolders";
 
 const app = express();
@@ -91,7 +91,7 @@ app.use("/api/users", usersRouter);
 app.use("/api/legal/documents", legalRouter);
 app.use("/internal/events", internalEventsRouter);
 app.use("/api/portfolio-images", portfolioRouter);
-app.use("/uploads/portfolio-images",express.static(getStorageBasePath("portfolio-images")));
+app.use("/uploads/portfolio-images",express.static(getStoragePath(STORAGE_FOLDER.portfolio)));
 app.use("/api/services-content", servicesContentRouter);
 
 app.use((_req, res) => {
@@ -118,4 +118,3 @@ startWebSocketServer({
 
 startRgpdCron();
 ensureStorageFolders();
-console.log("STATIC PATH:", getStorageBasePath());
