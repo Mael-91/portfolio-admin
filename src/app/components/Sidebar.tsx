@@ -242,7 +242,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
                       : "text-admin-text-soft hover:bg-white/5 hover:text-white"
                   )}
                 >
-                  Paramètrea généraux
+                  Paramètre généraux
                 </Link>
               </div>
             )}
