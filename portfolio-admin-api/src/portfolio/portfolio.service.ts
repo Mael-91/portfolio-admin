@@ -10,6 +10,7 @@ import {
   updatePortfolioImageOrder,
 } from "./portfolio.repository";
 import { AppError } from "../common/app-error";
+import { getStoragePath } from "../common/storagePath";
 
 function sanitizeImage(row: any) {
   return {
@@ -138,5 +139,5 @@ export async function removePortfolioImage(id: number) {
 }
 
 export function getPortfolioImagesStorageDir() {
-  return path.resolve(process.cwd(), "storage", "portfolio-images");
+  return getStoragePath("portfolio-images");
 }

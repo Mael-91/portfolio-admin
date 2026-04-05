@@ -18,6 +18,8 @@ import { startWebSocketServer } from "./websocket/ws-server";
 import { portfolioRouter } from "./portfolio/portfolio.routes";
 import path from "node:path";
 import { servicesContentRouter } from "./services-content/services.routes";
+import { getStorageBasePath } from "./common/storagePath";
+import { ensureStorageFolders } from "./common/ensureStorageFolders";
 
 const app = express();
 
@@ -89,7 +91,7 @@ app.use("/api/users", usersRouter);
 app.use("/api/legal/documents", legalRouter);
 app.use("/internal/events", internalEventsRouter);
 app.use("/api/portfolio-images", portfolioRouter);
-app.use("/uploads/portfolio-images",express.static(path.resolve(process.cwd(), "storage", "portfolio-images")));
+app.use("/uploads/portfolio-images",express.static(getStorageBasePath()));
 app.use("/api/services-content", servicesContentRouter);
 
 app.use((_req, res) => {
@@ -115,3 +117,4 @@ startWebSocketServer({
 });
 
 startRgpdCron();
+ensureStorageFolders();
