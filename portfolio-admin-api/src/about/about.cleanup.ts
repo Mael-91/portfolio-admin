@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { getStoragePath } from "../common/storagePath"
+import { getStoragePath, STORAGE_FOLDER } from "../common/storagePath"
 import { getAboutContent } from "./about.repository";
 
 function extractFilenameFromAboutUrl(imageUrl: string | null | undefined) {
@@ -12,7 +12,7 @@ function extractFilenameFromAboutUrl(imageUrl: string | null | undefined) {
 }
 
 export async function cleanupOrphanAboutImages() {
-  const aboutDir = getStoragePath("about");
+  const aboutDir = getStoragePath(STORAGE_FOLDER.about);
 
   let files: string[] = [];
   try {

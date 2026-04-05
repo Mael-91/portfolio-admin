@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { getStoragePath } from "../common/storagePath";
+import { getStoragePath, STORAGE_FOLDER } from "../common/storagePath";
 
 export async function deleteAboutImageIfExists(
   imageUrl: string | null | undefined
@@ -15,7 +15,7 @@ export async function deleteAboutImageIfExists(
 
   if (!filename) return;
 
-  const filePath = path.join(getStoragePath("about"), filename);
+  const filePath = path.join(getStoragePath(STORAGE_FOLDER.about), filename);
 
   try {
     await fs.unlink(filePath);
