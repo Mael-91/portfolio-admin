@@ -15,6 +15,7 @@ import {
   type LegalDocumentType,
   updateDraftLegalDocument,
 } from "./legal.repository";
+import { getStoragePath, STORAGE_FOLDER } from "../common/storagePath";
 
 function buildVersionLabel(date = new Date()) {
   const yyyy = date.getFullYear();
@@ -129,11 +130,7 @@ function buildDocumentHtml(params: {
 }
 
 async function ensureArchiveDirectory() {
-  const archiveDir = path.resolve(
-    process.cwd(),
-    "storage",
-    "legal-archives"
-  );
+  const archiveDir = getStoragePath(STORAGE_FOLDER.legal);
 
   await fs.mkdir(archiveDir, { recursive: true });
 
