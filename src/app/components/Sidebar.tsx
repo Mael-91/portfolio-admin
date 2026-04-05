@@ -120,7 +120,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
       <div className="flex h-20 items-center px-7">
         {sidebarLogoUrl ? (
           <img
-            src={settings.siteSidebarLogoUrl}
+            src={sidebarLogoUrl}
             alt={settings.siteName || "Logo dashboard"}
             className="max-h-12 max-w-[160px] object-contain"
           />
