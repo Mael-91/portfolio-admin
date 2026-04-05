@@ -118,3 +118,4 @@ startWebSocketServer({
 
 startRgpdCron();
 ensureStorageFolders();
+console.log("STATIC PATH:", getStorageBasePath());
