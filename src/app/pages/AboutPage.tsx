@@ -184,17 +184,6 @@ export function AboutPage() {
         </div>
 
         <Button
-          variant="primary"
-          onClick={handleSave}
-          isLoading={saving}
-          disabled={saving}
-        >
-          {saving ? "Enregistrement..." : "Enregistrer"}
-        </Button>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Button
           variant="secondary"
           onClick={handleCleanupOrphans}
           isLoading={cleaningOrphans}
