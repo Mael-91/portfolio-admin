@@ -4,6 +4,7 @@ import { requireAdminAuth } from "../auth/auth.middleware";
 import { handleRouteError } from "../common/handle-route-error";
 import { fetchAboutContent, saveAboutContent } from "./about.service";
 import { aboutUpload } from "./about.upload";
+import { deleteAboutImageIfExists } from "./about.file";
 
 export const aboutRouter = Router();
 
@@ -26,16 +27,21 @@ aboutRouter.put("/", async (req, res) => {
   try {
     const schema = z.object({
       textHtml: z.string(),
-      imageAlt: z.string(),
       imageUrl: z.string().optional(),
+      imageAlt: z.string().optional(),
     });
 
     const body = schema.parse(req.body);
+
     const about = await saveAboutContent({
       textHtml: body.textHtml,
       imageUrl: body.imageUrl ?? "",
       imageAlt: body.imageAlt ?? "",
     });
+
+    if (req.session.pendingAboutImageUrl) {
+      delete req.session.pendingAboutImageUrl;
+    }
 
     return res.status(200).json({
       success: true,
@@ -58,9 +64,18 @@ aboutRouter.post(
         });
       }
 
+      const newFileUrl = `/uploads/about/${req.file.filename}`;
+      const previousPendingImageUrl = req.session.pendingAboutImageUrl;
+
+      if (previousPendingImageUrl && previousPendingImageUrl !== newFileUrl) {
+        await deleteAboutImageIfExists(previousPendingImageUrl);
+      }
+
+      req.session.pendingAboutImageUrl = newFileUrl;
+
       return res.status(200).json({
         success: true,
-        fileUrl: `/uploads/about/${req.file.filename}`,
+        fileUrl: newFileUrl,
       });
     } catch (error) {
       return handleRouteError(res, error, "upload image à propos");

@@ -8,5 +8,6 @@ declare module "express-session" {
       lastName: string;
       email: string;
     };
+    pendingAboutImageUrl?: string;
   }
 }

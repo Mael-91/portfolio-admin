@@ -2,6 +2,7 @@ import {
   getAboutContent,
   updateAboutContent,
 } from "./about.repository";
+import { deleteAboutImageIfExists } from "./about.file";
 
 export async function fetchAboutContent() {
   const content = await getAboutContent();
@@ -26,11 +27,20 @@ export async function saveAboutContent(input: {
   imageUrl: string;
   imageAlt: string;
 }) {
+  const current = await getAboutContent();
+
+  const previousImageUrl = current?.image_url ?? "";
+  const nextImageUrl = input.imageUrl || "";
+
   const updated = await updateAboutContent({
     textHtml: input.textHtml,
-    imageUrl: input.imageUrl || null,
+    imageUrl: nextImageUrl || null,
     imageAlt: input.imageAlt || null,
   });
+
+  if (previousImageUrl && previousImageUrl !== nextImageUrl) {
+    await deleteAboutImageIfExists(previousImageUrl);
+  }
 
   return {
     textHtml: updated.text_html ?? "",
