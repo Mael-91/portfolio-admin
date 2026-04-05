@@ -21,6 +21,7 @@ import { servicesContentRouter } from "./services-content/services.routes";
 import { getStorageBasePath, getStoragePath, STORAGE_FOLDER } from "./common/storagePath";
 import { ensureStorageFolders } from "./common/ensureStorageFolders";
 import { settingsGeneralRouter } from "./settings-general/settings-general.routes";
+import { aboutRouter } from "./about/about.routes";
 
 const app = express();
 
@@ -96,6 +97,8 @@ app.use("/uploads/portfolio-images",express.static(getStoragePath(STORAGE_FOLDER
 app.use("/api/services-content", servicesContentRouter);
 app.use("/api/settings/general", settingsGeneralRouter);
 app.use("/uploads/logos", express.static(getStoragePath(STORAGE_FOLDER.logos)));
+app.use("/api/about", aboutRouter);
+app.use("/uploads/about", express.static(getStoragePath(STORAGE_FOLDER.about)));
 
 app.use((_req, res) => {
   res.status(404).json({

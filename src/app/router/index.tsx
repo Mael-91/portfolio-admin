@@ -11,6 +11,7 @@ import { UsersSettingsPage } from "../pages/UsersSettingsPage";
 import { PortfolioImagesPage } from "../pages/PortfolioImagesPage";
 import { ServicesContentPage } from "../pages/ServicesContentPage";
 import { SettingsGeneralPage } from "../pages/SettingsGeneralPage";
+import { AboutPage } from "../pages/AboutPage";
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,10 @@ export const router = createBrowserRouter([
       {
         path: "/settings/general",
         element: <SettingsGeneralPage />,
+      },
+      {
+        path: "/about",
+        element: <AboutPage />,
       }
     ],
   },
