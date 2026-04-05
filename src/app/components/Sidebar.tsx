@@ -86,15 +86,11 @@ const navItems: NavItem[] = [
   },
 ];
 
-const { settings } = useGeneralSettings();
-
 function resolveAssetUrl(url: string) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   return `${env.apiBaseUrl}${url}`;
 }
-
-const sidebarLogoUrl = resolveAssetUrl(settings.siteSidebarLogoUrl);
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -108,6 +104,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
   const [settingsOpen, setSettingsOpen] = useState(isSettingsRoute);
 
   const { settings } = useGeneralSettings();
+  const sidebarLogoUrl = resolveAssetUrl(settings.siteSidebarLogoUrl);
 
   useEffect(() => {
     if (isSettingsRoute) {
