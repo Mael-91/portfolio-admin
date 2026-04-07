@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { getSettingsByKeys, upsertSetting } from "./settings-general.repository";
 import { getStoragePath } from "../common/storagePath";
+import { deleteLogoIfExists } from "./settings-general.file";
 
 const GENERAL_SETTING_KEYS = [
   "site_name",
@@ -50,12 +51,31 @@ export async function saveGeneralSettings(input: {
   siteLogoUrl: string;
   siteSidebarLogoUrl: string;
 }) {
+  const current = await getGeneralSettings();
+
+  const previousSiteLogoUrl = current.siteLogoUrl ?? "";
+  const previousSidebarLogoUrl = current.siteSidebarLogoUrl ?? "";
+
+  const nextSiteLogoUrl = input.siteLogoUrl || "";
+  const nextSidebarLogoUrl = input.siteSidebarLogoUrl || "";
+
   await Promise.all([
     upsertSetting("site_name", input.siteName),
     upsertSetting("site_description", input.siteDescription),
-    upsertSetting("site_logo_url", input.siteLogoUrl),
-    upsertSetting("site_sidebar_logo_url", input.siteSidebarLogoUrl),
+    upsertSetting("site_logo_url", nextSiteLogoUrl),
+    upsertSetting("site_sidebar_logo_url", nextSidebarLogoUrl),
   ]);
+
+  if (previousSiteLogoUrl && previousSiteLogoUrl !== nextSiteLogoUrl) {
+    await deleteLogoIfExists(previousSiteLogoUrl);
+  }
+
+  if (
+    previousSidebarLogoUrl &&
+    previousSidebarLogoUrl !== nextSidebarLogoUrl
+  ) {
+    await deleteLogoIfExists(previousSidebarLogoUrl);
+  }
 
   return getGeneralSettings();
 }

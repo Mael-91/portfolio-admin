@@ -9,5 +9,7 @@ declare module "express-session" {
       email: string;
     };
     pendingAboutImageUrl?: string;
+    pendingSiteLogoUrl?: string;
+    pendingSidebarLogoUrl?: string;
   }
 }
