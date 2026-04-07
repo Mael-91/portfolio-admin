@@ -50,11 +50,7 @@ function applySeo(settings: GeneralSettings) {
 
   metaDescription.content = settings.siteDescription || "";
 
-  const faviconUrl = settings.siteLogoUrl
-    ? settings.siteLogoUrl.startsWith("http")
-      ? settings.siteLogoUrl
-      : `${env.apiBaseUrl}${settings.siteLogoUrl}`
-    : "";
+  const faviconUrl = resolveAssetUrl(settings.siteLogoUrl);
 
   let favicon = document.querySelector(
     'link[rel="icon"]'
@@ -121,4 +117,10 @@ export function GeneralSettingsProvider({
 
 export function useGeneralSettings() {
   return useContext(GeneralSettingsContext);
+}
+
+function resolveAssetUrl(url: string) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${env.apiBaseUrl}${url}`;
 }
