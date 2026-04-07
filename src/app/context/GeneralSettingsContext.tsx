@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { fetchSettingsGeneral } from "../services/settingsGeneral";
+import { fetchPublicGeneralSettings } from "../services/settingsGeneral";
 import { env } from "../../env";
 
 export type GeneralSettings = {
@@ -35,6 +35,12 @@ const GeneralSettingsContext = createContext<GeneralSettingsContextValue>({
   refreshSettings: async () => {},
 });
 
+function resolveAssetUrl(url: string) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${env.apiBaseUrl}${url}`;
+}
+
 function applySeo(settings: GeneralSettings) {
   document.title = settings.siteName || "Dashboard";
 
@@ -50,11 +56,7 @@ function applySeo(settings: GeneralSettings) {
 
   metaDescription.content = settings.siteDescription || "";
 
-  const faviconUrl = settings.siteLogoUrl
-    ? settings.siteLogoUrl.startsWith("http")
-      ? settings.siteLogoUrl
-      : `${env.apiBaseUrl}${settings.siteLogoUrl}`
-    : "";
+  const faviconUrl = resolveAssetUrl(settings.siteLogoUrl);
 
   let favicon = document.querySelector(
     'link[rel="icon"]'
@@ -81,7 +83,7 @@ export function GeneralSettingsProvider({
 
   async function refreshSettings() {
     try {
-      const data = await fetchSettingsGeneral();
+      const data = await fetchPublicGeneralSettings();
 
       const nextSettings: GeneralSettings = {
         siteName: data.settings.siteName ?? "Dashboard",

@@ -154,7 +154,7 @@ export function SettingsGeneralPage() {
     setErrorMessage("");
 
     try {
-      const data = await uploadGeneralLogo(file);
+      const data = await uploadGeneralLogo(file, target);
       await refreshSettings();
 
       setForm((prev) => ({
