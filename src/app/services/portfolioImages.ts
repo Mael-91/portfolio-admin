@@ -23,10 +23,7 @@ export async function fetchPortfolioImages() {
 }
 
 export async function createPortfolioImage(formData: FormData) {
-  return apiFetch<{
-    success: true;
-    image: PortfolioImage;
-  }>("/api/portfolio-images", {
+  return apiFetch("/api/portfolio-images", {
     method: "POST",
     body: formData,
   });
@@ -38,31 +35,26 @@ export async function updatePortfolioImage(
     caption: string;
     altText: string;
     description?: string;
-    isActive?: boolean;
+    isActive: boolean;
   }
 ) {
-  return apiFetch<{
-    success: true;
-    image: PortfolioImage;
-  }>(`/api/portfolio-images/${id}`, {
+  return apiFetch(`/api/portfolio-images/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
 }
 
-export async function reorderPortfolioImages(imageIds: number[]) {
-  return apiFetch<{
-    success: true;
-  }>("/api/portfolio-images/reorder", {
+export async function reorderPortfolioImages(
+  items: Array<{ id: number; displayOrder: number }>
+) {
+  return apiFetch("/api/portfolio-images/reorder/all", {
     method: "PATCH",
-    body: JSON.stringify({ imageIds }),
+    body: JSON.stringify({ items }),
   });
 }
 
 export async function deletePortfolioImage(id: number) {
-  return apiFetch<{
-    success: true;
-  }>(`/api/portfolio-images/${id}`, {
+  return apiFetch(`/api/portfolio-images/${id}`, {
     method: "DELETE",
   });
 }

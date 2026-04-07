@@ -1,109 +1,201 @@
 import { apiFetch } from "./api";
 
-export type MessageStatus = "new" | "in_progress" | "processed";
+export type ProcessingStatus = "unprocessed" | "in_progress" | "processed";
 
-export type ContactMessage = {
+export interface MessageListItem {
   id: number;
   requestType: string;
-  firstName: string;
-  lastName: string;
+  email: string;
+  messagePreview: string;
+  allowPhoneContact: boolean;
+  consentPrivacy: boolean;
+  processingStatus: ProcessingStatus;
+  createdAt: string;
+}
+
+export interface MessageDetail {
+  id: number;
+  requestType: string;
+  firstName: string | null;
+  lastName: string | null;
   company: string | null;
   email: string;
   phone: string | null;
   messageText: string;
   allowPhoneContact: boolean;
   consentPrivacy: boolean;
-  privacyPolicyAcceptedAt: string | null;
-  privacyPolicyDocumentId: number | null;
-  privacyPolicyVersion: string | null;
-  privacyNoticePresented: boolean;
-  emailSubject: string | null;
-  emailText: string | null;
-  formPayload: string | null;
-  emailSnapshot: string | null;
-  processingContext: string | null;
-  legalBasis: string | null;
-  processingPurpose: string | null;
-  status: MessageStatus;
+  processingStatus: ProcessingStatus;
+  processingUpdatedAt: string | null;
+  createdAt: string;
+}
+
+export interface ListMessagesResponse {
+  success: boolean;
+  page: number;
+  pageSize: number;
+  total: number;
+  messages: MessageListItem[];
+}
+
+type ApiContactMessage = {
+  id: number;
+  requestType: string;
+  firstName: string | null;
+  lastName: string | null;
+  company: string | null;
+  email: string;
+  phone: string | null;
+  messageText: string;
+  allowPhoneContact: boolean;
+  consentPrivacy: boolean;
+  status: ProcessingStatus;
   createdAt: string;
   updatedAt: string;
 };
 
-export type MessagesListResponse = {
-  messages: ContactMessage[];
-  total: number;
+function buildMessagePreview(messageText: string) {
+  const normalized = messageText.replace(/\s+/g, " ").trim();
+
+  if (normalized.length <= 100) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 100).trimEnd()}…`;
+}
+
+function mapApiMessageToListItem(message: ApiContactMessage): MessageListItem {
+  return {
+    id: message.id,
+    requestType: message.requestType,
+    email: message.email,
+    messagePreview: buildMessagePreview(message.messageText),
+    allowPhoneContact: message.allowPhoneContact,
+    consentPrivacy: message.consentPrivacy,
+    processingStatus: message.status,
+    createdAt: message.createdAt,
+  };
+}
+
+function mapApiMessageToDetail(message: ApiContactMessage): MessageDetail {
+  return {
+    id: message.id,
+    requestType: message.requestType,
+    firstName: message.firstName,
+    lastName: message.lastName,
+    company: message.company,
+    email: message.email,
+    phone: message.phone,
+    messageText: message.messageText,
+    allowPhoneContact: message.allowPhoneContact,
+    consentPrivacy: message.consentPrivacy,
+    processingStatus: message.status,
+    processingUpdatedAt: message.updatedAt,
+    createdAt: message.createdAt,
+  };
+}
+
+export async function fetchMessages(params: {
   page: number;
   pageSize: number;
-};
-
-function buildMessagesQuery(params?: {
-  page?: number;
-  pageSize?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  status?: string;
+  status?: ProcessingStatus;
   search?: string;
-}) {
+}): Promise<ListMessagesResponse> {
   const searchParams = new URLSearchParams();
 
-  if (params?.page) searchParams.set("page", String(params.page));
-  if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
-  if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
-  if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
-  if (params?.status) searchParams.set("status", params.status);
-  if (params?.search) searchParams.set("search", params.search);
+  searchParams.set("page", String(params.page));
+  searchParams.set("pageSize", String(params.pageSize));
 
-  const queryString = searchParams.toString();
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params.status) searchParams.set("status", params.status);
+  if (params.search) searchParams.set("search", params.search);
 
-  return queryString ? `?${queryString}` : "";
-}
-
-export async function fetchMessages(params?: {
-  page?: number;
-  pageSize?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-  status?: string;
-  search?: string;
-}) {
-  return apiFetch<{
-    success: true;
-    messages: ContactMessage[];
-    total: number;
+  const data = await apiFetch<{
+    success: boolean;
     page: number;
     pageSize: number;
-  }>(`/api/messages${buildMessagesQuery(params)}`);
+    total: number;
+    messages: ApiContactMessage[];
+  }>(`/api/messages?${searchParams.toString()}`);
+
+  return {
+    success: data.success,
+    page: data.page,
+    pageSize: data.pageSize,
+    total: data.total,
+    messages: data.messages.map(mapApiMessageToListItem),
+  };
 }
 
-export async function fetchMessageById(id: number) {
-  return apiFetch<{
-    success: true;
-    message: ContactMessage;
+export async function fetchMessageDetail(
+  id: number
+): Promise<{ success: boolean; message: MessageDetail }> {
+  const data = await apiFetch<{
+    success: boolean;
+    message: ApiContactMessage;
   }>(`/api/messages/${id}`);
+
+  return {
+    success: data.success,
+    message: mapApiMessageToDetail(data.message),
+  };
 }
 
-export async function updateMessageStatus(
+export async function updateMessageProcessingStatus(
   id: number,
-  status: MessageStatus
-) {
-  return apiFetch<{
-    success: true;
-    message: ContactMessage;
+  processingStatus: ProcessingStatus
+): Promise<{ success: boolean; message: MessageDetail }> {
+  const data = await apiFetch<{
+    success: boolean;
+    message: ApiContactMessage;
   }>(`/api/messages/${id}/status`, {
     method: "PATCH",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({
+      status: processingStatus,
+    }),
   });
+
+  return {
+    success: data.success,
+    message: mapApiMessageToDetail(data.message),
+  };
 }
 
-export async function exportMessageRgpdByEmail(payload: {
-  messageId: number;
-  recipientEmail: string;
-}) {
-  return apiFetch<{
-    success: true;
-    message: string;
+export async function fetchNewMessagesCount(
+  lastSeenId: number
+): Promise<{ success: boolean; total: number }> {
+  return apiFetch<{ success: boolean; total: number }>(
+    `/api/messages/new-count?lastSeenId=${lastSeenId}`
+  );
+}
+
+export async function exportMessageRgpd(
+  id: number,
+  email: string
+): Promise<{ success: boolean; sent: boolean; email: string }> {
+  const data = await apiFetch<{
+    success: boolean;
   }>("/api/messages/export-rgpd", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      messageId: id,
+      recipientEmail: email,
+    }),
   });
+
+  return {
+    success: data.success,
+    sent: true,
+    email,
+  };
+}
+
+export async function fetchUnprocessedMessagesCount(): Promise<number> {
+  const data = await apiFetch<{ success: boolean; total: number }>(
+    "/api/messages/count-unprocessed"
+  );
+
+  return data.total;
 }
