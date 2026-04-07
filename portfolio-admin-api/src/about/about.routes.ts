@@ -6,6 +6,7 @@ import { fetchAboutContent, saveAboutContent } from "./about.service";
 import { aboutUpload } from "./about.upload";
 import { deleteAboutImageIfExists } from "./about.file";
 import { cleanupOrphanAboutImages } from "./about.cleanup";
+import { handleUpload } from "../common/handle-upload";
 
 export const aboutRouter = Router();
 
@@ -55,9 +56,9 @@ aboutRouter.put("/", async (req, res) => {
 
 aboutRouter.post(
   "/upload-image",
-  aboutUpload.single("image"),
-  async (req, res) => {
-    try {
+  handleUpload(
+    aboutUpload.single("image"),
+    async (req, res) => {
       if (!req.file) {
         return res.status(400).json({
           success: false,
@@ -78,10 +79,13 @@ aboutRouter.post(
         success: true,
         fileUrl: newFileUrl,
       });
-    } catch (error) {
-      return handleRouteError(res, error, "upload image à propos");
+    },
+    {
+      context: "upload image à propos",
+      fileTooLargeMessage:
+        "Le fichier est trop volumineux. La taille maximale autorisée est de 8 Mo.",
     }
-  }
+  )
 );
 
 aboutRouter.post("/cleanup-orphans", async (_req, res) => {

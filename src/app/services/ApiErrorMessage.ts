@@ -12,3 +12,23 @@ export function extractApiErrorMessage(data: any, fallback: string) {
 
   return fallback;
 }
+
+export async function parseApiResponse(res: Response) {
+  const contentType = res.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return await res.json();
+  }
+
+  const text = await res.text();
+
+  if (!res.ok) {
+    return {
+      success: false,
+      message: "Réponse invalide du serveur",
+      raw: text,
+    };
+  }
+
+  return text;
+}

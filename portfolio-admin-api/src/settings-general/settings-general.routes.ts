@@ -10,6 +10,8 @@ import {
 } from "./settings-general.service";
 import { settingsGeneralUpload } from "./settings-general.upload";
 import { deleteLogoIfExists } from "./settings-general.file";
+import { handleUpload } from "../common/handle-upload";
+
 
 export const settingsGeneralRouter = Router();
 
@@ -73,15 +75,15 @@ settingsGeneralRouter.put("/", async (req, res) => {
       settings,
     });
   } catch (error) {
-    return handleRouteError(res, error, "save settings general");
+    return handleRouteError(res, error, "enregistrement des paramètres généraux");
   }
 });
 
 settingsGeneralRouter.post(
   "/upload-logo",
-  settingsGeneralUpload.single("logo"),
-  async (req, res) => {
-    try {
+  handleUpload(
+    settingsGeneralUpload.single("logo"),
+    async (req, res) => {
       if (!req.file) {
         return res.status(400).json({
           success: false,
@@ -124,9 +126,11 @@ settingsGeneralRouter.post(
         success: true,
         fileUrl,
       });
-    } catch (error) {
-      return handleRouteError(res, error, "upload logo");
+    },
+    {
+      context: "upload logo",
+      fileTooLargeMessage:
+        "Le fichier est trop volumineux. La taille maximale autorisée est de 5 Mo.",
     }
-  }
+  )
 );
-

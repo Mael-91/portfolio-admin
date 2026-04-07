@@ -11,6 +11,8 @@ import {
 } from "./portfolio.service";
 import { portfolioUpload } from "./portfolio.upload";
 import { handleRouteError } from "../common/handle-route-error";
+import multer from "multer";
+import { handleUpload } from "../common/handle-upload";
 
 export const portfolioRouter = Router();
 
@@ -29,46 +31,52 @@ portfolioRouter.get("/", async (_req, res) => {
   }
 });
 
-portfolioRouter.post("/", portfolioUpload.single("image"), async (req, res) => {
-  try {
-    const schema = z.object({
-      caption: z.string().trim().min(1).max(255),
-      altText: z.string().trim().min(1).max(255),
-      description: z.string().trim().max(5000).optional(),
-      isActive: z.coerce.boolean().optional(),
-    });
-
-    const body = schema.parse(req.body);
-
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Aucun fichier image fourni",
+portfolioRouter.post("/",
+  handleUpload(
+    portfolioUpload.single("image"),
+    async (req, res) => {
+      const schema = z.object({
+        caption: z.string().trim().min(1).max(255),
+        altText: z.string().trim().min(1).max(255),
+        description: z.string().trim().max(5000).optional(),
+        isActive: z.coerce.boolean().optional(),
       });
+
+      const body = schema.parse(req.body);
+
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Aucune image fournie.",
+        });
+      }
+
+      const fileUrl = `/uploads/portfolio-images/${req.file.filename}`;
+      const filePath = path.resolve(req.file.path);
+
+      const image = await createPortfolioImage({
+        caption: body.caption,
+        altText: body.altText,
+        description: body.description,
+        fileName: req.file.filename,
+        filePath,
+        fileUrl,
+        mimeType: req.file.mimetype,
+        isActive: body.isActive ?? true,
+      });
+
+      return res.status(201).json({
+        success: true,
+        image,
+      });
+    },
+    {
+      context: "création de l'image du portfolio",
+      fileTooLargeMessage:
+        "Le fichier est trop volumineux. La taille maximale autorisée est de 5 Mo.",
     }
-
-    const fileUrl = `/uploads/portfolio-images/${req.file.filename}`;
-    const filePath = path.resolve(req.file.path);
-
-    const image = await createPortfolioImage({
-      caption: body.caption,
-      altText: body.altText,
-      description: body.description,
-      fileName: req.file.filename,
-      filePath,
-      fileUrl,
-      mimeType: req.file.mimetype,
-      isActive: body.isActive ?? true,
-    });
-
-    return res.status(201).json({
-      success: true,
-      image,
-    });
-  } catch (error: any) {
-    return handleRouteError(res, error, "Erreur dans la création de l'image du portfolio");
-  }
-});
+  )
+);
 
 portfolioRouter.patch("/:id", async (req, res) => {
   try {
@@ -98,8 +106,12 @@ portfolioRouter.patch("/:id", async (req, res) => {
       success: true,
       image,
     });
-  } catch (error: any) {
-    return handleRouteError(res, error, "Erreur dans la mise à jour de l'image du portfolio");
+  } catch (error) {
+    return handleRouteError(
+      res,
+      error,
+      "Mise à jour de l'image du portfolio"
+    );
   }
 });
 

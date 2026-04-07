@@ -1,31 +1,33 @@
-import { env } from "../../env";
+import { apiFetch } from "./api";
 
 export async function fetchPublicGeneralSettings() {
-  const res = await fetch(`${env.apiBaseUrl}/api/settings/general/public`, {
-    credentials: "include",
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Erreur chargement branding dashboard");
-  }
-
-  return data;
+  return apiFetch<{
+    success: true;
+    settings: {
+      siteName: string;
+      siteDescription: string;
+      siteLogoUrl: string;
+      siteSidebarLogoUrl: string;
+    };
+  }>("/api/settings/general/public");
 }
 
 export async function fetchSettingsGeneral() {
-  const res = await fetch(`${env.apiBaseUrl}/api/settings/general`, {
-    credentials: "include",
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Erreur chargement paramètres généraux");
-  }
-
-  return data;
+  return apiFetch<{
+    success: true;
+    settings: {
+      siteName: string;
+      siteDescription: string;
+      siteLogoUrl: string;
+      siteSidebarLogoUrl: string;
+    };
+    storage: {
+      portfolioImagesSize: number;
+      legalArchivesSize: number;
+      logosSize: number;
+      totalSize: number;
+    };
+  }>("/api/settings/general");
 }
 
 export async function saveSettingsGeneral(payload: {
@@ -34,22 +36,18 @@ export async function saveSettingsGeneral(payload: {
   siteLogoUrl: string;
   siteSidebarLogoUrl: string;
 }) {
-  const res = await fetch(`${env.apiBaseUrl}/api/settings/general`, {
+  return apiFetch<{
+    success: true;
+    settings: {
+      siteName: string;
+      siteDescription: string;
+      siteLogoUrl: string;
+      siteSidebarLogoUrl: string;
+    };
+  }>("/api/settings/general", {
     method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Erreur sauvegarde paramètres généraux");
-  }
-
-  return data;
 }
 
 export async function uploadGeneralLogo(
@@ -60,17 +58,11 @@ export async function uploadGeneralLogo(
   formData.append("logo", file);
   formData.append("target", target);
 
-  const res = await fetch(`${env.apiBaseUrl}/api/settings/general/upload-logo`, {
+  return apiFetch<{
+    success: true;
+    fileUrl: string;
+  }>("/api/settings/general/upload-logo", {
     method: "POST",
-    credentials: "include",
     body: formData,
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Erreur upload logo");
-  }
-
-  return data;
 }

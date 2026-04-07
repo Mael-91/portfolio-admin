@@ -1,5 +1,4 @@
-import { env } from "../../env";
-import { extractApiErrorMessage } from "./ApiErrorMessage";
+import { apiFetch } from "./api";
 
 export type PortfolioImage = {
   id: number;
@@ -17,31 +16,20 @@ export type PortfolioImage = {
 };
 
 export async function fetchPortfolioImages() {
-  const res = await fetch(`${env.apiBaseUrl}/api/portfolio-images`, {
-    credentials: "include",
-  });
-
-  if (!res.ok) {
-    throw new Error("Erreur récupération portfolio");
-  }
-
-  return res.json();
+  return apiFetch<{
+    success: true;
+    images: PortfolioImage[];
+  }>("/api/portfolio-images");
 }
 
 export async function createPortfolioImage(formData: FormData) {
-  const res = await fetch(`${env.apiBaseUrl}/api/portfolio-images`, {
+  return apiFetch<{
+    success: true;
+    image: PortfolioImage;
+  }>("/api/portfolio-images", {
     method: "POST",
-    credentials: "include",
     body: formData,
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur création image"));
-  }
-
-  return data;
 }
 
 export async function updatePortfolioImage(
@@ -50,59 +38,31 @@ export async function updatePortfolioImage(
     caption: string;
     altText: string;
     description?: string;
-    isActive: boolean;
+    isActive?: boolean;
   }
 ) {
-  const res = await fetch(`${env.apiBaseUrl}/api/portfolio-images/${id}`, {
+  return apiFetch<{
+    success: true;
+    image: PortfolioImage;
+  }>(`/api/portfolio-images/${id}`, {
     method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur modification image"));
-  }
-
-  return data;
 }
 
-export async function reorderPortfolioImages(
-  items: Array<{ id: number; displayOrder: number }>
-) {
-  const res = await fetch(`${env.apiBaseUrl}/api/portfolio-images/reorder/all`, {
+export async function reorderPortfolioImages(imageIds: number[]) {
+  return apiFetch<{
+    success: true;
+  }>("/api/portfolio-images/reorder", {
     method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({ imageIds }),
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur réorganisation images"));
-  }
-
-  return data;
 }
 
 export async function deletePortfolioImage(id: number) {
-  const res = await fetch(`${env.apiBaseUrl}/api/portfolio-images/${id}`, {
+  return apiFetch<{
+    success: true;
+  }>(`/api/portfolio-images/${id}`, {
     method: "DELETE",
-    credentials: "include",
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur suppression image"));
-  }
-
-  return data;
 }

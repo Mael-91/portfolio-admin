@@ -1,84 +1,97 @@
-import { env } from "../../env";
+import { apiFetch } from "./api";
 
-export type LegalDocumentType =
-  | "privacy_content"
-  | "legal_notice"
-  | "terms_private"
-  | "terms_pro";
+export type LegalDocumentStatus = "draft" | "published" | "archived";
 
-export async function fetchLegalTypes() {
-  const res = await fetch(`${env.apiBaseUrl}/api/legal/documents/types`, {
-    credentials: "include",
-  });
+export type LegalDocument = {
+  id: number;
+  documentType: string;
+  title: string;
+  slug: string;
+  versionLabel: string;
+  status: LegalDocumentStatus;
+  isCurrent: boolean;
+  contentHtml: string;
+  contentText: string | null;
+  archiveFilePath: string | null;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
-  return res.json();
+export async function fetchLegalDocuments(documentType?: string) {
+  const query = documentType
+    ? `?documentType=${encodeURIComponent(documentType)}`
+    : "";
+
+  return apiFetch<{
+    success: true;
+    documents: LegalDocument[];
+  }>(`/api/legal${query}`);
 }
 
-export async function fetchCurrentLegalDocument(documentType: LegalDocumentType) {
-  const url = new URL(`${env.apiBaseUrl}/api/legal/documents/current`);
-  url.searchParams.set("type", documentType);
-
-  const res = await fetch(url.toString(), {
-    credentials: "include",
-  });
-
-  return res.json();
+export async function fetchLegalDocumentById(id: number) {
+  return apiFetch<{
+    success: true;
+    document: LegalDocument;
+  }>(`/api/legal/${id}`);
 }
 
-export async function fetchDraftLegalDocument(documentType: LegalDocumentType) {
-  const url = new URL(`${env.apiBaseUrl}/api/legal/documents/draft`);
-  url.searchParams.set("type", documentType);
-
-  const res = await fetch(url.toString(), {
-    credentials: "include",
-  });
-
-  return res.json();
-}
-
-export async function fetchLegalHistory(documentType: LegalDocumentType) {
-  const url = new URL(`${env.apiBaseUrl}/api/legal/documents/history`);
-  url.searchParams.set("type", documentType);
-
-  const res = await fetch(url.toString(), {
-    credentials: "include",
-  });
-
-  return res.json();
-}
-
-export async function saveLegalDraft(payload: {
-  documentType: LegalDocumentType;
+export async function createLegalDocument(payload: {
+  documentType: string;
+  title: string;
+  slug: string;
+  versionLabel: string;
   contentHtml: string;
 }) {
-  const res = await fetch(`${env.apiBaseUrl}/api/legal/documents/draft`, {
+  return apiFetch<{
+    success: true;
+    document: LegalDocument;
+  }>("/api/legal", {
     method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
-
-  return res.json();
 }
 
-export async function publishLegalDocument(payload: {
-  documentType: LegalDocumentType;
-  contentHtml: string;
-}) {
-  const res = await fetch(`${env.apiBaseUrl}/api/legal/documents/publish`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
+export async function updateLegalDocument(
+  id: number,
+  payload: {
+    title: string;
+    slug: string;
+    versionLabel: string;
+    contentHtml: string;
+  }
+) {
+  return apiFetch<{
+    success: true;
+    document: LegalDocument;
+  }>(`/api/legal/${id}`, {
+    method: "PATCH",
     body: JSON.stringify(payload),
   });
-
-  return res.json();
 }
 
-export function getLegalDownloadUrl(id: number) {
-  return `${env.apiBaseUrl}/api/legal/documents/${id}/download`;
+export async function publishLegalDocument(id: number) {
+  return apiFetch<{
+    success: true;
+    document: LegalDocument;
+  }>(`/api/legal/${id}/publish`, {
+    method: "POST",
+  });
+}
+
+export async function archiveLegalDocument(id: number) {
+  return apiFetch<{
+    success: true;
+    document: LegalDocument;
+  }>(`/api/legal/${id}/archive`, {
+    method: "POST",
+  });
+}
+
+export async function deleteLegalDocument(id: number) {
+  return apiFetch<{
+    success: true;
+  }>(`/api/legal/${id}`, {
+    method: "DELETE",
+  });
 }

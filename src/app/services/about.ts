@@ -1,32 +1,14 @@
-import { env } from "../../env";
-
-function extractApiErrorMessage(data: any, fallback: string) {
-  if (typeof data?.message === "string" && data.message.trim()) {
-    return data.message;
-  }
-
-  if (Array.isArray(data?.errors) && data.errors.length > 0) {
-    return data.errors
-      .map((error: any) => error?.message)
-      .filter(Boolean)
-      .join(" ");
-  }
-
-  return fallback;
-}
+import { apiFetch } from "./api";
 
 export async function fetchAboutContent() {
-  const res = await fetch(`${env.apiBaseUrl}/api/about`, {
-    credentials: "include",
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur chargement page à propos"));
-  }
-
-  return data;
+  return apiFetch<{
+    success: true;
+    about: {
+      textHtml: string;
+      imageAlt: string;
+      imageUrl: string;
+    };
+  }>("/api/about");
 }
 
 export async function saveAboutContent(payload: {
@@ -34,56 +16,40 @@ export async function saveAboutContent(payload: {
   imageAlt: string;
   imageUrl: string;
 }) {
-  const res = await fetch(`${env.apiBaseUrl}/api/about`, {
+  return apiFetch<{
+    success: true;
+    about: {
+      textHtml: string;
+      imageAlt: string;
+      imageUrl: string;
+    };
+  }>("/api/about", {
     method: "PUT",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur sauvegarde page à propos"));
-  }
-
-  return data;
 }
 
 export async function uploadAboutImage(file: File) {
   const formData = new FormData();
   formData.append("image", file);
 
-  const res = await fetch(`${env.apiBaseUrl}/api/about/upload-image`, {
+  return apiFetch<{
+    success: true;
+    fileUrl: string;
+  }>("/api/about/upload-image", {
     method: "POST",
-    credentials: "include",
     body: formData,
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur upload image à propos"));
-  }
-
-  return data;
 }
 
 export async function cleanupOrphanAboutImages() {
-  const res = await fetch(`${env.apiBaseUrl}/api/about/cleanup-orphans`, {
+  return apiFetch<{
+    success: true;
+    scannedCount: number;
+    deletedCount: number;
+    keptCount: number;
+    deletedFiles: string[];
+  }>("/api/about/cleanup-orphans", {
     method: "POST",
-    credentials: "include",
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(
-      extractApiErrorMessage(data, "Erreur nettoyage images orphelines")
-    );
-  }
-
-  return data;
 }

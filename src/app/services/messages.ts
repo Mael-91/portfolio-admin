@@ -1,127 +1,109 @@
-import { env } from "../../env";
 import { apiFetch } from "./api";
-import { extractApiErrorMessage } from "./ApiErrorMessage";
 
-export type ProcessingStatus = "unprocessed" | "in_progress" | "processed";
+export type MessageStatus = "new" | "in_progress" | "processed";
 
-export interface MessageListItem {
+export type ContactMessage = {
   id: number;
   requestType: string;
-  email: string;
-  messagePreview: string;
-  allowPhoneContact: boolean;
-  consentPrivacy: boolean;
-  processingStatus: ProcessingStatus;
-  createdAt: string;
-}
-
-export interface MessageDetail {
-  id: number;
-  requestType: string;
-  firstName: string | null;
-  lastName: string | null;
+  firstName: string;
+  lastName: string;
   company: string | null;
   email: string;
   phone: string | null;
   messageText: string;
   allowPhoneContact: boolean;
   consentPrivacy: boolean;
-  processingStatus: ProcessingStatus;
-  processingUpdatedAt: string | null;
+  privacyPolicyAcceptedAt: string | null;
+  privacyPolicyDocumentId: number | null;
+  privacyPolicyVersion: string | null;
+  privacyNoticePresented: boolean;
+  emailSubject: string | null;
+  emailText: string | null;
+  formPayload: string | null;
+  emailSnapshot: string | null;
+  processingContext: string | null;
+  legalBasis: string | null;
+  processingPurpose: string | null;
+  status: MessageStatus;
   createdAt: string;
-}
+  updatedAt: string;
+};
 
-export interface ListMessagesResponse {
-  success: boolean;
-  page: number;
-  pageSize: number;
+export type MessagesListResponse = {
+  messages: ContactMessage[];
   total: number;
-  messages: MessageListItem[];
-}
-
-export async function fetchMessages(params: {
   page: number;
   pageSize: number;
+};
+
+function buildMessagesQuery(params?: {
+  page?: number;
+  pageSize?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  status?: ProcessingStatus;
+  status?: string;
   search?: string;
-}): Promise<ListMessagesResponse> {
+}) {
   const searchParams = new URLSearchParams();
 
-  searchParams.set("page", String(params.page));
-  searchParams.set("pageSize", String(params.pageSize));
+  if (params?.page) searchParams.set("page", String(params.page));
+  if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+  if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params?.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params?.status) searchParams.set("status", params.status);
+  if (params?.search) searchParams.set("search", params.search);
 
-  if (params.sortBy) {
-    searchParams.set("sortBy", params.sortBy);
-  }
+  const queryString = searchParams.toString();
 
-  if (params.search) {
-    searchParams.set("search", params.search);
-  }
-
-  if (params.sortOrder) {
-    searchParams.set("sortOrder", params.sortOrder);
-  }
-
-  if (params.status) {
-    searchParams.set("status", params.status);
-  }
-
-  return apiFetch<ListMessagesResponse>(`/api/messages?${searchParams.toString()}`);
+  return queryString ? `?${queryString}` : "";
 }
 
-export async function fetchMessageDetail(id: number): Promise<{
-  success: boolean;
-  message: MessageDetail;
-}> {
-  return apiFetch(`/api/messages/${id}`);
+export async function fetchMessages(params?: {
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  status?: string;
+  search?: string;
+}) {
+  return apiFetch<{
+    success: true;
+    messages: ContactMessage[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }>(`/api/messages${buildMessagesQuery(params)}`);
 }
 
-export async function updateMessageProcessingStatus(
+export async function fetchMessageById(id: number) {
+  return apiFetch<{
+    success: true;
+    message: ContactMessage;
+  }>(`/api/messages/${id}`);
+}
+
+export async function updateMessageStatus(
   id: number,
-  processingStatus: ProcessingStatus
-): Promise<{
-  success: boolean;
-  message: MessageDetail;
-}> {
-  return apiFetch(`/api/messages/${id}/processing-status`, {
+  status: MessageStatus
+) {
+  return apiFetch<{
+    success: true;
+    message: ContactMessage;
+  }>(`/api/messages/${id}/status`, {
     method: "PATCH",
-    body: JSON.stringify({ processingStatus }),
+    body: JSON.stringify({ status }),
   });
 }
 
-export async function fetchNewMessagesCount(lastSeenId: number): Promise<{
-  success: boolean;
-  total: number;
-}> {
-  return apiFetch(`/api/messages/new-count?lastSeenId=${lastSeenId}`);
-}
-
-export async function exportMessageRgpd(id: number, email: string): Promise<{
-  success: boolean;
-  sent: boolean;
-  email: string;
-}> {
-  return apiFetch(`/api/messages/${id}/export-rgpd`, {
+export async function exportMessageRgpdByEmail(payload: {
+  messageId: number;
+  recipientEmail: string;
+}) {
+  return apiFetch<{
+    success: true;
+    message: string;
+  }>("/api/messages/export-rgpd", {
     method: "POST",
-    body: JSON.stringify({ email }),
+    body: JSON.stringify(payload),
   });
-}
-
-export async function fetchUnprocessedMessagesCount(): Promise<number> {
-  const baseUrl = env.apiBaseUrl;
-
-  const url = `${baseUrl}/api/messages/count-unprocessed`;
-
-  const response = await fetch(url, {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error(extractApiErrorMessage(await response.json(), "Erreur chargement nombre messages non traités"));
-  }
-
-  const data = await response.json();
-  return data.total;
 }

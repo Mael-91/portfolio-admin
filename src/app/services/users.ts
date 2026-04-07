@@ -1,5 +1,4 @@
-import { env } from "../../env";
-import { extractApiErrorMessage } from "./ApiErrorMessage";
+import { apiFetch } from "./api";
 
 export type AdminUser = {
   id: number;
@@ -12,15 +11,10 @@ export type AdminUser = {
 };
 
 export async function fetchAdminUsers() {
-  const res = await fetch(`${env.apiBaseUrl}/api/users`, {
-    credentials: "include",
-  });
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(await res.json(), "Erreur récupération utilisateurs"));
-  }
-
-  return res.json();
+  return apiFetch<{
+    success: true;
+    users: AdminUser[];
+  }>("/api/users");
 }
 
 export async function createAdminUser(payload: {
@@ -29,37 +23,13 @@ export async function createAdminUser(payload: {
   lastName: string;
   password: string;
 }) {
-  const res = await fetch(`${env.apiBaseUrl}/api/users`, {
+  return apiFetch<{
+    success: true;
+    user: AdminUser;
+  }>("/api/users", {
     method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur création utilisateur"));
-  }
-
-  return data;
-}
-
-export async function deleteAdminUser(id: number) {
-  const res = await fetch(`${env.apiBaseUrl}/api/users/${id}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Erreur suppression utilisateur");
-  }
-
-  return data;
 }
 
 export async function updateAdminUser(
@@ -70,22 +40,13 @@ export async function updateAdminUser(
     lastName: string;
   }
 ) {
-  const res = await fetch(`${env.apiBaseUrl}/api/users/${id}`, {
+  return apiFetch<{
+    success: true;
+    user: AdminUser;
+  }>(`/api/users/${id}`, {
     method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Erreur modification utilisateur");
-  }
-
-  return data;
 }
 
 export async function updateAdminUserPassword(
@@ -94,22 +55,13 @@ export async function updateAdminUserPassword(
     password: string;
   }
 ) {
-  const res = await fetch(`${env.apiBaseUrl}/api/users/${id}/password`, {
+  return apiFetch<{
+    success: true;
+    user: AdminUser;
+  }>(`/api/users/${id}/password`, {
     method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Erreur mise à jour mot de passe");
-  }
-
-  return data;
 }
 
 export async function updateAdminUserActiveStatus(
@@ -118,20 +70,19 @@ export async function updateAdminUserActiveStatus(
     isActive: boolean;
   }
 ) {
-  const res = await fetch(`${env.apiBaseUrl}/api/users/${id}/active`, {
+  return apiFetch<{
+    success: true;
+    user: AdminUser;
+  }>(`/api/users/${id}/active`, {
     method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
+}
 
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Erreur activation utilisateur");
-  }
-
-  return data;
+export async function deleteAdminUser(id: number) {
+  return apiFetch<{
+    success: true;
+  }>(`/api/users/${id}`, {
+    method: "DELETE",
+  });
 }
