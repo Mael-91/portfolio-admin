@@ -151,7 +151,7 @@ export async function updateMessageProcessingStatus(
   const data = await apiFetch<{
     success: boolean;
     message: ApiContactMessage;
-  }>(`/api/messages/${id}/status`, {
+  }>(`/api/messages/${id}/processing-status`, {
     method: "PATCH",
     body: JSON.stringify({
       status: processingStatus,
@@ -178,7 +178,7 @@ export async function exportMessageRgpd(
 ): Promise<{ success: boolean; sent: boolean; email: string }> {
   const data = await apiFetch<{
     success: boolean;
-  }>("/api/messages/export-rgpd", {
+  }>(`/api/messages/${id}/export-rgpd`, {
     method: "POST",
     body: JSON.stringify({
       messageId: id,

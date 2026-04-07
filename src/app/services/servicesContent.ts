@@ -1,3 +1,4 @@
+import { env } from "../../env";
 import { apiFetch } from "./api";
 
 export type ServiceType = "pro" | "private";
@@ -21,11 +22,14 @@ export type ServicesSection = {
 };
 
 export async function fetchServicesContent(serviceType: ServiceType) {
+  const url = new URL(`${env.apiBaseUrl}/api/services-content`);
+  url.searchParams.set("type", serviceType);
+
   return apiFetch<{
     success: true;
     section: ServicesSection;
     cards: ServiceCard[];
-  }>(`/api/services-content/${serviceType}`);
+  }>(`${url.pathname}${url.search}`);
 }
 
 export async function saveServicesContent(payload: {
