@@ -53,8 +53,9 @@ type ApiContactMessage = {
   updatedAt: string;
 };
 
-function buildMessagePreview(messageText: string) {
-  const normalized = messageText.replace(/\s+/g, " ").trim();
+function buildMessagePreview(messageText?: string | null) {
+  const safeText = typeof messageText === "string" ? messageText : "";
+  const normalized = safeText.replace(/\s+/g, " ").trim();
 
   if (normalized.length <= 100) {
     return normalized;
@@ -68,7 +69,7 @@ function mapApiMessageToListItem(message: ApiContactMessage): MessageListItem {
     id: message.id,
     requestType: message.requestType,
     email: message.email,
-    messagePreview: buildMessagePreview(message.messageText),
+    messagePreview: buildMessagePreview(message.messageText ?? ""),
     allowPhoneContact: message.allowPhoneContact,
     consentPrivacy: message.consentPrivacy,
     processingStatus: message.status,
