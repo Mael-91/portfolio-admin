@@ -13,6 +13,24 @@ import { deleteLogoIfExists } from "./settings-general.file";
 
 export const settingsGeneralRouter = Router();
 
+settingsGeneralRouter.get("/public", async (_req, res) => {
+  try {
+    const settings = await getGeneralSettings();
+
+    return res.status(200).json({
+      success: true,
+      settings: {
+        siteName: settings.siteName,
+        siteDescription: settings.siteDescription,
+        siteLogoUrl: settings.siteLogoUrl,
+        siteSidebarLogoUrl: settings.siteSidebarLogoUrl,
+      },
+    });
+  } catch (error) {
+    return handleRouteError(res, error, "lecture branding dashboard public");
+  }
+});
+
 settingsGeneralRouter.use(requireAdminAuth);
 
 settingsGeneralRouter.get("/", async (_req, res) => {
@@ -111,3 +129,4 @@ settingsGeneralRouter.post(
     }
   }
 );
+

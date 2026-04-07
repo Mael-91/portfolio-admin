@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { fetchSettingsGeneral } from "../services/settingsGeneral";
+import { fetchPublicGeneralSettings } from "../services/settingsGeneral";
 import { env } from "../../env";
 
 export type GeneralSettings = {
@@ -34,6 +34,12 @@ const GeneralSettingsContext = createContext<GeneralSettingsContextValue>({
   loading: true,
   refreshSettings: async () => {},
 });
+
+function resolveAssetUrl(url: string) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${env.apiBaseUrl}${url}`;
+}
 
 function applySeo(settings: GeneralSettings) {
   document.title = settings.siteName || "Dashboard";
@@ -77,7 +83,7 @@ export function GeneralSettingsProvider({
 
   async function refreshSettings() {
     try {
-      const data = await fetchSettingsGeneral();
+      const data = await fetchPublicGeneralSettings();
 
       const nextSettings: GeneralSettings = {
         siteName: data.settings.siteName ?? "Dashboard",
@@ -117,10 +123,4 @@ export function GeneralSettingsProvider({
 
 export function useGeneralSettings() {
   return useContext(GeneralSettingsContext);
-}
-
-function resolveAssetUrl(url: string) {
-  if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  return `${env.apiBaseUrl}${url}`;
 }

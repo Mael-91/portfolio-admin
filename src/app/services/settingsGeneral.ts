@@ -1,5 +1,19 @@
 import { env } from "../../env";
 
+export async function fetchPublicGeneralSettings() {
+  const res = await fetch(`${env.apiBaseUrl}/api/settings/general/public`, {
+    credentials: "include",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Erreur chargement branding dashboard");
+  }
+
+  return data;
+}
+
 export async function fetchSettingsGeneral() {
   const res = await fetch(`${env.apiBaseUrl}/api/settings/general`, {
     credentials: "include",
