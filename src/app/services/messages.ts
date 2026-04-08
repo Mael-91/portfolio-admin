@@ -155,7 +155,7 @@ export async function updateMessageProcessingStatus(
     method: "PATCH",
     body: JSON.stringify({processingStatus}),
   });
-  console.log("message API detail =", data.message);
+
   return {
     success: data.success,
     message: mapApiMessageToDetail(data.message),
@@ -176,18 +176,17 @@ export async function exportMessageRgpd(
 ): Promise<{ success: boolean; sent: boolean; email: string }> {
   const data = await apiFetch<{
     success: boolean;
+    sent?: boolean;
+    email: string;
   }>(`/api/messages/${id}/export-rgpd`, {
     method: "POST",
-    body: JSON.stringify({
-      messageId: id,
-      recipientEmail: email,
-    }),
+    body: JSON.stringify({ email }),
   });
 
   return {
     success: data.success,
-    sent: true,
-    email,
+    sent: data.sent ?? true,
+    email : data.email ?? email,
   };
 }
 
