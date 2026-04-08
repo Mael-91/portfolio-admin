@@ -110,7 +110,7 @@ export function MessagesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { unprocessedCount, refreshSignal } = useMessageNotifications();
+  const { unprocessedCount, refreshSignal, resetNewMessagesCount } = useMessageNotifications();
 
   const page = parsePositiveInt(searchParams.get("page"), 1);
   const sortBy = parseSortBy(searchParams.get("sortBy"));
@@ -212,6 +212,10 @@ export function MessagesPage() {
       }
     }
   }
+
+  useEffect(() => {
+    resetNewMessagesCount();
+  }, [resetNewMessagesCount]);
 
   useEffect(() => {
     loadMessages();

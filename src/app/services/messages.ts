@@ -48,7 +48,8 @@ type ApiContactMessage = {
   messageText: string;
   allowPhoneContact: boolean;
   consentPrivacy: boolean;
-  status: ProcessingStatus;
+  processingStatus: ProcessingStatus;
+  processingUpdatedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -72,7 +73,7 @@ function mapApiMessageToListItem(message: ApiContactMessage): MessageListItem {
     messagePreview: buildMessagePreview(message.messageText ?? ""),
     allowPhoneContact: message.allowPhoneContact,
     consentPrivacy: message.consentPrivacy,
-    processingStatus: message.status,
+    processingStatus: message.processingStatus,
     createdAt: message.createdAt,
   };
 }
@@ -89,8 +90,8 @@ function mapApiMessageToDetail(message: ApiContactMessage): MessageDetail {
     messageText: message.messageText,
     allowPhoneContact: message.allowPhoneContact,
     consentPrivacy: message.consentPrivacy,
-    processingStatus: message.status,
-    processingUpdatedAt: message.updatedAt,
+    processingStatus: message.processingStatus,
+    processingUpdatedAt: message.processingUpdatedAt,
     createdAt: message.createdAt,
   };
 }
@@ -176,18 +177,17 @@ export async function exportMessageRgpd(
 ): Promise<{ success: boolean; sent: boolean; email: string }> {
   const data = await apiFetch<{
     success: boolean;
+    sent?: boolean;
+    email: string;
   }>(`/api/messages/${id}/export-rgpd`, {
     method: "POST",
-    body: JSON.stringify({
-      messageId: id,
-      recipientEmail: email,
-    }),
+    body: JSON.stringify({ email }),
   });
 
   return {
     success: data.success,
-    sent: true,
-    email,
+    sent: data.sent ?? true,
+    email : data.email ?? email,
   };
 }
 

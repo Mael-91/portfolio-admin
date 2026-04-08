@@ -151,7 +151,10 @@ export function RGPDPage() {
 
         <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-5">
           <p className="text-sm text-admin-text-soft">Statut</p>
-          <p className="mt-2 text-2xl font-semibold text-white">
+          <p className={`mt-1 text-2xl font-semibold ${
+              autoPurgeEnabled ? "text-green-400" : "text-orange-400"
+            }`}
+          >
             {autoPurgeEnabled ? "Actif" : "Off"}
           </p>
         </div>

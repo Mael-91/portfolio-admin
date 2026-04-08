@@ -11,8 +11,10 @@ import { useToast } from "../hooks/useToast";
 
 type ContextType = {
   unprocessedCount: number;
+  newMessagesCount: number;
   refreshSignal: number;
   connectionStatus: "connecting" | "connected" | "disconnected";
+  resetNewMessagesCount: () => void;
 };
 
 const MessageNotificationsContext = createContext<ContextType | null>(null);
@@ -44,6 +46,7 @@ export function MessageNotificationsProvider({
   const { showToast } = useToast();
 
   const [unprocessedCount, setUnprocessedCount] = useState(0);
+  const [newMessagesCount, setNewMessagesCount] = useState(0);
   const [refreshSignal, setRefreshSignal] = useState(0);
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "disconnected"
@@ -53,6 +56,10 @@ export function MessageNotificationsProvider({
   const reconnectTimeoutRef = useRef<number | null>(null);
   const isUnmountedRef = useRef(false);
   const previousCountRef = useRef<number | null>(null);
+
+  function resetNewMessagesCount() {
+    setNewMessagesCount(0);
+  }
 
   useEffect(() => {
     isUnmountedRef.current = false;
@@ -74,6 +81,7 @@ export function MessageNotificationsProvider({
           if (data.type === "connected") {
             previousCountRef.current = data.unprocessedCount;
             setUnprocessedCount(data.unprocessedCount);
+            setNewMessagesCount(0);
             return;
           }
 
@@ -82,8 +90,9 @@ export function MessageNotificationsProvider({
               previousCountRef.current !== null &&
               data.unprocessedCount > previousCountRef.current
             ) {
-              const diff =
-                data.diff ?? data.unprocessedCount - previousCountRef.current;
+              const diff = data.diff ?? data.unprocessedCount - previousCountRef.current;
+
+              setNewMessagesCount((prev) => prev + diff);
 
               showToast({
                 title: "Nouveaux messages reçus",
@@ -100,6 +109,7 @@ export function MessageNotificationsProvider({
             setUnprocessedCount((prev) => {
               if (prev !== data.unprocessedCount) {
                 setRefreshSignal((value) => value + 1);
+                setNewMessagesCount((prev) => prev + 1);
                 return data.unprocessedCount;
               }
 
@@ -166,18 +176,26 @@ export function MessageNotificationsProvider({
   }, [showToast]);
 
   const value = useMemo(
-    () => ({
-      unprocessedCount,
-      refreshSignal,
-      connectionStatus,
-    }),
-    [unprocessedCount, refreshSignal, connectionStatus]
-  );
+  () => ({
+    unprocessedCount,
+    newMessagesCount,
+    refreshSignal,
+    connectionStatus,
+    resetNewMessagesCount,
+  }),
+  [
+    unprocessedCount,
+    newMessagesCount,
+    refreshSignal,
+    connectionStatus,
+  ]
+);
 
   return (
     <MessageNotificationsContext.Provider value={value}>
       {children}
     </MessageNotificationsContext.Provider>
+    
   );
 }
 
