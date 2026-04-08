@@ -412,7 +412,10 @@ export function MessageDetailPage() {
                   Dernière mise à jour statut
                 </p>
                 <p className="mt-2 text-sm text-admin-text">
-                  {formatDate(message.processingUpdatedAt)}
+                  {message.processingUpdatedAt &&
+                    message.processingUpdatedAt !== message.createdAt
+                      ? formatDate(message.processingUpdatedAt)
+                      : "Aucune mise à jour"}
                 </p>
               </div>
 
