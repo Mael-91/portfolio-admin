@@ -70,7 +70,7 @@ export function SettingsGeneralPage() {
   const [isUploadingSidebarLogo, setIsUploadingSidebarLogo] = useState(false);
 
   const [showPreviews, setShowPreviews] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [, setErrorMessage] = useState("");
 
   const { refreshSettings } = useGeneralSettings();
 
@@ -226,12 +226,6 @@ export function SettingsGeneralPage() {
           {saving ? "Enregistrement..." : "Enregistrer"}
         </Button>
       </div>
-
-      {errorMessage ? (
-        <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-          {errorMessage}
-        </p>
-      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">

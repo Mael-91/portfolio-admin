@@ -12,6 +12,7 @@ import {
 import { LegalEditor } from "../components/editor/LegalEditor";
 import { ConfirmLegalPublishModal } from "../components/legal/ConfirmLegalPublishModal";
 import { Button } from "../components/ui/Button";
+import { useToast } from "../hooks/useToast";
 
 type LegalTypeItem = {
   value: LegalDocumentType;
@@ -40,7 +41,9 @@ export function LegalDocumentsPage() {
   const [savingDraft, setSavingDraft] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [, setSuccessMessage] = useState("");
+
+  const { showToast } = useToast();
 
   const currentDownloadId = useMemo(() => {
     if (draftDocument?.id) {
@@ -92,6 +95,11 @@ export function LegalDocumentsPage() {
 
       setDraftDocument(response.document);
       setSuccessMessage("Brouillon enregistré");
+      showToast({
+        title: "Brouillon enregistré",
+        description: "Le brouillon a bien été enregistré.",
+        variant: "success",
+      });
     } finally {
       setSavingDraft(false);
     }
@@ -110,6 +118,11 @@ export function LegalDocumentsPage() {
       setDraftDocument(null);
       setShowPublishModal(false);
       setSuccessMessage("Document publié");
+      showToast({
+        title: "Document publié",
+        description: "Le document a bien été publié.",
+        variant: "success",
+      });
 
       await loadDocumentData(selectedType);
     } finally {
@@ -135,12 +148,6 @@ export function LegalDocumentsPage() {
           Gestion des brouillons, publications et historique des documents.
         </p>
       </div>
-
-      {successMessage ? (
-        <div className="rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-400">
-          {successMessage}
-        </div>
-      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
         <aside className="rounded-2xl bg-white/[0.03] p-4">

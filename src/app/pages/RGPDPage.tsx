@@ -9,6 +9,7 @@ import {
   runRgpdPurgeNow,
   saveRgpdSettings,
 } from "../services/rgpd";
+import { useToast } from "../hooks/useToast";
 
 export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -17,12 +18,13 @@ export function RGPDPage() {
   const [toDelete, setToDelete] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [, setSuccessMessage] = useState("");
   const [nextDeletionDate, setNextDeletionDate] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const { refreshSignal } = useMessageNotifications();
+  const { showToast } = useToast();
 
   async function loadAll() {
     try {
@@ -71,6 +73,11 @@ export function RGPDPage() {
     try {
       const data = await runRgpdPurgeNow();
       setSuccessMessage(`${data.deleted} messages supprimés`);
+      showToast({
+        title: "Purge RGPD terminée",
+        description: `${data.deleted} messages ont été supprimés.`,
+        variant: "success",
+      });
       setShowModal(false);
       await refreshStats(retentionDays);
     } catch (error) {
@@ -261,12 +268,6 @@ export function RGPDPage() {
               </Button>
             </div>
           </div>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400">
-          {successMessage}
         </div>
       )}
     </div>
