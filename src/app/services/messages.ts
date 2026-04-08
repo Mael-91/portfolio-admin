@@ -48,7 +48,7 @@ type ApiContactMessage = {
   messageText: string;
   allowPhoneContact: boolean;
   consentPrivacy: boolean;
-  status: ProcessingStatus;
+  processingStatus: ProcessingStatus;
   createdAt: string;
   updatedAt: string;
 };
@@ -72,7 +72,7 @@ function mapApiMessageToListItem(message: ApiContactMessage): MessageListItem {
     messagePreview: buildMessagePreview(message.messageText ?? ""),
     allowPhoneContact: message.allowPhoneContact,
     consentPrivacy: message.consentPrivacy,
-    processingStatus: message.status,
+    processingStatus: message.processingStatus,
     createdAt: message.createdAt,
   };
 }
@@ -89,7 +89,7 @@ function mapApiMessageToDetail(message: ApiContactMessage): MessageDetail {
     messageText: message.messageText,
     allowPhoneContact: message.allowPhoneContact,
     consentPrivacy: message.consentPrivacy,
-    processingStatus: message.status,
+    processingStatus: message.processingStatus,
     processingUpdatedAt: message.updatedAt,
     createdAt: message.createdAt,
   };
