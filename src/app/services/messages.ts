@@ -148,15 +148,12 @@ export async function updateMessageProcessingStatus(
   id: number,
   processingStatus: ProcessingStatus
 ): Promise<{ success: boolean; message: MessageDetail }> {
-  console.log("processingStatus envoyé =", processingStatus);
   const data = await apiFetch<{
     success: boolean;
     message: ApiContactMessage;
   }>(`/api/messages/${id}/processing-status`, {
     method: "PATCH",
-    body: JSON.stringify({
-      status: processingStatus,
-    }),
+    body: JSON.stringify({processingStatus}),
   });
 
   return {
