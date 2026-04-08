@@ -49,6 +49,7 @@ type ApiContactMessage = {
   allowPhoneContact: boolean;
   consentPrivacy: boolean;
   processingStatus: ProcessingStatus;
+  processingUpdatedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
