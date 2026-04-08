@@ -11,6 +11,7 @@ import {
 import { DeleteUserConfirmModal } from "../components/users/DeleteUserConfirmModal";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
+import { useToast } from "../hooks/useToast";
 
 type FormMode = "create" | "edit";
 
@@ -24,8 +25,8 @@ const emptyForm = {
 export function UsersSettingsPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [, setErrorMessage] = useState("");
+  const [, setSuccessMessage] = useState("");
 
   const [formMode, setFormMode] = useState<FormMode>("create");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
@@ -37,6 +38,8 @@ export function UsersSettingsPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const { showToast } = useToast();
+
   async function loadUsers() {
     setLoading(true);
 
@@ -45,6 +48,11 @@ export function UsersSettingsPage() {
       setUsers(response.users);
     } catch (error: any) {
       setErrorMessage(error?.message || "Erreur chargement utilisateurs");
+      showToast({
+        title: "Erreur",
+        description: error?.message || "Erreur chargement utilisateurs",
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -83,6 +91,11 @@ export function UsersSettingsPage() {
       if (formMode === "create") {
         await createAdminUser(form);
         setSuccessMessage("Utilisateur créé");
+        showToast({
+          title: "Utilisateur créé",
+          description: "Le nouvel utilisateur a bien été créé.",
+          variant: "success",
+        });
       } else if (selectedUserId) {
         await updateAdminUser(selectedUserId, {
           email: form.email,
@@ -97,12 +110,22 @@ export function UsersSettingsPage() {
         }
 
         setSuccessMessage("Utilisateur mis à jour");
+        showToast({
+          title: "Utilisateur mis à jour",
+          description: "Les modifications ont bien été enregistrées.",
+          variant: "success",
+        });
       }
 
       resetForm();
       await loadUsers();
     } catch (error: any) {
       setErrorMessage(error?.message || "Erreur sauvegarde utilisateur");
+      showToast({
+        title: "Erreur",
+        description: error?.message || "Erreur sauvegarde utilisateur",
+        variant: "error",
+      });
     } finally {
       setSaving(false);
     }
@@ -120,10 +143,22 @@ export function UsersSettingsPage() {
       setSuccessMessage(
         user.isActive ? "Utilisateur désactivé" : "Utilisateur activé"
       );
+      showToast({
+        title: user.isActive ? "Utilisateur désactivé" : "Utilisateur activé",
+        description: `L'utilisateur a bien été ${
+          user.isActive ? "désactivé" : "activé"
+        }.`,
+        variant: "success",
+      });
 
       await loadUsers();
     } catch (error: any) {
       setErrorMessage(error?.message || "Erreur changement statut utilisateur");
+      showToast({
+        title: "Erreur",
+        description: error?.message || "Erreur changement statut utilisateur",
+        variant: "error",
+      });
     }
   }
 
@@ -139,6 +174,11 @@ export function UsersSettingsPage() {
     try {
       await deleteAdminUser(deleteTarget.id);
       setSuccessMessage("Utilisateur supprimé");
+      showToast({
+        title: "Utilisateur supprimé",
+        description: "L'utilisateur a bien été supprimé.",
+        variant: "success",
+      });
       setDeleteTarget(null);
 
       if (selectedUserId === deleteTarget.id) {
@@ -148,6 +188,11 @@ export function UsersSettingsPage() {
       await loadUsers();
     } catch (error: any) {
       setErrorMessage(error?.message || "Erreur suppression utilisateur");
+      showToast({
+        title: "Erreur",
+        description: error?.message || "Erreur suppression utilisateur",
+        variant: "error",
+      });
     } finally {
       setDeleting(false);
     }
@@ -163,18 +208,6 @@ export function UsersSettingsPage() {
           Crée, modifie et active les comptes administrateurs du dashboard.
         </p>
       </div>
-
-      {errorMessage ? (
-        <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">
-          {errorMessage}
-        </div>
-      ) : null}
-
-      {successMessage ? (
-        <div className="rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-400">
-          {successMessage}
-        </div>
-      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="rounded-2xl bg-white/[0.03] p-5">

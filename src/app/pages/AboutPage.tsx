@@ -36,7 +36,7 @@ export function AboutPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [, setErrorMessage] = useState("");
   const [form, setForm] = useState<AboutForm>(emptyForm);
   const [cleaningOrphans, setCleaningOrphans] = useState(false);
 
@@ -204,12 +204,6 @@ export function AboutPage() {
           </Button>
         </div>
       </div>
-
-      {errorMessage ? (
-        <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-          {errorMessage}
-        </p>
-      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
