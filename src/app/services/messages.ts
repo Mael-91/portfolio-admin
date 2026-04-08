@@ -154,7 +154,7 @@ export async function updateMessageProcessingStatus(
   }>(`/api/messages/${id}/processing-status`, {
     method: "PATCH",
     body: JSON.stringify({
-      status: processingStatus,
+      status: JSON.stringify({ processingStatus }),
     }),
   });
 
