@@ -29,6 +29,7 @@ import { env } from "../../env";
 import { Button } from "../components/ui/Button";
 import { Input, Textarea } from "../components/ui/Input";
 import { Switch } from "../components/ui/Switch";
+import { useToast } from "../hooks/useToast";
 
 /* ========================= */
 /* Utils */
@@ -133,10 +134,12 @@ export function PortfolioImagesPage() {
   });
 
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [, setSuccessMessage] = useState("");
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  const { showToast } = useToast();
 
   /* ========================= */
   /* Load data */
@@ -149,7 +152,13 @@ export function PortfolioImagesPage() {
       const res = await fetchPortfolioImages();
       setImages(res.images);
     } catch (err: any) {
-      setErrorMessage(err.message);
+      const message = err?.message || "Impossible d’uploader l’image.";
+      setErrorMessage(message);
+      showToast({
+        title: "Erreur",
+        description: message,
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -177,11 +186,16 @@ export function PortfolioImagesPage() {
   if (!nextFile) return;
 
   if (!nextFile.type.startsWith("image/")) {
-    setErrorMessage("Veuillez sélectionner un fichier image valide.");
+    const message = "Veuillez sélectionner un fichier image valide.";
+    setErrorMessage(message);
+    showToast({
+      title: "Erreur",
+      description: message,
+      variant: "error",
+    });
     return;
   }
 
-  setErrorMessage("");
   setFile(nextFile);
 }
 
@@ -235,21 +249,37 @@ export function PortfolioImagesPage() {
   async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
 
-  setErrorMessage("");
-  setSuccessMessage("");
-
   if (!form.caption.trim()) {
-    setErrorMessage("Le champ caption est obligatoire.");
+    const message = "Le champ caption est obligatoire.";
+    setErrorMessage(message);
+    showToast({
+      title: "Erreur",
+      description: message,
+      variant: "error",
+    });
     return;
   }
 
   if (!form.altText.trim()) {
-    setErrorMessage("Le texte alternatif est obligatoire.");
+    const message = "Le texte alternatif est obligatoire.";
+    setErrorMessage(message);
+    showToast({
+      title: "Erreur",
+      description: message,
+      variant: "error",
+    });
     return;
   }
 
   if (!selectedImage && !file) {
-    setErrorMessage("Veuillez sélectionner une image.");
+    const message = "Veuillez sélectionner une image.";
+    setErrorMessage(message);
+    showToast({
+      title: "Erreur",
+      description: message,
+      variant: "error",
+    });
+    
     return;
   }
 
@@ -266,7 +296,13 @@ export function PortfolioImagesPage() {
 
     if (selectedImage) {
       await updatePortfolioImage(selectedImage.id, payload);
-      setSuccessMessage("Photo mise à jour");
+      const message = "Photo mise à jour avec succès."
+      setSuccessMessage(message);
+      showToast({
+        title: "Succès",
+        description: message,
+        variant: "success",
+      });
     } else {
       const formData = new FormData();
       formData.append("image", file as File);
@@ -276,13 +312,27 @@ export function PortfolioImagesPage() {
       formData.append("isActive", String(form.isActive));
 
       await createPortfolioImage(formData);
-      setSuccessMessage("Photo ajoutée");
+      const message = "Photo ajoutée avec succès."
+      setSuccessMessage(message);
+      showToast({
+        title: "Succès",
+        description: message,
+        variant: "success",
+      });
+      
     }
 
     resetForm();
     await loadImages();
   } catch (err: any) {
-    setErrorMessage(err.message || "Erreur lors de l'enregistrement");
+    const message = err?.message || "Erreur lors de l'enregistrement."
+    setErrorMessage(message);
+    showToast({
+      title: "Erreur",
+      description: message,
+      variant: "error",
+    });
+    
   } finally {
     setSavingForm(false);
   }
@@ -299,11 +349,23 @@ export function PortfolioImagesPage() {
 
     try {
       await deletePortfolioImage(deleteTarget.id);
-      setSuccessMessage("Photo supprimée");
+      const message = "Photo supprimée avec succès.";
+      setSuccessMessage(message);
+      showToast({
+        title: "Succès",
+        description: message,
+        variant: "success",
+      });
       setDeleteTarget(null);
       await loadImages();
     } catch (err: any) {
-      setErrorMessage(err.message);
+      const message = err.message;
+      setErrorMessage(message);
+      showToast({
+        title: "Erreur",
+        description: message,
+        variant: "error",
+      });
     } finally {
       setDeleting(false);
     }
@@ -343,9 +405,21 @@ export function PortfolioImagesPage() {
         }))
       );
 
-      setSuccessMessage("Ordre mis à jour");
+      const message = "Ordre mis à jour avec succès.";
+      setSuccessMessage(message);
+      showToast({
+        title: "Succès",
+        description: message,
+        variant: "success",
+      });
     } catch (err: any) {
-      setErrorMessage(err.message);
+      const message = err.message;
+      setErrorMessage(message);
+      showToast({
+        title: "Erreur",
+        description: message,
+        variant: "error",
+      });
       await loadImages();
     } finally {
       setSavingOrder(false);
@@ -382,14 +456,6 @@ export function PortfolioImagesPage() {
       `}</style>
 
       <h1 className="text-2xl font-semibold">Portfolio</h1>
-
-      {errorMessage && (
-        <div className="text-red-400">{errorMessage}</div>
-      )}
-
-      {successMessage && (
-        <div className="text-green-400">{successMessage}</div>
-      )}
 
       <div className="grid xl:grid-cols-[1fr_350px] gap-6">
         {/* GRID */}
