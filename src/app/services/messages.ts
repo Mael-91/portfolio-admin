@@ -91,7 +91,7 @@ function mapApiMessageToDetail(message: ApiContactMessage): MessageDetail {
     allowPhoneContact: message.allowPhoneContact,
     consentPrivacy: message.consentPrivacy,
     processingStatus: message.processingStatus,
-    processingUpdatedAt: message.updatedAt,
+    processingUpdatedAt: message.processingUpdatedAt,
     createdAt: message.createdAt,
   };
 }
