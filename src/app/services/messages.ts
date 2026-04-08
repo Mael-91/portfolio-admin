@@ -155,7 +155,7 @@ export async function updateMessageProcessingStatus(
     method: "PATCH",
     body: JSON.stringify({processingStatus}),
   });
-
+  console.log("message API detail =", data.message);
   return {
     success: data.success,
     message: mapApiMessageToDetail(data.message),
