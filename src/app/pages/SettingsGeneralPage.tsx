@@ -27,6 +27,13 @@ type StorageUsage = {
   byFolder: Record<string, number>;
 };
 
+const STORAGE_LABELS: Record<string, string> = {
+  "portfolio-images": "Images du portfolio",
+  "legal-archives": "Archives légales",
+  "logos": "Logos",
+  "about": "Section À propos",
+};
+
 const emptyForm: GeneralSettingsForm = {
   siteName: "",
   siteDescription: "",
@@ -51,6 +58,10 @@ function resolveAssetUrl(url: string) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   return `${env.apiBaseUrl}${url}`;
+}
+
+function getStorageLabel(folderName: string) {
+  return STORAGE_LABELS[folderName] ?? folderName;
 }
 
 export function SettingsGeneralPage() {
@@ -444,38 +455,6 @@ export function SettingsGeneralPage() {
               </div>
 
               <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-admin-text-soft">Images portfolio</span>
-                  <span className="text-white">
-                    {formatBytes(storage.portfolioImagesSize)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-admin-text-soft">Archives légales</span>
-                  <span className="text-white">
-                    {formatBytes(storage.legalArchivesSize)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-admin-text-soft">Logos</span>
-                  <span className="text-white">
-                    {formatBytes(storage.logosSize)}
-                  </span>
-                </div>
-
-                <div className="my-2 h-px bg-white/10" />
-
-                <div className="flex items-center justify-between text-base font-medium">
-                  <span className="text-white">Total</span>
-                  <span className="text-white">
-                    {formatBytes(storage.totalSize)}
-                  </span>
-                </div>
-
-                <div className="my-2 h-px bg-white/10" />
-
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-white">Détail par dossier</p>
 
@@ -486,7 +465,7 @@ export function SettingsGeneralPage() {
                           key={folderName}
                           className="flex items-center justify-between text-sm"
                         >
-                          <span className="text-admin-text-soft">{folderName}</span>
+                          <span className="text-admin-text-soft">{getStorageLabel(folderName)}</span>
                           <span className="text-white">{formatBytes(size)}</span>
                         </div>
                       ))}
@@ -496,6 +475,15 @@ export function SettingsGeneralPage() {
                       Aucun dossier détecté.
                     </p>
                   )}
+                </div>
+
+                <div className="my-2 h-px bg-white/10" />
+
+                <div className="flex items-center justify-between text-base font-medium">
+                  <span className="text-white">Total</span>
+                  <span className="text-white">
+                    {formatBytes(storage.totalSize)}
+                  </span>
                 </div>
               </div>
             </div>
