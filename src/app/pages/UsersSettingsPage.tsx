@@ -12,6 +12,7 @@ import { DeleteUserConfirmModal } from "../components/users/DeleteUserConfirmMod
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useToast } from "../hooks/useToast";
+import { useFeedback } from "../hooks/useFeedback";
 
 type FormMode = "create" | "edit";
 
@@ -25,8 +26,7 @@ const emptyForm = {
 export function UsersSettingsPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [, setErrorMessage] = useState("");
-  const [, setSuccessMessage] = useState("");
+  const { setSuccess, setError, setLoadingError, reset } = useFeedback();
 
   const [formMode, setFormMode] = useState<FormMode>("create");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
@@ -42,12 +42,13 @@ export function UsersSettingsPage() {
 
   async function loadUsers() {
     setLoading(true);
+    reset();
 
     try {
       const response = await fetchAdminUsers();
       setUsers(response.users);
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur chargement utilisateurs");
+      setError();
       showToast({
         title: "Erreur",
         description: error?.message || "Erreur chargement utilisateurs",
@@ -84,13 +85,12 @@ export function UsersSettingsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+    reset();
 
     try {
       if (formMode === "create") {
         await createAdminUser(form);
-        setSuccessMessage("Utilisateur créé");
+        setSuccess();
         showToast({
           title: "Utilisateur créé",
           description: "Le nouvel utilisateur a bien été créé.",
@@ -109,7 +109,7 @@ export function UsersSettingsPage() {
           });
         }
 
-        setSuccessMessage("Utilisateur mis à jour");
+        setSuccess();
         showToast({
           title: "Utilisateur mis à jour",
           description: "Les modifications ont bien été enregistrées.",
@@ -120,7 +120,7 @@ export function UsersSettingsPage() {
       resetForm();
       await loadUsers();
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur sauvegarde utilisateur");
+      setError();
       showToast({
         title: "Erreur",
         description: error?.message || "Erreur sauvegarde utilisateur",
@@ -132,17 +132,13 @@ export function UsersSettingsPage() {
   }
 
   async function handleToggleActive(user: AdminUser) {
-    setErrorMessage("");
-    setSuccessMessage("");
-
+    reset();
     try {
       await updateAdminUserActiveStatus(user.id, {
         isActive: !user.isActive,
       });
 
-      setSuccessMessage(
-        user.isActive ? "Utilisateur désactivé" : "Utilisateur activé"
-      );
+      setSuccess();
       showToast({
         title: user.isActive ? "Utilisateur désactivé" : "Utilisateur activé",
         description: `L'utilisateur a bien été ${
@@ -153,7 +149,7 @@ export function UsersSettingsPage() {
 
       await loadUsers();
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur changement statut utilisateur");
+      setError();
       showToast({
         title: "Erreur",
         description: error?.message || "Erreur changement statut utilisateur",
@@ -163,17 +159,17 @@ export function UsersSettingsPage() {
   }
 
   async function handleDeleteUser() {
+    reset();
+
     if (!deleteTarget) {
       return;
     }
 
     setDeleting(true);
-    setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       await deleteAdminUser(deleteTarget.id);
-      setSuccessMessage("Utilisateur supprimé");
+      setSuccess();
       showToast({
         title: "Utilisateur supprimé",
         description: "L'utilisateur a bien été supprimé.",
@@ -187,7 +183,7 @@ export function UsersSettingsPage() {
 
       await loadUsers();
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur suppression utilisateur");
+      setError();
       showToast({
         title: "Erreur",
         description: error?.message || "Erreur suppression utilisateur",
