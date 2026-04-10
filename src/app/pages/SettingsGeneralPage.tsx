@@ -29,7 +29,7 @@ type StorageUsage = {
 
 const STORAGE_LABELS: Record<string, string> = {
   "portfolio-images": "Images du portfolio",
-  "legal-archives": "Archives légales",
+  "legal-documents-archives": "Archives légales",
   "logos": "Logos",
   "about": "Section À propos",
 };
