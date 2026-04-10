@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { getSettingsByKeys, upsertSetting } from "./settings-general.repository";
-import { getStoragePath } from "../common/storagePath";
+import { getStorageBasePath } from "../common/storagePath";
 import { deleteLogoIfExists } from "./settings-general.file";
 
 const GENERAL_SETTING_KEYS = [
@@ -31,6 +31,35 @@ async function getDirectorySize(dirPath: string): Promise<number> {
     return total;
   } catch {
     return 0;
+  }
+}
+
+async function getStorageFoldersUsage(basePath: string) {
+  try {
+    const entries = await fs.readdir(basePath, { withFileTypes: true });
+
+    const byFolder: Record<string, number> = {};
+    let totalSize = 0;
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+
+      const folderPath = path.join(basePath, entry.name);
+      const folderSize = await getDirectorySize(folderPath);
+
+      byFolder[entry.name] = folderSize;
+      totalSize += folderSize;
+    }
+
+    return {
+      byFolder,
+      totalSize,
+    };
+  } catch {
+    return {
+      byFolder: {},
+      totalSize: 0,
+    };
   }
 }
 
@@ -81,18 +110,11 @@ export async function saveGeneralSettings(input: {
 }
 
 export async function getStorageUsage() {
-  const portfolioImagesSize = await getDirectorySize(
-    getStoragePath("portfolio-images")
-  );
-  const legalArchivesSize = await getDirectorySize(
-    getStoragePath("legal-archives")
-  );
-  const logosSize = await getDirectorySize(getStoragePath("logos"));
+  const storageBasePath = getStorageBasePath();
+  const { byFolder, totalSize } = await getStorageFoldersUsage(storageBasePath);
 
   return {
-    portfolioImagesSize,
-    legalArchivesSize,
-    logosSize,
-    totalSize: portfolioImagesSize + legalArchivesSize + logosSize,
+    totalSize,
+    byFolder,
   };
 }

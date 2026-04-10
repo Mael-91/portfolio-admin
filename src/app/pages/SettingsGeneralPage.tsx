@@ -24,6 +24,7 @@ type StorageUsage = {
   legalArchivesSize: number;
   logosSize: number;
   totalSize: number;
+  byFolder: Record<string, number>;
 };
 
 const emptyForm: GeneralSettingsForm = {
@@ -64,6 +65,7 @@ export function SettingsGeneralPage() {
     legalArchivesSize: 0,
     logosSize: 0,
     totalSize: 0,
+    byFolder: {},
   });
 
   const [isUploadingSiteLogo, setIsUploadingSiteLogo] = useState(false);
@@ -93,6 +95,7 @@ export function SettingsGeneralPage() {
         legalArchivesSize: data.storage.legalArchivesSize ?? 0,
         logosSize: data.storage.logosSize ?? 0,
         totalSize: data.storage.totalSize ?? 0,
+        byFolder: data.storage.byFolder ?? {},
       });
     } catch (error: any) {
       setErrorMessage(
@@ -191,6 +194,10 @@ export function SettingsGeneralPage() {
     () => resolveAssetUrl(form.siteSidebarLogoUrl),
     [form.siteSidebarLogoUrl]
   );
+
+  const sortedStorageFolders = useMemo(() => {
+    return Object.entries(storage.byFolder).sort((a, b) => b[1] - a[1]);
+  }, [storage.byFolder]);
 
   if (loading) {
     return (
@@ -465,6 +472,30 @@ export function SettingsGeneralPage() {
                   <span className="text-white">
                     {formatBytes(storage.totalSize)}
                   </span>
+                </div>
+
+                <div className="my-2 h-px bg-white/10" />
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-white">Détail par dossier</p>
+
+                  {sortedStorageFolders.length > 0 ? (
+                    <div className="space-y-2">
+                      {sortedStorageFolders.map(([folderName, size]) => (
+                        <div
+                          key={folderName}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="text-admin-text-soft">{folderName}</span>
+                          <span className="text-white">{formatBytes(size)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-admin-text-soft">
+                      Aucun dossier détecté.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

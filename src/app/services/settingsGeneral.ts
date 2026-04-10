@@ -26,6 +26,7 @@ export async function fetchSettingsGeneral() {
       legalArchivesSize: number;
       logosSize: number;
       totalSize: number;
+      byFolder: Record<string, number>;
     };
   }>("/api/settings/general");
 }
