@@ -56,10 +56,16 @@ export function MessageNotificationsProvider({
   const reconnectTimeoutRef = useRef<number | null>(null);
   const isUnmountedRef = useRef(false);
   const previousCountRef = useRef<number | null>(null);
+  const showToastRef = useRef(showToast);
+  const lastRgpdToastKeyRef = useRef<string | null>(null);
 
   function resetNewMessagesCount() {
     setNewMessagesCount(0);
   }
+
+  useEffect(() => {
+    showToastRef.current = showToast;
+  }, [showToast]);
 
   useEffect(() => {
     isUnmountedRef.current = false;
@@ -94,7 +100,7 @@ export function MessageNotificationsProvider({
 
               setNewMessagesCount((prev) => prev + diff);
 
-              showToast({
+              showToastRef.current({
                 title: "Nouveaux messages reçus",
                 description:
                   diff === 1
@@ -125,18 +131,23 @@ export function MessageNotificationsProvider({
                 setRefreshSignal((value) => value + 1);
                 return data.unprocessedCount;
               }
-
               return prev;
             });
 
-            showToast({
-              title: "Purge RGPD effectuée",
-              description:
-                data.deletedCount === 1
-                  ? "1 message a été supprimé automatiquement."
-                  : `${data.deletedCount} messages ont été supprimés automatiquement.`,
-              variant: "info",
-            });
+            const toastKey = `${data.timestamp}:${data.deletedCount}:${data.unprocessedCount}`;
+
+            if (lastRgpdToastKeyRef.current !== toastKey) {
+              lastRgpdToastKeyRef.current = toastKey;
+
+              showToastRef.current({
+                title: "Purge RGPD effectuée",
+                description:
+                  data.deletedCount === 1
+                    ? "1 message a été supprimé."
+                    : `${data.deletedCount} messages ont été supprimés.`,
+                variant: "info",
+              });
+            }
 
             return;
           }
@@ -173,7 +184,7 @@ export function MessageNotificationsProvider({
 
       wsRef.current?.close();
     };
-  }, [showToast]);
+  }, []);
 
   const value = useMemo(
   () => ({
