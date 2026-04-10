@@ -9,7 +9,7 @@ import {
   runRgpdPurgeNow,
   saveRgpdSettings,
 } from "../services/rgpd";
-import { useToast } from "../hooks/useToast";
+//import { useToast } from "../hooks/useToast";
 
 export function RGPDPage() {
   const [retentionDays, setRetentionDays] = useState(90);
@@ -18,13 +18,13 @@ export function RGPDPage() {
   const [toDelete, setToDelete] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [, setSuccessMessage] = useState("");
+  //const [, setSuccessMessage] = useState("");
   const [nextDeletionDate, setNextDeletionDate] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const { refreshSignal } = useMessageNotifications();
-  const { showToast } = useToast();
+  //const { showToast } = useToast();
 
   async function loadAll() {
     try {
@@ -71,13 +71,7 @@ export function RGPDPage() {
 
   async function confirmPurge() {
     try {
-      const data = await runRgpdPurgeNow();
-      setSuccessMessage(`${data.deleted} messages supprimés`);
-      showToast({
-        title: "Purge RGPD terminée",
-        description: `${data.deleted} messages ont été supprimés.`,
-        variant: "success",
-      });
+      await runRgpdPurgeNow();
       setShowModal(false);
       await refreshStats(retentionDays);
     } catch (error) {
