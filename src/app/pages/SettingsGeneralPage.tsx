@@ -31,7 +31,7 @@ const STORAGE_LABELS: Record<string, string> = {
   "portfolio-images": "Images du portfolio",
   "legal-documents-archives": "Archives légales",
   "logos": "Logos",
-  "about": "Section À propos",
+  "about-section-photo": "Section À propos",
 };
 
 const emptyForm: GeneralSettingsForm = {
