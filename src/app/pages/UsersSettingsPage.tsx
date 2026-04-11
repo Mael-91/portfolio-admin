@@ -298,7 +298,6 @@ export function UsersSettingsPage() {
                         variant="secondary"
                         size="sm"
                         onClick={() => handleEditUser(user)}
-                        className="w-full"
                       >
                         Modifier
                       </Button>
@@ -446,7 +445,7 @@ export function UsersSettingsPage() {
               </div>
             )}
 
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving} className="w-full">
               {saving
                 ? "Enregistrement..."
                 : formMode === "create"
