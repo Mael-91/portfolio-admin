@@ -298,13 +298,13 @@ export function UsersSettingsPage() {
                         variant="secondary"
                         size="sm"
                         onClick={() => handleEditUser(user)}
+                        className="w-full"
                       >
                         Modifier
                       </Button>
 
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="secondary" size="sm"
                         onClick={() => handleToggleActive(user)}
                       >
                         {user.isActive ? "Désactiver" : "Activer"}
