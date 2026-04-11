@@ -127,12 +127,10 @@ export function buildRgpdExportEmailHtml(data: any) {
           <div style="padding:20px;">
             <p>Bonjour ${escapeHtml(fullName)},</p>
             <p>
-              <br />
               Vous recevez ce message car un export de vos données personnelles a été demandé depuis notre interface d’administration, à partir de votre demande de contact.
               <br />
-              Si vous n’êtes pas à l’origine de cette demande ou si vous souhaitez exercer un autre droit sur vos données, vous pouvez répondre à ce message.
               <br />
-              Cordialement,
+              Si vous n’êtes pas à l’origine de cette demande ou si vous souhaitez exercer un autre droit sur vos données, vous pouvez répondre à ce message.
               <br />
               <br />
               Vous trouverez ci-dessous les informations actuellement enregistrées vous concernant.
