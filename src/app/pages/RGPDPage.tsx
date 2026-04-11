@@ -9,6 +9,7 @@ import {
   runRgpdPurgeNow,
   saveRgpdSettings,
 } from "../services/rgpd";
+import { useFeedback } from "../hooks/useFeedback";
 //import { useToast } from "../hooks/useToast";
 
 export function RGPDPage() {
@@ -18,15 +19,15 @@ export function RGPDPage() {
   const [toDelete, setToDelete] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  //const [, setSuccessMessage] = useState("");
   const [nextDeletionDate, setNextDeletionDate] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const { refreshSignal } = useMessageNotifications();
-  //const { showToast } = useToast();
+  const { reset } = useFeedback();
 
   async function loadAll() {
+    reset();
     try {
       const [settingsData, statsData] = await Promise.all([
         fetchRgpdSettings(),

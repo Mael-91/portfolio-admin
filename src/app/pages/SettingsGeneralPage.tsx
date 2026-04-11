@@ -11,6 +11,7 @@ import {
 import { useToast } from "../hooks/useToast";
 import { env } from "../../env";
 import { useGeneralSettings } from "../context/GeneralSettingsContext";
+import { useFeedback } from "../hooks/useFeedback";
 
 type GeneralSettingsForm = {
   siteName: string;
@@ -83,13 +84,13 @@ export function SettingsGeneralPage() {
   const [isUploadingSidebarLogo, setIsUploadingSidebarLogo] = useState(false);
 
   const [showPreviews, setShowPreviews] = useState(true);
-  const [, setErrorMessage] = useState("");
 
   const { refreshSettings } = useGeneralSettings();
+  const { setSuccess, setError, reset } = useFeedback();
 
   async function loadData() {
     setLoading(true);
-    setErrorMessage("");
+    reset();
 
     try {
       const data = await fetchSettingsGeneral();
@@ -109,9 +110,12 @@ export function SettingsGeneralPage() {
         byFolder: data.storage.byFolder ?? {},
       });
     } catch (error: any) {
-      setErrorMessage(
-        error?.message || "Erreur lors du chargement des paramètres généraux."
-      );
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Impossible de charger les paramètres généraux. Veuillez réessayer.",
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -123,12 +127,13 @@ export function SettingsGeneralPage() {
 
   async function handleSave() {
     setSaving(true);
-    setErrorMessage("");
+    reset();
 
     try {
       await saveSettingsGeneral(form);
       await refreshSettings();
 
+      setSuccess();
       showToast({
         title: "Paramètres enregistrés",
         description: "Les paramètres généraux ont bien été mis à jour.",
@@ -137,15 +142,10 @@ export function SettingsGeneralPage() {
 
       await loadData();
     } catch (error: any) {
-      const message =
-        error?.message ||
-        "Impossible d’enregistrer les paramètres généraux.";
-
-      setErrorMessage(message);
-
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: "Impossible d’enregistrer les paramètres généraux.",
         variant: "error",
       });
     } finally {
@@ -157,6 +157,7 @@ export function SettingsGeneralPage() {
     file: File | null,
     target: "siteLogoUrl" | "siteSidebarLogoUrl"
   ) {
+    reset();
     if (!file) return;
 
     const setUploading =
@@ -165,7 +166,6 @@ export function SettingsGeneralPage() {
         : setIsUploadingSidebarLogo;
 
     setUploading(true);
-    setErrorMessage("");
 
     try {
       const data = await uploadGeneralLogo(file, target);
@@ -176,19 +176,18 @@ export function SettingsGeneralPage() {
         [target]: data.fileUrl,
       }));
 
+      setSuccess();
       showToast({
         title: "Logo téléversé",
         description: "Le logo a bien été ajouté.",
         variant: "success",
       });
     } catch (error: any) {
-      const message = error?.message || "Erreur lors du téléversement du logo.";
-
-      setErrorMessage(message);
+      setError();
 
       showToast({
         title: "Erreur",
-        description: message,
+        description: "Erreur lors du téléversement du logo.",
         variant: "error",
       });
     } finally {

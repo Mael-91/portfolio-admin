@@ -30,6 +30,10 @@ import { Button } from "../components/ui/Button";
 import { Input, Textarea } from "../components/ui/Input";
 import { Switch } from "../components/ui/Switch";
 import { useToast } from "../hooks/useToast";
+import { useFeedback } from "../hooks/useFeedback";
+import { useFormValidation } from "../hooks/useFormValidation";
+import { cn } from "../../lib/utils";
+import { getInputFeedbackClasses } from "../../lib/feedbackStyles";
 
 /* ========================= */
 /* Utils */
@@ -72,7 +76,10 @@ function SortablePortfolioCard({
         />
 
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
-          <Button variant="secondary" size="sm" className="cursor-grab active:cursor-grabbing bg-black/50" 
+          <Button
+            variant="secondary"
+            size="sm"
+            className="cursor-grab active:cursor-grabbing bg-black/50"
             type="button"
             {...attributes}
             {...listeners}
@@ -96,9 +103,21 @@ function SortablePortfolioCard({
         <div className="font-medium text-white">{image.caption}</div>
 
         <div className="mt-1 flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => onEdit(image)}>Modifier</Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onEdit(image)}
+          >
+            Modifier
+          </Button>
 
-          <Button variant="dangerSoft" size="sm" onClick={() => onDelete(image)}>Supprimer</Button>
+          <Button
+            variant="dangerSoft"
+            size="sm"
+            onClick={() => onDelete(image)}
+          >
+            Supprimer
+          </Button>
         </div>
       </figcaption>
     </figure>
@@ -133,13 +152,24 @@ export function PortfolioImagesPage() {
     isActive: true,
   });
 
-  const [errorMessage, setErrorMessage] = useState("");
-  const [, setSuccessMessage] = useState("");
-
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
   const { showToast } = useToast();
+  const { feedbackState, setSuccess, setError, reset } = useFeedback();
+
+  const {
+    hasFieldError,
+    submitValidation,
+    resetValidation,
+    touchField,
+    hasAnyError,
+  } = useFormValidation(form, {
+    caption: (value) => value.trim().length > 0,
+    altText: (value) => value.trim().length > 0,
+    description: () => true,
+    isActive: () => true,
+  });
 
   /* ========================= */
   /* Load data */
@@ -147,16 +177,16 @@ export function PortfolioImagesPage() {
 
   async function loadImages() {
     setLoading(true);
+    reset();
 
     try {
       const res = await fetchPortfolioImages();
       setImages(res.images);
     } catch (err: any) {
-      const message = err?.message || "Impossible d’uploader l’image.";
-      setErrorMessage(message);
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: "Impossible de téléverser l’image.",
         variant: "error",
       });
     } finally {
@@ -183,21 +213,21 @@ export function PortfolioImagesPage() {
   }, [file]);
 
   function handleFileSelect(nextFile: File | null) {
-  if (!nextFile) return;
+    reset();
+    if (!nextFile) return;
 
-  if (!nextFile.type.startsWith("image/")) {
-    const message = "Veuillez sélectionner un fichier image valide.";
-    setErrorMessage(message);
-    showToast({
-      title: "Erreur",
-      description: message,
-      variant: "error",
-    });
-    return;
+    if (!nextFile.type.startsWith("image/")) {
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Veuillez sélectionner un fichier image valide.",
+        variant: "error",
+      });
+      return;
+    }
+
+    setFile(nextFile);
   }
-
-  setFile(nextFile);
-}
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -230,9 +260,14 @@ export function PortfolioImagesPage() {
       isActive: true,
     });
     setFile(null);
+    resetValidation();
+    reset();
   }
 
   function handleEdit(image: PortfolioImage) {
+    resetValidation();
+    reset();
+
     setSelectedImage(image);
     setForm({
       caption: image.caption,
@@ -247,123 +282,106 @@ export function PortfolioImagesPage() {
   /* ========================= */
 
   async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
+    e.preventDefault();
+    reset();
+    submitValidation();
 
-  if (!form.caption.trim()) {
-    const message = "Le champ caption est obligatoire.";
-    setErrorMessage(message);
-    showToast({
-      title: "Erreur",
-      description: message,
-      variant: "error",
-    });
-    return;
-  }
-
-  if (!form.altText.trim()) {
-    const message = "Le texte alternatif est obligatoire.";
-    setErrorMessage(message);
-    showToast({
-      title: "Erreur",
-      description: message,
-      variant: "error",
-    });
-    return;
-  }
-
-  if (!selectedImage && !file) {
-    const message = "Veuillez sélectionner une image.";
-    setErrorMessage(message);
-    showToast({
-      title: "Erreur",
-      description: message,
-      variant: "error",
-    });
-    
-    return;
-  }
-
-  setSavingForm(true);
-
-  try {
-    const payload = {
-      ...form,
-      altText: form.altText.trim() || form.caption.trim(),
-      caption: form.caption.trim(),
-      description: form.description.trim(),
-      isActive: form.isActive ?? true,
-    };
-
-    if (selectedImage) {
-      await updatePortfolioImage(selectedImage.id, payload);
-      const message = "Photo mise à jour avec succès."
-      setSuccessMessage(message);
+    if (hasAnyError) {
+      setError();
       showToast({
-        title: "Succès",
-        description: message,
-        variant: "success",
+        title: "Erreur",
+        description: "Veuillez renseigner les champs obligatoires.",
+        variant: "error",
       });
-    } else {
-      const formData = new FormData();
-      formData.append("image", file as File);
-      formData.append("caption", payload.caption);
-      formData.append("altText", payload.altText);
-      formData.append("description", payload.description || "");
-      formData.append("isActive", String(form.isActive));
-
-      await createPortfolioImage(formData);
-      const message = "Photo ajoutée avec succès."
-      setSuccessMessage(message);
-      showToast({
-        title: "Succès",
-        description: message,
-        variant: "success",
-      });
-      
+      return;
     }
 
-    resetForm();
-    await loadImages();
-  } catch (err: any) {
-    const message = err?.message || "Erreur lors de l'enregistrement."
-    setErrorMessage(message);
-    showToast({
-      title: "Erreur",
-      description: message,
-      variant: "error",
-    });
-    
-  } finally {
-    setSavingForm(false);
+    if (!selectedImage && !file) {
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Veuillez sélectionner une image.",
+        variant: "error",
+      });
+
+      return;
+    }
+
+    setSavingForm(true);
+
+    try {
+      const payload = {
+        ...form,
+        altText: form.altText.trim() || form.caption.trim(),
+        caption: form.caption.trim(),
+        description: form.description.trim(),
+        isActive: form.isActive ?? true,
+      };
+
+      if (selectedImage) {
+        await updatePortfolioImage(selectedImage.id, payload);
+        setSuccess();
+        showToast({
+          title: "Succès",
+          description: "Photo mise à jour avec succès.",
+          variant: "success",
+        });
+      } else {
+        const formData = new FormData();
+        formData.append("image", file as File);
+        formData.append("caption", payload.caption);
+        formData.append("altText", payload.altText);
+        formData.append("description", payload.description || "");
+        formData.append("isActive", String(form.isActive));
+
+        await createPortfolioImage(formData);
+        setSuccess();
+        showToast({
+          title: "Succès",
+          description: "Photo ajoutée avec succès.",
+          variant: "success",
+        });
+      }
+
+      resetForm();
+      await loadImages();
+    } catch (err: any) {
+      setError();
+      showToast({
+        title: "Erreur",
+        description: err?.message || "Erreur lors de l'enregistrement.",
+        variant: "error",
+      });
+    } finally {
+      setSavingForm(false);
+    }
   }
-}
 
   /* ========================= */
   /* Delete */
   /* ========================= */
 
   async function handleDelete() {
+    reset();
     if (!deleteTarget) return;
 
     setDeleting(true);
 
     try {
       await deletePortfolioImage(deleteTarget.id);
-      const message = "Photo supprimée avec succès.";
-      setSuccessMessage(message);
+      setSuccess();
       showToast({
         title: "Succès",
-        description: message,
+        description: "Photo supprimée avec succès.",
         variant: "success",
       });
       setDeleteTarget(null);
       await loadImages();
     } catch (err: any) {
-      const message = err.message;
-      setErrorMessage(message);
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: err.message,
         variant: "error",
       });
     } finally {
@@ -376,6 +394,7 @@ export function PortfolioImagesPage() {
   /* ========================= */
 
   async function handleDragEnd(event: DragEndEvent) {
+    reset();
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
@@ -405,19 +424,17 @@ export function PortfolioImagesPage() {
         }))
       );
 
-      const message = "Ordre mis à jour avec succès.";
-      setSuccessMessage(message);
+      setSuccess();
       showToast({
         title: "Succès",
-        description: message,
+        description: "Ordre mis à jour avec succès.",
         variant: "success",
       });
     } catch (err: any) {
-      const message = err.message;
-      setErrorMessage(message);
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: err.message,
         variant: "error",
       });
       await loadImages();
@@ -511,7 +528,9 @@ export function PortfolioImagesPage() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
+                    onChange={(e) =>
+                      handleFileSelect(e.target.files?.[0] ?? null)
+                    }
                   />
 
                   <label
@@ -546,7 +565,12 @@ export function PortfolioImagesPage() {
                       <span className="text-xs text-admin-text-soft">
                         Aperçu avant envoi
                       </span>
-                      <Button variant="dangerSoft" size="sm" type="button" onClick={() => setFile(null)}>
+                      <Button
+                        variant="dangerSoft"
+                        size="sm"
+                        type="button"
+                        onClick={() => setFile(null)}
+                      >
                         Retirer
                       </Button>
                     </div>
@@ -566,46 +590,61 @@ export function PortfolioImagesPage() {
               onChange={(e) =>
                 setForm({ ...form, caption: e.target.value })
               }
+              onBlur={() => touchField("caption")}
               placeholder="Caption"
-              className={`outline-none ${
-                errorMessage && !form.caption.trim()
-                  ? "border-red-500"
-                  : "border-white/10 focus:border-white/20"
-              }`}
+              className={cn(
+                "outline-none",
+                getInputFeedbackClasses(
+                  feedbackState,
+                  hasFieldError("caption")
+                )
+              )}
             />
-            <Input 
+            <Input
               value={form.altText}
               onChange={(e) =>
-                  setForm({ ...form, altText: e.target.value })
+                setForm({ ...form, altText: e.target.value })
               }
+              onBlur={() => touchField("altText")}
               placeholder="Texte alternatif"
-              className={`outline-none ${
-                errorMessage && !form.altText.trim()
-                  ? "border-red-500"
-                  : "border-white/10 focus:border-white/20"
-              }`}
+              className={cn(
+                "outline-none",
+                getInputFeedbackClasses(
+                  feedbackState,
+                  hasFieldError("altText")
+                )
+              )}
             />
             <Textarea
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
+              onBlur={() => touchField("description")}
               placeholder="Description"
-              className={`bg-white/[0.03] outline-none ${
-                errorMessage && !form.description.trim()
-                  ? "border-red-500"
-                  : "border-white/10 focus:border-white/20"
-              }`}
+              className={cn(
+                "bg-white/[0.03] outline-none",
+                getInputFeedbackClasses(
+                  feedbackState,
+                  hasFieldError("description")
+                )
+              )}
             />
 
             <label className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
               <span className="text-sm text-admin-text-soft">
                 Activer la photo sur le site
               </span>
-              <Switch checked={form.isActive} onChange={(checked) => setForm((prev) => ({ ...prev, isActive: checked })) } />
+              <Switch
+                checked={form.isActive}
+                onChange={(checked) =>
+                  setForm((prev) => ({ ...prev, isActive: checked }))
+                }
+              />
             </label>
 
-            <Button type="submit"
+            <Button
+              type="submit"
               disabled={savingForm}
               className={`w-full 
                 ${
@@ -614,13 +653,13 @@ export function PortfolioImagesPage() {
                     : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
                 }
               `}
-              >
-                {savingForm
+            >
+              {savingForm
                 ? "Enregistrement..."
                 : selectedImage
                 ? "Enregistrer les modifications"
                 : "Ajouter la photo"}
-              </Button>
+            </Button>
           </form>
         </div>
       </div>

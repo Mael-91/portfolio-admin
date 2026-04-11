@@ -11,6 +11,7 @@ import {
   uploadAboutImage,
 } from "../services/about";
 import { LegalEditor } from "../components/editor/LegalEditor";
+import { useFeedback } from "../hooks/useFeedback";
 
 type AboutForm = {
   textHtml: string;
@@ -36,13 +37,13 @@ export function AboutPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [, setErrorMessage] = useState("");
   const [form, setForm] = useState<AboutForm>(emptyForm);
   const [cleaningOrphans, setCleaningOrphans] = useState(false);
+  const { setSuccess, setError, reset } = useFeedback();
 
   async function loadData() {
     setLoading(true);
-    setErrorMessage("");
+    reset();
 
     try {
       const data = await fetchAboutContent();
@@ -53,7 +54,12 @@ export function AboutPage() {
         imageUrl: data.about.imageUrl ?? "",
       });
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur chargement page à propos.");
+      setError();
+      showToast({
+        title: "Erreur",
+        description: error?.message || "Erreur chargement page à propos.",
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -65,11 +71,12 @@ export function AboutPage() {
 
   async function handleSave() {
     setSaving(true);
-    setErrorMessage("");
+    reset();
 
     try {
       await saveAboutContent(form);
 
+      setSuccess();
       showToast({
         title: "À propos enregistré",
         description: "La section À propos a bien été mise à jour.",
@@ -78,12 +85,10 @@ export function AboutPage() {
 
       await loadData();
     } catch (error: any) {
-      const message = error?.message || "Impossible d’enregistrer la section À propos.";
-      setErrorMessage(message);
-
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: error?.message || "Impossible d’enregistrer la section À propos.",
         variant: "error",
       });
     } finally {
@@ -92,10 +97,10 @@ export function AboutPage() {
   }
 
   async function handleUpload(file: File | null) {
+    reset();
     if (!file) return;
 
     setUploading(true);
-    setErrorMessage("");
 
     try {
       const data = await uploadAboutImage(file);
@@ -105,18 +110,17 @@ export function AboutPage() {
         imageUrl: data.fileUrl,
       }));
 
+      setSuccess();
       showToast({
         title: "Image téléversée",
         description: "L’image de la section À propos a bien été ajoutée.",
         variant: "success",
       });
     } catch (error: any) {
-      const message = error?.message || "Erreur lors du téléversement de l’image.";
-      setErrorMessage(message);
-
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: error?.message || "Erreur lors du téléversement de l’image.",
         variant: "error",
       });
     } finally {
@@ -126,11 +130,12 @@ export function AboutPage() {
 
   async function handleCleanupOrphans() {
     setCleaningOrphans(true);
-    setErrorMessage("");
+    reset();
 
     try {
       const data = await cleanupOrphanAboutImages();
 
+      setSuccess();
       showToast({
         title: "Nettoyage terminé",
         description:
@@ -142,14 +147,10 @@ export function AboutPage() {
 
       await loadData();
     } catch (error: any) {
-      const message =
-        error?.message || "Erreur lors du nettoyage des images orphelines.";
-
-      setErrorMessage(message);
-
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: error?.message || "Erreur lors du nettoyage des images orphelines.",
         variant: "error",
       });
     } finally {

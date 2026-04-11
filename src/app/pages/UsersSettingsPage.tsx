@@ -12,6 +12,8 @@ import { DeleteUserConfirmModal } from "../components/users/DeleteUserConfirmMod
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useToast } from "../hooks/useToast";
+import { useFeedback } from "../hooks/useFeedback";
+import { useFormValidation } from "../hooks/useFormValidation";
 
 type FormMode = "create" | "edit";
 
@@ -25,13 +27,11 @@ const emptyForm = {
 export function UsersSettingsPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [, setErrorMessage] = useState("");
-  const [, setSuccessMessage] = useState("");
+  const { setSuccess, setError, reset } = useFeedback();
 
   const [formMode, setFormMode] = useState<FormMode>("create");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
-
   const [passwordReset, setPasswordReset] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -40,14 +40,38 @@ export function UsersSettingsPage() {
 
   const { showToast } = useToast();
 
+  const {
+    submitValidation,
+    resetValidation,
+    touchField,
+    hasAnyError,
+  } = useFormValidation(
+    {
+      email: form.email,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      password: form.password,
+      passwordReset,
+    },
+    {
+      email: (value) => value.trim().length > 0,
+      firstName: (value) => value.trim().length > 0,
+      lastName: (value) => value.trim().length > 0,
+      password: (value) =>
+        formMode === "create" ? value.trim().length > 0 : true,
+      passwordReset: () => true,
+    }
+  );
+
   async function loadUsers() {
     setLoading(true);
+    reset();
 
     try {
       const response = await fetchAdminUsers();
       setUsers(response.users);
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur chargement utilisateurs");
+      setError();
       showToast({
         title: "Erreur",
         description: error?.message || "Erreur chargement utilisateurs",
@@ -67,9 +91,14 @@ export function UsersSettingsPage() {
     setSelectedUserId(null);
     setForm(emptyForm);
     setPasswordReset("");
+    resetValidation();
+    reset();
   }
 
   function handleEditUser(user: AdminUser) {
+    resetValidation();
+    reset();
+
     setFormMode("edit");
     setSelectedUserId(user.id);
     setForm({
@@ -83,14 +112,25 @@ export function UsersSettingsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    reset();
+    submitValidation();
+
+    if (hasAnyError) {
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Veuillez renseigner les champs obligatoires.",
+        variant: "error",
+      });
+      return;
+    }
+
     setSaving(true);
-    setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       if (formMode === "create") {
         await createAdminUser(form);
-        setSuccessMessage("Utilisateur créé");
+        setSuccess();
         showToast({
           title: "Utilisateur créé",
           description: "Le nouvel utilisateur a bien été créé.",
@@ -109,7 +149,7 @@ export function UsersSettingsPage() {
           });
         }
 
-        setSuccessMessage("Utilisateur mis à jour");
+        setSuccess();
         showToast({
           title: "Utilisateur mis à jour",
           description: "Les modifications ont bien été enregistrées.",
@@ -120,7 +160,7 @@ export function UsersSettingsPage() {
       resetForm();
       await loadUsers();
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur sauvegarde utilisateur");
+      setError();
       showToast({
         title: "Erreur",
         description: error?.message || "Erreur sauvegarde utilisateur",
@@ -132,17 +172,14 @@ export function UsersSettingsPage() {
   }
 
   async function handleToggleActive(user: AdminUser) {
-    setErrorMessage("");
-    setSuccessMessage("");
+    reset();
 
     try {
       await updateAdminUserActiveStatus(user.id, {
         isActive: !user.isActive,
       });
 
-      setSuccessMessage(
-        user.isActive ? "Utilisateur désactivé" : "Utilisateur activé"
-      );
+      setSuccess();
       showToast({
         title: user.isActive ? "Utilisateur désactivé" : "Utilisateur activé",
         description: `L'utilisateur a bien été ${
@@ -153,7 +190,7 @@ export function UsersSettingsPage() {
 
       await loadUsers();
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur changement statut utilisateur");
+      setError();
       showToast({
         title: "Erreur",
         description: error?.message || "Erreur changement statut utilisateur",
@@ -163,22 +200,24 @@ export function UsersSettingsPage() {
   }
 
   async function handleDeleteUser() {
+    reset();
+
     if (!deleteTarget) {
       return;
     }
 
     setDeleting(true);
-    setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       await deleteAdminUser(deleteTarget.id);
-      setSuccessMessage("Utilisateur supprimé");
+
+      setSuccess();
       showToast({
         title: "Utilisateur supprimé",
         description: "L'utilisateur a bien été supprimé.",
         variant: "success",
       });
+
       setDeleteTarget(null);
 
       if (selectedUserId === deleteTarget.id) {
@@ -187,7 +226,7 @@ export function UsersSettingsPage() {
 
       await loadUsers();
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur suppression utilisateur");
+      setError();
       showToast({
         title: "Erreur",
         description: error?.message || "Erreur suppression utilisateur",
@@ -199,26 +238,28 @@ export function UsersSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 text-white">
-      <div>
+    <div className="space-y-8 text-white">
+      <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">
           Gestion des utilisateurs
         </h1>
-        <p className="mt-1 text-sm text-admin-text-soft">
+        <p className="text-sm text-admin-text-soft">
           Crée, modifie et active les comptes administrateurs du dashboard.
         </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <section className="rounded-2xl bg-white/[0.03] p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Utilisateurs existants</h2>
-          </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-white">
+            Utilisateurs existants
+          </h2>
 
           {loading ? (
-            <div className="text-sm text-admin-text-soft">Chargement...</div>
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-5 text-sm text-admin-text-soft">
+              Chargement...
+            </div>
           ) : users.length === 0 ? (
-            <div className="text-sm text-admin-text-soft">
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-5 text-sm text-admin-text-soft">
               Aucun utilisateur trouvé.
             </div>
           ) : (
@@ -226,50 +267,66 @@ export function UsersSettingsPage() {
               {users.map((user) => (
                 <div
                   key={user.id}
-                  className="rounded-2xl border border-white/8 bg-white/[0.02] p-4"
+                  className="rounded-2xl border border-white/8 bg-white/[0.03] p-5"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="font-medium text-white">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-base font-medium text-white">
                         {user.firstName} {user.lastName}
-                      </div>
-                      <div className="mt-1 text-sm text-admin-text-soft">
+                      </p>
+                      <p className="mt-1 text-sm text-admin-text-soft">
                         {user.email}
-                      </div>
-                      <div className="mt-2 text-xs text-admin-text-muted">
+                      </p>
+                      <p className="mt-2 text-xs text-admin-text-muted">
                         Créé le{" "}
                         {new Date(user.createdAt).toLocaleString("fr-FR")}
-                      </div>
+                      </p>
                     </div>
 
-                    <span
-                      className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
-                        user.isActive
-                          ? "bg-green-500/15 text-green-400"
-                          : "bg-orange-500/15 text-orange-400"
-                      }`}
-                    >
-                      {user.isActive ? "Actif" : "Inactif"}
-                    </span>
-                  </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          user.isActive
+                            ? "bg-green-500/15 text-green-400"
+                            : "bg-orange-500/15 text-orange-400"
+                        }`}
+                      >
+                        {user.isActive ? "Actif" : "Inactif"}
+                      </span>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button variant="secondary" size="md" onClick={() => handleEditUser(user)}>
-                      Modifier
-                    </Button>
-                    <Button variant="secondary" size="md" onClick={() => handleToggleActive(user)}>
-                      {user.isActive ? "Désactiver" : "Activer"}
-                    </Button>
-                    <Button variant="dangerSoft" size="md" onClick={() => setDeleteTarget(user)}>
-                      Supprimer
-                    </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleEditUser(user)}
+                      >
+                        Modifier
+                      </Button>
+
+                      <Button
+                        variant="secondary" size="sm"
+                        onClick={() => handleToggleActive(user)}
+                      >
+                        {user.isActive ? "Désactiver" : "Activer"}
+                      </Button>
+
+                      <Button
+                        variant="dangerSoft"
+                        size="sm"
+                        onClick={() => setDeleteTarget(user)}
+                      >
+                        Supprimer
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
+
               <DeleteUserConfirmModal
-                isOpen={Boolean(deleteTarget)}
+                isOpen={!!deleteTarget}
                 userLabel={
-                  deleteTarget ? `${deleteTarget.firstName} ${deleteTarget.lastName}` : undefined
+                  deleteTarget
+                    ? `${deleteTarget.firstName} ${deleteTarget.lastName}`
+                    : undefined
                 }
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={handleDeleteUser}
@@ -279,97 +336,111 @@ export function UsersSettingsPage() {
           )}
         </section>
 
-        <aside className="rounded-2xl bg-white/[0.03] p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-white">
               {formMode === "create"
                 ? "Créer un utilisateur"
                 : "Modifier un utilisateur"}
             </h2>
 
             {formMode === "edit" ? (
-              <Button
-                type="button"
-                onClick={resetForm}
-                className="text-admin-soft"
-              >
+              <Button variant="secondary" size="sm" onClick={resetForm}>
                 Annuler
               </Button>
             ) : null}
           </div>
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label className="mb-1 block text-sm text-admin-text-soft">
-                Prénom
-              </label>
-              <Input 
-                value={form.firstName}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, firstName: e.target.value }))
-                }
-                className="px-3 outline-none"
-              />
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 rounded-2xl border border-white/8 bg-white/[0.03] p-6"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">Prénom</label>
+                <Input
+                  value={form.firstName}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      firstName: e.target.value,
+                    }))
+                  }
+                  onBlur={() => touchField("firstName")}
+                  className="px-3 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">Nom</label>
+                <Input
+                  value={form.lastName}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      lastName: e.target.value,
+                    }))
+                  }
+                  onBlur={() => touchField("lastName")}
+                  className="px-3 outline-none"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm text-admin-text-soft">
-                Nom
-              </label>
-              <Input 
-                value={form.lastName}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, lastName: e.target.value }))
-                }
-                className="px-3 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm text-admin-text-soft">
-                Email
-              </label>
-              <Input 
+            <div className="space-y-2">
+              <label className="text-sm text-admin-text-soft">Email</label>
+              <Input
                 type="email"
                 value={form.email}
                 onChange={(e) =>
-                  setForm((prev) => ({ ...prev, email: e.target.value }))
+                  setForm((prev) => ({
+                    ...prev,
+                    email: e.target.value,
+                  }))
                 }
+                onBlur={() => touchField("email")}
                 className="px-3 outline-none"
               />
             </div>
 
             {formMode === "create" ? (
-              <div>
-                <label className="mb-1 block text-sm text-admin-text-soft">
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
                   Mot de passe
                 </label>
-                <Input 
+                <Input
                   type="password"
                   value={form.password}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, password: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
                   }
+                  onBlur={() => touchField("password")}
                   className="px-3 outline-none"
                 />
-                <p className="mt-1 text-xs text-admin-text-muted">
-                  12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.
+                <p className="text-xs text-admin-text-muted">
+                  12 caractères minimum, avec majuscule, minuscule, chiffre et
+                  caractère spécial.
                 </p>
               </div>
             ) : (
-              <div>
-                <label className="mb-1 block text-sm text-admin-text-soft">
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
                   Nouveau mot de passe
                 </label>
-                <Input 
+                <Input
                   type="password"
                   value={passwordReset}
                   onChange={(e) => setPasswordReset(e.target.value)}
+                  onBlur={() => touchField("passwordReset")}
                   placeholder="Laisser vide pour ne pas changer"
                   className="px-3 outline-none placeholder:text-admin-text-muted"
                 />
-                <p className="mt-1 text-xs text-admin-text-muted">
-                  12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.
+                <p className="text-xs text-admin-text-muted">
+                  12 caractères minimum, avec majuscule, minuscule, chiffre et
+                  caractère spécial.
                 </p>
               </div>
             )}
@@ -382,7 +453,7 @@ export function UsersSettingsPage() {
                 : "Enregistrer les modifications"}
             </Button>
           </form>
-        </aside>
+        </section>
       </div>
     </div>
   );
