@@ -77,6 +77,13 @@ export async function sendRgpdExportEmail(params: {
     message_text: message.messageText,
   });
 
+  console.log("RGPD mail debug", {
+    subject,
+    textLength: text?.length,
+    htmlLength: html?.length,
+    hasHtml: !!html,
+  });
+
   await transporter.sendMail({
     from: env.mailFrom,
     to,
