@@ -196,6 +196,7 @@ export function buildRgpdExportEmailText(data: any) {
 
 function formatDateFR(date: string | Date) {
   return new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
     day: "2-digit",
     month: "long",
     year: "numeric",
