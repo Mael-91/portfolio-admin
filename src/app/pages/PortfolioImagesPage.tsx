@@ -141,6 +141,7 @@ export function PortfolioImagesPage() {
 
   const { showToast } = useToast();
   const { feedbackState, setSuccess, setError, reset } = useFeedback();
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   /* ========================= */
   /* Load data */
@@ -250,6 +251,7 @@ export function PortfolioImagesPage() {
   async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
   reset();
+  setIsSubmitted(true);
 
   if (!form.caption.trim()) {
     setError();
@@ -563,7 +565,7 @@ export function PortfolioImagesPage() {
               placeholder="Caption"
               className={cn(
                 "outline-none",
-                getInputFeedbackClasses(feedbackState, !form.caption.trim())
+                getInputFeedbackClasses(feedbackState, isSubmitted && !form.caption.trim())
               )}
             />
             <Input 
@@ -574,7 +576,7 @@ export function PortfolioImagesPage() {
               placeholder="Texte alternatif"
               className={cn(
                 "outline-none",
-                getInputFeedbackClasses(feedbackState, !form.altText.trim())
+                getInputFeedbackClasses(feedbackState, isSubmitted && !form.altText.trim())
               )}
             />
             <Textarea
@@ -585,7 +587,7 @@ export function PortfolioImagesPage() {
               placeholder="Description"
               className={cn(
                 "bg-white/[0.03] outline-none",
-                getInputFeedbackClasses(feedbackState, !form.description.trim())
+                getInputFeedbackClasses(feedbackState, isSubmitted && !form.description.trim())
               )}
             />
 
