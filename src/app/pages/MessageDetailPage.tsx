@@ -11,6 +11,7 @@ import { ExportRgpdModal } from "../components/ExportRgpdModal";
 import { useToast } from "../hooks/useToast";
 import { Button } from "../components/ui/Button";
 import { useFeedback } from "../hooks/useFeedback";
+import { useMessageNotifications } from "../hooks/useMessageNotifications";
 
 function getStatusLabel(status: ProcessingStatus): string {
   switch (status) {
@@ -105,6 +106,7 @@ export function MessageDetailPage() {
   }, [location.search]);
 
   const { feedbackState, setError, reset } = useFeedback();
+  const { refreshUnprocessedCount } = useMessageNotifications();
 
 
   async function loadMessage() {
@@ -152,6 +154,7 @@ export function MessageDetailPage() {
         description: `Le message est maintenant marqué comme « ${getStatusLabel(status)} ».`,
         variant: "success",
       });
+      await refreshUnprocessedCount();
     } catch (error: any) {
       setError();
       showToast({

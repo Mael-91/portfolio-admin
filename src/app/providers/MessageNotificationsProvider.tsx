@@ -8,6 +8,7 @@ import {
 } from "react";
 import { env } from "../../env";
 import { useToast } from "../hooks/useToast";
+import { fetchUnprocessedMessagesCount } from "../services/messages";
 
 type ContextType = {
   unprocessedCount: number;
@@ -15,6 +16,7 @@ type ContextType = {
   refreshSignal: number;
   connectionStatus: "connecting" | "connected" | "disconnected";
   resetNewMessagesCount: () => void;
+  refreshUnprocessedCount: () => Promise<void>;
 };
 
 const MessageNotificationsContext = createContext<ContextType | null>(null);
@@ -61,6 +63,23 @@ export function MessageNotificationsProvider({
 
   function resetNewMessagesCount() {
     setNewMessagesCount(0);
+  }
+
+  async function refreshUnprocessedCount() {
+    try {
+      const count = await fetchUnprocessedMessagesCount();
+      previousCountRef.current = count;
+
+      setUnprocessedCount((prev) => {
+        if (prev !== count) {
+          setRefreshSignal((value) => value + 1);
+          return count;
+        }
+        return prev;
+      });
+    } catch (error) {
+      console.error("Erreur rafraîchissement compteur messages:", error);
+    }
   }
 
   useEffect(() => {
@@ -193,6 +212,7 @@ export function MessageNotificationsProvider({
     refreshSignal,
     connectionStatus,
     resetNewMessagesCount,
+    refreshUnprocessedCount,
   }),
   [
     unprocessedCount,
