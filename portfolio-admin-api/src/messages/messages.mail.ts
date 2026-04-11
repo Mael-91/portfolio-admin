@@ -45,7 +45,7 @@ export async function sendRgpdExportEmail(params: {
 }) {
   const { to, message } = params;
 
-  const subject = "Vos données personnelles - Exportation de vos données";
+  const subject = "Vos données personnelles - maelconstantin.fr";
 
   const text = buildRgpdExportEmailText({
     id: message.id,
@@ -113,26 +113,26 @@ export function buildRgpdExportEmailHtml(data: any) {
   return `
     <!DOCTYPE html>
     <html lang="fr">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vos données personnelles - Exportation de vos données</title>
     <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial;">
       <div style="max-width:720px;margin:auto;padding:24px;">
         <div style="background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
 
           <div style="padding:20px;background:#111827;color:#fff;">
-            <h1 style="margin:0;font-size:20px;">Export RGPD</h1>
-            <p style="margin:8px 0 0;font-size:13px;color:#d1d5db;">
-              Bonjour,
-              <br />
+            <h1 style="margin:0;font-size:20px;">Export de vos données personnelles</h1>
+          </div>
+
+          <div style="padding:20px;">
+            <p>Bonjour ${escapeHtml(fullName)},</p>
+            <p>
               <br />
               Vous recevez ce message car un export de vos données personnelles a été demandé depuis notre interface d’administration, à partir de votre demande de contact.
               <br />
               <br />
               Vous trouverez ci-dessous les informations actuellement enregistrées vous concernant.
-              <br />
             </p>
-          </div>
-
-          <div style="padding:20px;">
-            <p>Bonjour ${escapeHtml(fullName)},</p>
 
             <table width="100%" style="border-collapse:collapse;">
               ${row("Type", data.request_type)}
