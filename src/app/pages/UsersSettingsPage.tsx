@@ -14,8 +14,6 @@ import { Input } from "../components/ui/Input";
 import { useToast } from "../hooks/useToast";
 import { useFeedback } from "../hooks/useFeedback";
 import { useFormValidation } from "../hooks/useFormValidation";
-import { cn } from "../../lib/utils";
-import { getInputFeedbackClasses } from "../../lib/feedbackStyles";
 
 type FormMode = "create" | "edit";
 
@@ -40,26 +38,25 @@ export function UsersSettingsPage() {
   const [deleting, setDeleting] = useState(false);
 
   const { showToast } = useToast();
-  const { feedbackState, setSuccess, setError, reset } = useFeedback();
+  const { setSuccess, setError, reset } = useFeedback();
 
   const {
-    hasFieldError,
     submitValidation,
     resetValidation,
     touchField,
     hasAnyError,
   } = useFormValidation(
     {
+      email: form.email,
       firstName: form.firstName,
       lastName: form.lastName,
-      email: form.email,
       password: form.password,
       passwordReset,
     },
     {
+      email: (value) => value.trim().length > 0,
       firstName: (value) => value.trim().length > 0,
       lastName: (value) => value.trim().length > 0,
-      email: (value) => value.trim().length > 0,
       password: (value) =>
         formMode === "create" ? value.trim().length > 0 : true,
       passwordReset: () => true,
@@ -207,8 +204,8 @@ export function UsersSettingsPage() {
       return;
     }
 
-    reset();
     setDeleting(true);
+    reset();
 
     try {
       await deleteAdminUser(deleteTarget.id);
@@ -365,13 +362,7 @@ export function UsersSettingsPage() {
                   setForm((prev) => ({ ...prev, firstName: e.target.value }))
                 }
                 onBlur={() => touchField("firstName")}
-                className={cn(
-                  "px-3 outline-none",
-                  getInputFeedbackClasses(
-                    feedbackState,
-                    hasFieldError("firstName")
-                  )
-                )}
+                className="px-3 outline-none"
               />
             </div>
 
@@ -383,13 +374,7 @@ export function UsersSettingsPage() {
                   setForm((prev) => ({ ...prev, lastName: e.target.value }))
                 }
                 onBlur={() => touchField("lastName")}
-                className={cn(
-                  "px-3 outline-none",
-                  getInputFeedbackClasses(
-                    feedbackState,
-                    hasFieldError("lastName")
-                  )
-                )}
+                className="px-3 outline-none"
               />
             </div>
           </div>
@@ -403,10 +388,7 @@ export function UsersSettingsPage() {
                 setForm((prev) => ({ ...prev, email: e.target.value }))
               }
               onBlur={() => touchField("email")}
-              className={cn(
-                "px-3 outline-none",
-                getInputFeedbackClasses(feedbackState, hasFieldError("email"))
-              )}
+              className="px-3 outline-none"
             />
           </div>
 
@@ -422,13 +404,7 @@ export function UsersSettingsPage() {
                   setForm((prev) => ({ ...prev, password: e.target.value }))
                 }
                 onBlur={() => touchField("password")}
-                className={cn(
-                  "px-3 outline-none",
-                  getInputFeedbackClasses(
-                    feedbackState,
-                    hasFieldError("password")
-                  )
-                )}
+                className="px-3 outline-none"
               />
               <p className="text-xs text-admin-text-muted">
                 12 caractères minimum, avec majuscule, minuscule, chiffre et
@@ -446,13 +422,7 @@ export function UsersSettingsPage() {
                 onChange={(e) => setPasswordReset(e.target.value)}
                 onBlur={() => touchField("passwordReset")}
                 placeholder="Laisser vide pour ne pas changer"
-                className={cn(
-                  "px-3 outline-none placeholder:text-admin-text-muted",
-                  getInputFeedbackClasses(
-                    feedbackState,
-                    hasFieldError("passwordReset")
-                  )
-                )}
+                className="px-3 outline-none placeholder:text-admin-text-muted"
               />
               <p className="text-xs text-admin-text-muted">
                 12 caractères minimum, avec majuscule, minuscule, chiffre et
