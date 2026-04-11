@@ -141,7 +141,13 @@ export function buildRgpdExportEmailHtml(data: any) {
               ${row("Email", data.email)}
               ${row("Téléphone", data.phone)}
               ${row("Entreprise", data.company)}
-              ${row("Date", data.created_at)}
+              ${row("Date", new Date(data.created_at).toLocaleString("fr-FR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),)}
             </table>
 
             <div style="margin-top:20px;">
@@ -182,7 +188,15 @@ export function buildRgpdExportEmailText(data: any) {
     Contact téléphonique autorisé : ${data.allow_phone_contact ? "Oui" : "Non"}
     Consentement confidentialité : ${data.consent_privacy ? "Oui" : "Non"}
     Statut de traitement : ${formatProcessingStatus(data.processing_status)}
-    Date de création : ${data.created_at}
+    Date de création : ${
+      new Date(data.created_at).toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    }
 
     Message :
     ${data.message_text || ""}
