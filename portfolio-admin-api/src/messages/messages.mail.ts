@@ -141,13 +141,7 @@ export function buildRgpdExportEmailHtml(data: any) {
               ${row("Email", data.email)}
               ${row("Téléphone", data.phone)}
               ${row("Entreprise", data.company)}
-              ${row("Date", new Date(data.created_at).toLocaleString("fr-FR", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              }),)}
+              ${row("Date", formatDateFR(data.created_at))}
             </table>
 
             <div style="margin-top:20px;">
@@ -188,15 +182,7 @@ export function buildRgpdExportEmailText(data: any) {
     Contact téléphonique autorisé : ${data.allow_phone_contact ? "Oui" : "Non"}
     Consentement confidentialité : ${data.consent_privacy ? "Oui" : "Non"}
     Statut de traitement : ${formatProcessingStatus(data.processing_status)}
-    Date de création : ${
-      new Date(data.created_at).toLocaleString("fr-FR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    }
+    Date de création : ${formatDateFR(data.created_at) || ""}
 
     Message :
     ${data.message_text || ""}
@@ -206,4 +192,14 @@ export function buildRgpdExportEmailText(data: any) {
     Cordialement,
     Administration maelconstantin.fr
   `;
+}
+
+function formatDateFR(date: string | Date) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date));
 }
