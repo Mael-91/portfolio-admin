@@ -10,6 +10,7 @@ import {
 import { ExportRgpdModal } from "../components/ExportRgpdModal";
 import { useToast } from "../hooks/useToast";
 import { Button } from "../components/ui/Button";
+import { useFeedback } from "../hooks/useFeedback";
 
 function getStatusLabel(status: ProcessingStatus): string {
   switch (status) {
@@ -93,7 +94,6 @@ export function MessageDetailPage() {
   const [message, setMessage] = useState<MessageDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isExportingRgpd, setIsExportingRgpd] = useState(false);
@@ -104,32 +104,44 @@ export function MessageDetailPage() {
     return location.search ? `/messages${location.search}` : "/messages";
   }, [location.search]);
 
+  const { feedbackState, setError, reset } = useFeedback();
+
 
   async function loadMessage() {
+    reset();
     if (!id) {
-      setErrorMessage("Identifiant de message manquant.");
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Identifiant de message manquant.",
+        variant: "error",
+      });
       setIsLoading(false);
       return;
     }
 
     try {
-      setErrorMessage("");
       const response = await fetchMessageDetail(Number(id));
       setMessage(response.message);
     } catch (error: any) {
-      setErrorMessage(error?.message || "Impossible de charger le message.");
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Impossible de charger le message.",
+        variant: "error",
+      });
     } finally {
       setIsLoading(false);
     }
   }
 
   async function handleStatusChange(status: ProcessingStatus) {
+    reset();
     if (!id) {
       return;
     }
 
     try {
-      setErrorMessage("");
       setIsUpdatingStatus(true);
 
       const response = await updateMessageProcessingStatus(Number(id), status);
@@ -141,13 +153,10 @@ export function MessageDetailPage() {
         variant: "success",
       });
     } catch (error: any) {
-      const messageError =
-        error?.message || "Impossible de mettre à jour le statut.";
-      setErrorMessage(messageError);
-
+      setError();
       showToast({
         title: "Erreur",
-        description: messageError,
+        description: "Impossible de mettre à jour le statut.",
         variant: "error",
       });
     } finally {
@@ -156,12 +165,12 @@ export function MessageDetailPage() {
   }
 
   async function handleRgpdExport(email: string) {
+    reset();
     if (!id) {
       return;
     }
 
     try {
-      setErrorMessage("");
       setIsExportingRgpd(true);
 
       const response = await exportMessageRgpd(Number(id), email);
@@ -174,13 +183,10 @@ export function MessageDetailPage() {
         variant: "success",
       });
     } catch (error: any) {
-      const messageError =
-        error?.message || "Impossible d’envoyer l’export RGPD.";
-      setErrorMessage(messageError);
-
+      setError();
       showToast({
         title: "Erreur",
-        description: messageError,
+        description: "Impossible d’envoyer l’export RGPD.",
         variant: "error",
       });
     } finally {
@@ -229,11 +235,11 @@ export function MessageDetailPage() {
     );
   }
 
-  if (errorMessage && !message) {
+  if (feedbackState === "error" && !message) {
     return (
       <div className="space-y-6">
         <div className="rounded-xl bg-red-50 px-4 py-3 text-red-700">
-          {errorMessage}
+          Une erreur est survenue lors du chargement du message.
         </div>
 
         <Link
@@ -258,12 +264,6 @@ export function MessageDetailPage() {
 
   return (
     <div className="space-y-6">
-      {errorMessage ? (
-        <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage}
-        </div>
-      ) : null}
-
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <Link to={backToMessagesHref} className="text-sm text-admin-text-soft hover:text-white">

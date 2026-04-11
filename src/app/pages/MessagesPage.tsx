@@ -6,6 +6,8 @@ import {
   type ProcessingStatus,
 } from "../services/messages";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
+import { useFeedback } from "../hooks/useFeedback";
+import { useToast } from "../hooks/useToast";
 
 const PAGE_SIZE = 10;
 
@@ -108,7 +110,6 @@ export function MessagesPage() {
   const [messages, setMessages] = useState<MessageListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const { unprocessedCount, refreshSignal, resetNewMessagesCount } = useMessageNotifications();
 
@@ -128,6 +129,9 @@ export function MessagesPage() {
     () => buildPagination(page, totalPages),
     [page, totalPages]
   );
+
+  const { setError, reset } = useFeedback();
+  const { showToast } = useToast();
 
   function updateSearchParams(patch: Record<string, string | null>) {
     const next = new URLSearchParams(searchParams);
@@ -171,6 +175,7 @@ export function MessagesPage() {
   }
 
   async function loadMessages(options?: { silent?: boolean }) {
+    reset();
     const silent = options?.silent ?? false;
 
     if (isFetchingRef.current) {
@@ -188,8 +193,6 @@ export function MessagesPage() {
     }
 
     try {
-      setErrorMessage("");
-
       const response = await fetchMessages({
         page,
         pageSize: PAGE_SIZE,
@@ -202,7 +205,12 @@ export function MessagesPage() {
       setMessages(response.messages);
       setTotal(response.total);
     } catch (error: any) {
-      setErrorMessage(error?.message || "Impossible de charger les messages.");
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Impossible de charger les messages.",
+        variant: "error",
+      });
     } finally {
       isFetchingRef.current = false;
       setIsSearching(false);
@@ -315,12 +323,6 @@ export function MessagesPage() {
           </div>
         </div>
       </div>
-
-      {errorMessage ? (
-        <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage}
-        </div>
-      ) : null}
 
       <div className="rounded-[24px] bg-white/[0.025] shadow-lg shadow-black/10">
         <div className="flex items-center justify-between px-4 py-4">

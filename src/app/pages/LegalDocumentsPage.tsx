@@ -13,6 +13,7 @@ import { LegalEditor } from "../components/editor/LegalEditor";
 import { ConfirmLegalPublishModal } from "../components/legal/ConfirmLegalPublishModal";
 import { Button } from "../components/ui/Button";
 import { useToast } from "../hooks/useToast";
+import { useFeedback } from "../hooks/useFeedback";
 
 type LegalTypeItem = {
   value: LegalDocumentType;
@@ -41,7 +42,7 @@ export function LegalDocumentsPage() {
   const [savingDraft, setSavingDraft] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [, setSuccessMessage] = useState("");
+  const { setSuccess, reset } = useFeedback();
 
   const { showToast } = useToast();
 
@@ -86,6 +87,7 @@ export function LegalDocumentsPage() {
 
   async function handleSaveDraft() {
     setSavingDraft(true);
+    reset();
 
     try {
       const response = await saveLegalDraft({
@@ -94,7 +96,7 @@ export function LegalDocumentsPage() {
       });
 
       setDraftDocument(response.document);
-      setSuccessMessage("Brouillon enregistré");
+      setSuccess();
       showToast({
         title: "Brouillon enregistré",
         description: "Le brouillon a bien été enregistré.",
@@ -107,6 +109,7 @@ export function LegalDocumentsPage() {
 
   async function handlePublish() {
     setPublishing(true);
+    reset();
 
     try {
       const response = await publishLegalDocument({
@@ -117,7 +120,7 @@ export function LegalDocumentsPage() {
       setCurrentDocument(response.document);
       setDraftDocument(null);
       setShowPublishModal(false);
-      setSuccessMessage("Document publié");
+      setSuccess();
       showToast({
         title: "Document publié",
         description: "Le document a bien été publié.",

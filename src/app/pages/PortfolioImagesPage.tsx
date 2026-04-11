@@ -30,6 +30,9 @@ import { Button } from "../components/ui/Button";
 import { Input, Textarea } from "../components/ui/Input";
 import { Switch } from "../components/ui/Switch";
 import { useToast } from "../hooks/useToast";
+import { useFeedback } from "../hooks/useFeedback";
+import { cn } from "../../lib/utils";
+import { getInputFeedbackClasses } from "../../lib/feedbackStyles";
 
 /* ========================= */
 /* Utils */
@@ -133,13 +136,11 @@ export function PortfolioImagesPage() {
     isActive: true,
   });
 
-  const [errorMessage, setErrorMessage] = useState("");
-  const [, setSuccessMessage] = useState("");
-
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
   const { showToast } = useToast();
+  const { feedbackState, setSuccess, setError, reset } = useFeedback();
 
   /* ========================= */
   /* Load data */
@@ -147,16 +148,16 @@ export function PortfolioImagesPage() {
 
   async function loadImages() {
     setLoading(true);
+    reset();
 
     try {
       const res = await fetchPortfolioImages();
       setImages(res.images);
     } catch (err: any) {
-      const message = err?.message || "Impossible d’uploader l’image.";
-      setErrorMessage(message);
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: "Impossible de téléverser l’image.",
         variant: "error",
       });
     } finally {
@@ -183,14 +184,14 @@ export function PortfolioImagesPage() {
   }, [file]);
 
   function handleFileSelect(nextFile: File | null) {
+    reset();
   if (!nextFile) return;
 
   if (!nextFile.type.startsWith("image/")) {
-    const message = "Veuillez sélectionner un fichier image valide.";
-    setErrorMessage(message);
+    setError();
     showToast({
       title: "Erreur",
-      description: message,
+      description: "Veuillez sélectionner un fichier image valide.",
       variant: "error",
     });
     return;
@@ -248,35 +249,33 @@ export function PortfolioImagesPage() {
 
   async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
+  reset();
 
   if (!form.caption.trim()) {
-    const message = "Le champ caption est obligatoire.";
-    setErrorMessage(message);
+    setError();
     showToast({
       title: "Erreur",
-      description: message,
+      description: "Le champ caption est obligatoire.",
       variant: "error",
     });
     return;
   }
 
   if (!form.altText.trim()) {
-    const message = "Le texte alternatif est obligatoire.";
-    setErrorMessage(message);
+    setError();
     showToast({
       title: "Erreur",
-      description: message,
+      description: "Le texte alternatif est obligatoire.",
       variant: "error",
     });
     return;
   }
 
   if (!selectedImage && !file) {
-    const message = "Veuillez sélectionner une image.";
-    setErrorMessage(message);
+    setError();
     showToast({
       title: "Erreur",
-      description: message,
+      description: "Veuillez sélectionner une image.",
       variant: "error",
     });
     
@@ -296,11 +295,10 @@ export function PortfolioImagesPage() {
 
     if (selectedImage) {
       await updatePortfolioImage(selectedImage.id, payload);
-      const message = "Photo mise à jour avec succès."
-      setSuccessMessage(message);
+      setSuccess();
       showToast({
         title: "Succès",
-        description: message,
+        description: "Photo mise à jour avec succès.",
         variant: "success",
       });
     } else {
@@ -312,11 +310,10 @@ export function PortfolioImagesPage() {
       formData.append("isActive", String(form.isActive));
 
       await createPortfolioImage(formData);
-      const message = "Photo ajoutée avec succès."
-      setSuccessMessage(message);
+      setSuccess();
       showToast({
         title: "Succès",
-        description: message,
+        description: "Photo ajoutée avec succès.",
         variant: "success",
       });
       
@@ -325,11 +322,10 @@ export function PortfolioImagesPage() {
     resetForm();
     await loadImages();
   } catch (err: any) {
-    const message = err?.message || "Erreur lors de l'enregistrement."
-    setErrorMessage(message);
+    setError();
     showToast({
       title: "Erreur",
-      description: message,
+      description: "Erreur lors de l'enregistrement.",
       variant: "error",
     });
     
@@ -343,27 +339,26 @@ export function PortfolioImagesPage() {
   /* ========================= */
 
   async function handleDelete() {
+    reset();
     if (!deleteTarget) return;
 
     setDeleting(true);
 
     try {
       await deletePortfolioImage(deleteTarget.id);
-      const message = "Photo supprimée avec succès.";
-      setSuccessMessage(message);
+      setSuccess();
       showToast({
         title: "Succès",
-        description: message,
+        description: "Photo supprimée avec succès.",
         variant: "success",
       });
       setDeleteTarget(null);
       await loadImages();
     } catch (err: any) {
-      const message = err.message;
-      setErrorMessage(message);
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: err.message,
         variant: "error",
       });
     } finally {
@@ -376,6 +371,7 @@ export function PortfolioImagesPage() {
   /* ========================= */
 
   async function handleDragEnd(event: DragEndEvent) {
+    reset();
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
@@ -405,19 +401,17 @@ export function PortfolioImagesPage() {
         }))
       );
 
-      const message = "Ordre mis à jour avec succès.";
-      setSuccessMessage(message);
+      setSuccess();
       showToast({
         title: "Succès",
-        description: message,
+        description: "Ordre mis à jour avec succès.",
         variant: "success",
       });
     } catch (err: any) {
-      const message = err.message;
-      setErrorMessage(message);
+      setError();
       showToast({
         title: "Erreur",
-        description: message,
+        description: err.message,
         variant: "error",
       });
       await loadImages();
@@ -567,11 +561,10 @@ export function PortfolioImagesPage() {
                 setForm({ ...form, caption: e.target.value })
               }
               placeholder="Caption"
-              className={`outline-none ${
-                errorMessage && !form.caption.trim()
-                  ? "border-red-500"
-                  : "border-white/10 focus:border-white/20"
-              }`}
+              className={cn(
+                "outline-none",
+                getInputFeedbackClasses(feedbackState, !form.caption.trim())
+              )}
             />
             <Input 
               value={form.altText}
@@ -579,11 +572,10 @@ export function PortfolioImagesPage() {
                   setForm({ ...form, altText: e.target.value })
               }
               placeholder="Texte alternatif"
-              className={`outline-none ${
-                errorMessage && !form.altText.trim()
-                  ? "border-red-500"
-                  : "border-white/10 focus:border-white/20"
-              }`}
+              className={cn(
+                "outline-none",
+                getInputFeedbackClasses(feedbackState, !form.altText.trim())
+              )}
             />
             <Textarea
               value={form.description}
@@ -591,11 +583,10 @@ export function PortfolioImagesPage() {
                 setForm({ ...form, description: e.target.value })
               }
               placeholder="Description"
-              className={`bg-white/[0.03] outline-none ${
-                errorMessage && !form.description.trim()
-                  ? "border-red-500"
-                  : "border-white/10 focus:border-white/20"
-              }`}
+              className={cn(
+                "bg-white/[0.03] outline-none",
+                getInputFeedbackClasses(feedbackState, !form.description.trim())
+              )}
             />
 
             <label className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">

@@ -15,3 +15,38 @@ export function getFeedbackClasses(state: FeedbackState) {
       return "";
   }
 }
+
+export function getInputFeedbackClasses(
+  state: FeedbackState,
+  hasError: boolean
+) {
+  if (hasError) {
+    return "border-red-500 focus:border-red-400";
+  }
+
+  if (state === "error") {
+    return "border-red-500/30";
+  }
+
+  if (state === "success") {
+    return "border-green-500/30";
+  }
+
+  return "border-white/10 focus:border-white/20";
+}
+
+export function getButtonFeedbackClasses(state: FeedbackState) {
+  switch (state) {
+    case "loading":
+      return "opacity-70 cursor-not-allowed";
+
+    case "success":
+      return "bg-green-500/20 text-green-400 border-green-500/30";
+
+    case "error":
+      return "bg-red-500/20 text-red-400 border-red-500/30";
+
+    default:
+      return "";
+  }
+}

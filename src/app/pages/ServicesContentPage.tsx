@@ -11,6 +11,7 @@ import { useAutoSave } from "../hooks/useAutoSave";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Switch } from "../components/ui/Switch";
+import { useFeedback } from "../hooks/useFeedback";
 
 type EditableCard = ServiceCard;
 
@@ -26,7 +27,7 @@ export function ServicesContentPage() {
 
   const [cards, setCards] = useState<EditableCard[]>([]);
 
-  const [errorMessage, setErrorMessage] = useState("");
+  const { setError, reset } = useFeedback();
 
   const autoSavePayload = useMemo(
     () => ({
@@ -53,17 +54,11 @@ export function ServicesContentPage() {
     enabled: cards.length === 3,
     onSave: async (payload) => {
       try {
-        setErrorMessage("");
         await saveServicesContent(payload);
       } catch (error: any) {
-        const message =
-          error?.message || "Impossible d’enregistrer les prestations.";
-
-        setErrorMessage(message);
-
         showToast({
           title: "Erreur d’enregistrement",
-          description: message,
+          description: "Impossible d’enregistrer les prestations.",
           variant: "error",
         });
 
@@ -74,7 +69,7 @@ export function ServicesContentPage() {
 
   async function load(serviceType: ServiceType) {
     setLoading(true);
-    setErrorMessage("");
+    reset();
 
     try {
       const data = await fetchServicesContent(serviceType);
@@ -98,7 +93,12 @@ export function ServicesContentPage() {
         })),
       });
     } catch (error: any) {
-      setErrorMessage(error?.message || "Erreur chargement prestations");
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Impossible de charger les prestations. Veuillez réessayer.",
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ export function ServicesContentPage() {
 
   async function handleSave() {
     setSaving(true);
-    setErrorMessage("");
+    reset();
 
     try {
       await saveNow();
@@ -176,12 +176,6 @@ export function ServicesContentPage() {
           Particuliers
         </Button>
       </div>
-
-      {errorMessage ? (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-          {errorMessage}
-        </div>
-      ) : null}
 
       {loading ? (
         <div className="rounded-2xl bg-white/[0.03] p-5 text-sm text-admin-text-soft">

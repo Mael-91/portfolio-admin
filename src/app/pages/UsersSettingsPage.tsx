@@ -26,7 +26,7 @@ const emptyForm = {
 export function UsersSettingsPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const { setSuccess, setError, setLoadingError, reset } = useFeedback();
+  const { setSuccess, setError, reset } = useFeedback();
 
   const [formMode, setFormMode] = useState<FormMode>("create");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
