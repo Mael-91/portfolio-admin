@@ -177,7 +177,7 @@ export function buildRgpdExportEmailText(data: any) {
     Vous trouverez ci-dessous les informations actuellement enregistrées vous concernant.
 
     Identifiant : ${data.id}
-    Type de demande : ${formatRequestType(data.requestType)}
+    Type de demande : ${formatRequestType(data.request_type)}
     Prénom : ${data.firstName || ""}
     Nom : ${data.lastName || ""}
     Société : ${data.company || ""}
@@ -185,11 +185,11 @@ export function buildRgpdExportEmailText(data: any) {
     Téléphone : ${data.phone || ""}
     Contact téléphonique autorisé : ${data.allowPhoneContact ? "Oui" : "Non"}
     Consentement confidentialité : ${data.consentPrivacy ? "Oui" : "Non"}
-    Statut de traitement : ${formatProcessingStatus(data.processingStatus)}
-    Date de création : ${data.createdAt}
+    Statut de traitement : ${formatProcessingStatus(data.processing_status)}
+    Date de création : ${data.created_at}
 
     Message :
-    ${data.messageText}
+    ${data.messageText || ""}
 
     Si vous n’êtes pas à l’origine de cette demande ou si vous souhaitez exercer un autre droit sur vos données, vous pouvez répondre à ce message.",
 
