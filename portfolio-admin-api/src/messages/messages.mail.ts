@@ -45,7 +45,7 @@ export async function sendRgpdExportEmail(params: {
 }) {
   const { to, message } = params;
 
-  const subject = "Vos données personnelles – export demandé";
+  const subject = "Vos données personnelles - Exportation de vos données";
 
   const text = buildRgpdExportEmailText({
     id: message.id,
@@ -170,30 +170,30 @@ export function buildRgpdExportEmailHtml(data: any) {
 
 export function buildRgpdExportEmailText(data: any) {
   return `
-    "Bonjour,",
-    "",
-    "Vous recevez ce message car un export de vos données personnelles a été demandé depuis notre interface d’administration, à partir de votre demande de contact.",
-    "",
-    "Vous trouverez ci-dessous les informations actuellement enregistrées vous concernant.",
-    "",
-    "Identifiant : ${data.id}",
-    "Type de demande : ${formatRequestType(data.requestType)}",
-    "Prénom : ${data.firstName || ""}",
-    "Nom : ${data.lastName || ""}",
-    "Société : ${data.company || ""}",
-    "Email : ${data.email}",
-    "Téléphone : ${data.phone || ""}",
-    "Contact téléphonique autorisé : ${data.allowPhoneContact ? "Oui" : "Non"}",
-    "Consentement confidentialité : ${data.consentPrivacy ? "Oui" : "Non"}",
-    "Statut de traitement : ${formatProcessingStatus(data.processingStatus)}",
-    "Date de création : ${data.createdAt}",
-    "",
-    "Message :",
-    "${data.messageText}",
-    "",
-    "Si vous n’êtes pas à l’origine de cette demande ou si vous souhaitez exercer un autre droit sur vos données, vous pouvez répondre à ce message.",
-    "",
-    "Cordialement,",
-    "Administration maelconstantin.fr",
+    Bonjour,
+    
+    Vous recevez ce message car un export de vos données personnelles a été demandé depuis notre interface d’administration, à partir de votre demande de contact.
+
+    Vous trouverez ci-dessous les informations actuellement enregistrées vous concernant.
+
+    Identifiant : ${data.id}
+    Type de demande : ${formatRequestType(data.requestType)}
+    Prénom : ${data.firstName || ""}
+    Nom : ${data.lastName || ""}
+    Société : ${data.company || ""}
+    Email : ${data.email}
+    Téléphone : ${data.phone || ""}
+    Contact téléphonique autorisé : ${data.allowPhoneContact ? "Oui" : "Non"}
+    Consentement confidentialité : ${data.consentPrivacy ? "Oui" : "Non"}
+    Statut de traitement : ${formatProcessingStatus(data.processingStatus)}
+    Date de création : ${data.createdAt}
+
+    Message :
+    ${data.messageText}
+
+    Si vous n’êtes pas à l’origine de cette demande ou si vous souhaitez exercer un autre droit sur vos données, vous pouvez répondre à ce message.",
+
+    Cordialement,
+    Administration maelconstantin.fr
   `;
 }
