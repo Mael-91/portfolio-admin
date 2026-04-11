@@ -186,20 +186,20 @@ export function PortfolioImagesPage() {
 
   function handleFileSelect(nextFile: File | null) {
     reset();
-  if (!nextFile) return;
+    if (!nextFile) return;
 
-  if (!nextFile.type.startsWith("image/")) {
-    setError();
-    showToast({
-      title: "Erreur",
-      description: "Veuillez sélectionner un fichier image valide.",
-      variant: "error",
-    });
-    return;
+    if (!nextFile.type.startsWith("image/")) {
+      setError();
+      showToast({
+        title: "Erreur",
+        description: "Veuillez sélectionner un fichier image valide.",
+        variant: "error",
+      });
+      return;
+    }
+
+    setFile(nextFile);
   }
-
-  setFile(nextFile);
-}
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -327,7 +327,7 @@ export function PortfolioImagesPage() {
     setError();
     showToast({
       title: "Erreur",
-      description: "Erreur lors de l'enregistrement.",
+      description: err?.message || "Erreur lors de l'enregistrement.",
       variant: "error",
     });
     
