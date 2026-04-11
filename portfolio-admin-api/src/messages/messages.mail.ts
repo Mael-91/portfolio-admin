@@ -77,13 +77,6 @@ export async function sendRgpdExportEmail(params: {
     message_text: message.messageText,
   });
 
-  console.log("RGPD mail debug", {
-    subject,
-    textLength: text?.length,
-    htmlLength: html?.length,
-    hasHtml: !!html,
-  });
-
   await transporter.sendMail({
     from: env.mailFrom,
     to,
@@ -137,6 +130,10 @@ export function buildRgpdExportEmailHtml(data: any) {
               <br />
               Vous recevez ce message car un export de vos données personnelles a été demandé depuis notre interface d’administration, à partir de votre demande de contact.
               <br />
+              Si vous n’êtes pas à l’origine de cette demande ou si vous souhaitez exercer un autre droit sur vos données, vous pouvez répondre à ce message.
+              <br />
+              Cordialement,
+              <br />
               <br />
               Vous trouverez ci-dessous les informations actuellement enregistrées vous concernant.
             </p>
@@ -159,15 +156,9 @@ export function buildRgpdExportEmailHtml(data: any) {
 
           <div style="padding:16px;background:#f9fafb;border-top:1px solid #e5e7eb;">
             <p style="font-size:12px;color:#6b7280;margin:0;">
-              <br />
-              Si vous n’êtes pas à l’origine de cette demande ou si vous souhaitez exercer un autre droit sur vos données, vous pouvez répondre à ce message.
-              <br />
-              Cordialement,
-              <br />
-              Administration maelconstantin.fr
+              Administration de maelconstantin.fr
             </p>
           </div>
-
         </div>
       </div>
     </body>
