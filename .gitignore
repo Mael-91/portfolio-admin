@@ -35,3 +35,4 @@ coverage/
 cookies.txt
 backup-dashboard.sh
 restore-dashboard.sh
+/portfolio-admin-api/storage
