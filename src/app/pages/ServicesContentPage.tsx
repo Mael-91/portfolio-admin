@@ -26,6 +26,7 @@ export function ServicesContentPage() {
   const [introHtml, setIntroHtml] = useState("");
 
   const [cards, setCards] = useState<EditableCard[]>([]);
+  const [sectionEnabled, setSectionEnabled] = useState(false);
 
   const { setError, reset } = useFeedback();
 
@@ -34,6 +35,7 @@ export function ServicesContentPage() {
       serviceType: activeTab,
       introEnabled,
       introHtml,
+      sectionEnabled,
       cards: cards.map((card) => ({
         id: card.id,
         title: card.title,
@@ -45,7 +47,7 @@ export function ServicesContentPage() {
         bullets: card.bullets,
       })),
     }),
-    [activeTab, introEnabled, introHtml, cards]
+    [activeTab, introEnabled, introHtml, sectionEnabled, cards]
   );
 
   const { saveNow, markAsSaved } = useAutoSave({
@@ -76,11 +78,12 @@ export function ServicesContentPage() {
       setIntroEnabled(data.section.introEnabled);
       setIntroHtml(data.section.introHtml ?? "");
       setCards(data.cards);
-
+      setSectionEnabled(data.section.sectionEnabled);
       markAsSaved({
         serviceType,
         introEnabled: data.section.introEnabled,
         introHtml: data.section.introHtml ?? "",
+        sectionEnabled: data.section.sectionEnabled ?? false,
         cards: data.cards.map((card: ServiceCard) => ({
           id: card.id,
           title: card.title,
@@ -150,6 +153,24 @@ export function ServicesContentPage() {
         </p>
       </div>
 
+      <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base font-semibold text-white">
+              Affichage de la section prestations
+            </h2>
+            <p className="mt-1 text-sm text-admin-text-soft">
+              Active ou désactive toute la section prestations sur le site vitrine.
+            </p>
+          </div>
+
+          <Switch
+            checked={sectionEnabled}
+            onChange={setSectionEnabled}
+          />
+        </div>
+      </div>
+
       <div className="flex gap-3">
         <Button
           variant="secondary"
@@ -176,193 +197,196 @@ export function ServicesContentPage() {
           Particuliers
         </Button>
       </div>
-
-      {loading ? (
-        <div className="rounded-2xl bg-white/[0.03] p-5 text-sm text-admin-text-soft">
-          Chargement...
-        </div>
-      ) : (
-        <>
-          <section className="rounded-2xl bg-white/[0.03] p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Texte d’introduction</h2>
-              <Switch variant="success" checked={introEnabled} onChange={setIntroEnabled} />
-            </div>
-
-            <div
-              className={`overflow-hidden transition-all duration-300 ${
-                introEnabled
-                  ? "max-h-[1000px] opacity-100"
-                  : "max-h-0 opacity-0 pointer-events-none"
-              }`}
-            >
-              <div className="pt-2">
-                <LegalEditor content={introHtml} onChange={setIntroHtml} />
+      
+      <div className={!sectionEnabled ? "pointer-events-none opacity-50 grayscale" : ""}>
+        {loading ? (
+          <div className="rounded-2xl bg-white/[0.03] p-5 text-sm text-admin-text-soft">
+            Chargement...
+          </div>
+        ) : (
+          <>
+            <section className="rounded-2xl bg-white/[0.03] p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold">Texte d’introduction</h2>
+                <Switch variant="success" checked={introEnabled} onChange={setIntroEnabled} />
               </div>
-            </div>
-          </section>
 
-          <div className="space-y-6">
-            {cards.map((card) => (
-              <section
-                key={card.id}
-                className="rounded-2xl bg-white/[0.03] p-5 space-y-4"
+              <div
+                className={`overflow-hidden transition-all duration-300 ${
+                  introEnabled
+                    ? "max-h-[1000px] opacity-100"
+                    : "max-h-0 opacity-0 pointer-events-none"
+                }`}
               >
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold">
-                    Carte {card.cardIndex}
-                  </h2>
+                <div className="pt-2">
+                  <LegalEditor content={introHtml} onChange={setIntroHtml} />
                 </div>
+              </div>
+            </section>
 
-                <div>
-                  <label className="mb-1 block text-sm text-admin-text-soft">
-                    Titre
-                  </label>
-                  <Input
-                    value={card.title}
-                    onChange={(e) =>
-                      updateCard(card.id, (current) => ({
-                        ...current,
-                        title: e.target.value,
-                      }))
-                    }
-                    placeholder="Titre de la carte"
-                    className="px-3 outline-none"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-admin-text-soft">
-                    Afficher le texte
-                  </span>
-                  <Switch variant="success" checked={card.bodyEnabled} onChange={(value) =>
-                      updateCard(card.id, (current) => ({
-                        ...current,
-                        bodyEnabled: value,
-                      }))} 
-                    />
-                </div>
-
-                <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    card.bodyEnabled
-                      ? "max-h-[1000px] opacity-100"
-                      : "max-h-0 opacity-0 pointer-events-none"
-                  }`}
+            <div className="space-y-6">
+              {cards.map((card) => (
+                <section
+                  key={card.id}
+                  className="rounded-2xl bg-white/[0.03] p-5 space-y-4"
                 >
-                  <div className="pt-2">
-                    <LegalEditor
-                      content={card.bodyHtml}
-                      onChange={(value) =>
-                        updateCard(card.id, (current) => ({
-                          ...current,
-                          bodyHtml: value,
-                        }))
-                      }
-                    />
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-semibold">
+                      Carte {card.cardIndex}
+                    </h2>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-admin-text-soft">
-                    Afficher la liste à puces
-                  </span>
-                  <Switch variant="success" checked={card.bulletsEnabled} onChange={(value) =>
-                      updateCard(card.id, (current) => ({
-                        ...current,
-                        bulletsEnabled: value,
-                      }))} 
-                    />
-                </div>
-
-                <div className="space-y-2">
-                  {card.bullets.map((bullet, index) => (
-                    <Input
-                      key={`${card.id}-${index}`}
-                      value={bullet}
-                      onChange={(e) =>
-                        updateCard(card.id, (current) => ({
-                          ...current,
-                          bullets: current.bullets.map((item, bulletIndex) =>
-                            bulletIndex === index ? e.target.value : item
-                          ),
-                        }))
-                      }
-                      placeholder={`Puces ${index + 1}`}
-                      className="px-3 outline-none"
-                    />
-                  ))}
-
-                  <Button variant="secondary"
-                    type="button"
-                    onClick={() =>
-                      updateCard(card.id, (current) => ({
-                        ...current,
-                        bullets: [...current.bullets, ""],
-                      }))
-                    }
-                  >
-                    Ajouter une puce
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-admin-text-soft">
-                    Afficher le prix
-                  </span>
-                  <Switch variant="success" checked={card.priceEnabled} onChange={(value) =>
-                      updateCard(card.id, (current) => ({
-                        ...current,
-                        priceEnabled: value,
-                      }))} 
-                    />
-                </div>
-
-                <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    card.priceEnabled
-                      ? "max-h-40 opacity-100"
-                      : "max-h-0 opacity-0 pointer-events-none"
-                  }`}
-                >
-                  <div className="pt-2">
+                  <div>
                     <label className="mb-1 block text-sm text-admin-text-soft">
-                      Libellé du prix
+                      Titre
                     </label>
                     <Input
-                      value={card.priceLabel}
+                      value={card.title}
                       onChange={(e) =>
                         updateCard(card.id, (current) => ({
                           ...current,
-                          priceLabel: e.target.value,
+                          title: e.target.value,
                         }))
                       }
-                      placeholder="Ex: À partir de 250€ / session"
+                      placeholder="Titre de la carte"
                       className="px-3 outline-none"
                     />
                   </div>
-                </div>
-              </section>
-            ))}
-          </div>
 
-          <div className="flex justify-end">
-            <Button
-              size="lg"
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className={`rounded-2xl py-2.5 text-sm font-medium  ${
-                saving
-                  ? "cursor-not-allowed bg-white/10 text-white/60"
-                  : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
-              }`}
-            >
-              {saving ? "Enregistrement..." : "Enregistrer les prestations"}
-            </Button>
-          </div>
-        </>
-      )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-admin-text-soft">
+                      Afficher le texte
+                    </span>
+                    <Switch variant="success" checked={card.bodyEnabled} onChange={(value) =>
+                        updateCard(card.id, (current) => ({
+                          ...current,
+                          bodyEnabled: value,
+                        }))} 
+                      />
+                  </div>
+
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      card.bodyEnabled
+                        ? "max-h-[1000px] opacity-100"
+                        : "max-h-0 opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <div className="pt-2">
+                      <LegalEditor
+                        content={card.bodyHtml}
+                        onChange={(value) =>
+                          updateCard(card.id, (current) => ({
+                            ...current,
+                            bodyHtml: value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-admin-text-soft">
+                      Afficher la liste à puces
+                    </span>
+                    <Switch variant="success" checked={card.bulletsEnabled} onChange={(value) =>
+                        updateCard(card.id, (current) => ({
+                          ...current,
+                          bulletsEnabled: value,
+                        }))} 
+                      />
+                  </div>
+
+                  <div className="space-y-2">
+                    {card.bullets.map((bullet, index) => (
+                      <Input
+                        key={`${card.id}-${index}`}
+                        value={bullet}
+                        onChange={(e) =>
+                          updateCard(card.id, (current) => ({
+                            ...current,
+                            bullets: current.bullets.map((item, bulletIndex) =>
+                              bulletIndex === index ? e.target.value : item
+                            ),
+                          }))
+                        }
+                        placeholder={`Puces ${index + 1}`}
+                        className="px-3 outline-none"
+                      />
+                    ))}
+
+                    <Button variant="secondary"
+                      type="button"
+                      onClick={() =>
+                        updateCard(card.id, (current) => ({
+                          ...current,
+                          bullets: [...current.bullets, ""],
+                        }))
+                      }
+                    >
+                      Ajouter une puce
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-admin-text-soft">
+                      Afficher le prix
+                    </span>
+                    <Switch variant="success" checked={card.priceEnabled} onChange={(value) =>
+                        updateCard(card.id, (current) => ({
+                          ...current,
+                          priceEnabled: value,
+                        }))} 
+                      />
+                  </div>
+
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      card.priceEnabled
+                        ? "max-h-40 opacity-100"
+                        : "max-h-0 opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <div className="pt-2">
+                      <label className="mb-1 block text-sm text-admin-text-soft">
+                        Libellé du prix
+                      </label>
+                      <Input
+                        value={card.priceLabel}
+                        onChange={(e) =>
+                          updateCard(card.id, (current) => ({
+                            ...current,
+                            priceLabel: e.target.value,
+                          }))
+                        }
+                        placeholder="Ex: À partir de 250€ / session"
+                        className="px-3 outline-none"
+                      />
+                    </div>
+                  </div>
+                </section>
+              ))}
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                size="lg"
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className={`rounded-2xl py-2.5 text-sm font-medium  ${
+                  saving
+                    ? "cursor-not-allowed bg-white/10 text-white/60"
+                    : "bg-admin-accent text-white hover:brightness-110 active:scale-[0.98]"
+                }`}
+              >
+                {saving ? "Enregistrement..." : "Enregistrer les prestations"}
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+      
     </div>
   );
 }

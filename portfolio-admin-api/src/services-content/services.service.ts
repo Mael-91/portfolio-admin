@@ -10,6 +10,10 @@ import {
   updateServiceSection,
   type ServiceType,
 } from "./services.repository";
+import {
+  getSettingsByKeys,
+  upsertSetting,
+} from "../settings-general/settings-general.repository";
 
 type ServiceCardInput = {
   id: number;
@@ -21,6 +25,8 @@ type ServiceCardInput = {
   priceLabel: string | null;
   bullets: string[];
 };
+
+const SERVICES_SECTION_ENABLED_KEY = "services_section_enabled";
 
 function normalizeHtml(value?: string | null) {
   const trimmed = value?.trim() ?? "";
@@ -46,12 +52,16 @@ export async function getServicesContent(serviceType: ServiceType) {
   const cards = await findCardsBySectionId(section.id);
   const bullets = await findBulletsByCardIds(cards.map((card) => card.id));
 
+  const settings = await getSettingsByKeys([SERVICES_SECTION_ENABLED_KEY]);
+  const sectionEnabled = settings[SERVICES_SECTION_ENABLED_KEY] === "true";
+
   return {
     section: {
       id: section.id,
       serviceType: section.service_type,
       introEnabled: Boolean(section.intro_enabled),
       introHtml: section.intro_html ?? "",
+      sectionEnabled,
     },
     cards: cards.map((card) => ({
       id: card.id,
@@ -74,6 +84,7 @@ export async function saveServicesContent(params: {
   introEnabled: boolean;
   introHtml?: string | null;
   cards: ServiceCardInput[];
+  sectionEnabled: boolean;
 }) {
   const section = await findSectionByType(params.serviceType);
 
@@ -89,6 +100,11 @@ export async function saveServicesContent(params: {
 
   try {
     await connection.beginTransaction();
+
+    await upsertSetting(
+      "services_section_enabled",
+      params.sectionEnabled ? "true" : "false"
+    );
 
     await connection.execute(
       `

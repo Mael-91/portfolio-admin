@@ -19,6 +19,7 @@ export type ServicesSection = {
   serviceType: ServiceType;
   introEnabled: boolean;
   introHtml: string;
+  sectionEnabled: boolean;
 };
 
 export async function fetchServicesContent(serviceType: ServiceType) {
@@ -36,6 +37,7 @@ export async function saveServicesContent(payload: {
   serviceType: ServiceType;
   introEnabled: boolean;
   introHtml: string;
+  sectionEnabled: boolean;
   cards: Array<{
     id: number;
     title: string;

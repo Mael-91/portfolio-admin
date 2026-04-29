@@ -51,6 +51,7 @@ servicesContentRouter.put("/", async (req, res) => {
           })
         )
         .length(3),
+        sectionEnabled: z.boolean(),
     });
 
     const body = bodySchema.parse(req.body);
@@ -58,6 +59,7 @@ servicesContentRouter.put("/", async (req, res) => {
         serviceType: body.serviceType,
         introEnabled: body.introEnabled,
         introHtml: body.introHtml ?? null,
+        sectionEnabled: body.sectionEnabled,
         cards: body.cards.map((card) => ({
             id: card.id,
             title: card.title,
