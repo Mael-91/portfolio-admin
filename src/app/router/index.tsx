@@ -12,6 +12,7 @@ import { PortfolioImagesPage } from "../pages/PortfolioImagesPage";
 import { ServicesContentPage } from "../pages/ServicesContentPage";
 import { SettingsGeneralPage } from "../pages/SettingsGeneralPage";
 import { AboutPage } from "../pages/AboutPage";
+import { PortfolioConfigurationPage } from "../pages/PortfolioConfigurationPage";
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +66,10 @@ export const router = createBrowserRouter([
       {
         path: "/about",
         element: <AboutPage />,
+      },
+      {
+        path: "/portfolio/settings",
+        element: <PortfolioConfigurationPage />,
       }
     ],
   },

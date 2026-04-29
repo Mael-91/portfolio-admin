@@ -22,6 +22,7 @@ import { getStorageBasePath, getStoragePath, STORAGE_FOLDER } from "./common/sto
 import { ensureStorageFolders } from "./common/ensureStorageFolders";
 import { settingsGeneralRouter } from "./settings-general/settings-general.routes";
 import { aboutRouter } from "./about/about.routes";
+import { portfolioSiteSettingsRouter } from "./portfolio-site-settings/portfolio-site-settings.routes";
 
 const app = express();
 
@@ -99,6 +100,8 @@ app.use("/api/settings/general", settingsGeneralRouter);
 app.use("/uploads/logos", express.static(getStoragePath(STORAGE_FOLDER.logos)));
 app.use("/api/about", aboutRouter);
 app.use("/uploads/about", express.static(getStoragePath(STORAGE_FOLDER.about)));
+app.use("/api/portfolio-site-settings", portfolioSiteSettingsRouter);
+app.use("/uploads/portfolio-site-settings",express.static(getStoragePath(STORAGE_FOLDER.portfolioSiteSettings)));
 
 app.use((_req, res) => {
   res.status(404).json({

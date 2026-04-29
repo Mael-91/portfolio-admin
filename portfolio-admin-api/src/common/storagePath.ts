@@ -7,6 +7,7 @@ export const STORAGE_FOLDER = {
   legal: "legal-documents-archives",
   logos: "logos",
   about: "about-section-photo",
+  portfolioSiteSettings: "portfolio-site-settings",
 } as const;
 
 export function getStorageBasePath() {

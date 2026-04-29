@@ -11,5 +11,7 @@ declare module "express-session" {
     pendingAboutImageUrl?: string;
     pendingSiteLogoUrl?: string;
     pendingSidebarLogoUrl?: string;
+    pendingPortfolioSiteFaviconUrl?: string;
+    pendingPortfolioSiteHomeBackgroundUrl?: string;
   }
 }

@@ -100,6 +100,27 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
+  {
+    label: "Configuration portfolio",
+    href: "/portfolio/settings",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z" />
+        <path d="M8 9h8" />
+        <path d="M8 13h5" />
+        <path d="M8 17h3" />
+        <path d="M16 13.5 18 15.5 16 17.5" />
+      </svg>
+    ),
+  },
 ];
 
 function resolveAssetUrl(url: string) {
