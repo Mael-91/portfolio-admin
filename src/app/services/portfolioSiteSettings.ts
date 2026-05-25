@@ -11,6 +11,8 @@ export type PortfolioSiteSettings = {
 
   gallerySectionTitle: string;
   gallerySectionSubtitle: string;
+  galleryPrimaryButtonLabel: string;
+  gallerySecondaryButtonLabel: string;
 
   contactSectionTitle: string;
   contactSectionSubtitle: string;

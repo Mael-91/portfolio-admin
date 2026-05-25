@@ -40,6 +40,8 @@ portfolioSiteSettingsRouter.put("/", async (req, res) => {
 
       gallerySectionTitle: z.string().trim().max(255),
       gallerySectionSubtitle: z.string().trim().max(5000),
+      galleryPrimaryButtonLabel: z.string().trim().max(100),
+      gallerySecondaryButtonLabel: z.string().trim().max(100),
 
       contactSectionTitle: z.string().trim().max(255),
       contactSectionSubtitle: z.string().trim().max(5000),

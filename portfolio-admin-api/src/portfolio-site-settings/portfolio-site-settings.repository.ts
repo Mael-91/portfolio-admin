@@ -17,6 +17,8 @@ export async function updatePortfolioSiteSettings(data: {
   homeBackgroundImageUrl: string | null;
   gallerySectionTitle: string;
   gallerySectionSubtitle: string;
+  galleryPrimaryButtonLabel: string;
+  gallerySecondaryButtonLabel: string;
   contactSectionTitle: string;
   contactSectionSubtitle: string;
   contactOptionProEnabled: boolean;
@@ -39,6 +41,8 @@ export async function updatePortfolioSiteSettings(data: {
       home_background_image_url = ?,
       gallery_section_title = ?,
       gallery_section_subtitle = ?,
+      gallery_primary_button_label = ?,
+      gallery_secondary_button_label = ?,
       contact_section_title = ?,
       contact_section_subtitle = ?,
       contact_option_pro_enabled = ?,
@@ -61,6 +65,8 @@ export async function updatePortfolioSiteSettings(data: {
       data.homeBackgroundImageUrl,
       data.gallerySectionTitle,
       data.gallerySectionSubtitle,
+      data.galleryPrimaryButtonLabel,
+      data.gallerySecondaryButtonLabel,
       data.contactSectionTitle,
       data.contactSectionSubtitle,
       data.contactOptionProEnabled ? 1 : 0,

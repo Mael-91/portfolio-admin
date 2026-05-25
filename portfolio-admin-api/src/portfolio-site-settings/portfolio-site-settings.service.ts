@@ -17,7 +17,8 @@ function mapSettings(row: any) {
 
     gallerySectionTitle: row.gallery_section_title ?? "",
     gallerySectionSubtitle: row.gallery_section_subtitle ?? "",
-
+    galleryPrimaryButtonLabel: row.gallery_primary_button_label ?? "",
+    gallerySecondaryButtonLabel: row.gallery_secondary_button_label ?? "",
     contactSectionTitle: row.contact_section_title ?? "",
     contactSectionSubtitle: row.contact_section_subtitle ?? "",
 
@@ -56,6 +57,8 @@ export async function savePortfolioSiteSettings(input: {
   homeBackgroundImageUrl: string;
   gallerySectionTitle: string;
   gallerySectionSubtitle: string;
+  galleryPrimaryButtonLabel: string;
+  gallerySecondaryButtonLabel: string;
   contactSectionTitle: string;
   contactSectionSubtitle: string;
   contactOptionProEnabled: boolean;
@@ -88,6 +91,8 @@ export async function savePortfolioSiteSettings(input: {
     homeBackgroundImageUrl: input.homeBackgroundImageUrl || null,
     gallerySectionTitle: input.gallerySectionTitle,
     gallerySectionSubtitle: input.gallerySectionSubtitle,
+    galleryPrimaryButtonLabel: input.galleryPrimaryButtonLabel,
+    gallerySecondaryButtonLabel: input.gallerySecondaryButtonLabel,
     contactSectionTitle: input.contactSectionTitle,
     contactSectionSubtitle: input.contactSectionSubtitle,
     contactOptionProEnabled: input.contactOptionProEnabled,

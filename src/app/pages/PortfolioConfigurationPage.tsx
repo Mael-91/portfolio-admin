@@ -38,6 +38,8 @@ export function PortfolioConfigurationPage() {
     homeBackgroundImageUrl: "",
     gallerySectionTitle: "",
     gallerySectionSubtitle: "",
+    galleryPrimaryButtonLabel: "",
+    gallerySecondaryButtonLabel: "",
     contactSectionTitle: "",
     contactSectionSubtitle: "",
     contactOptionProEnabled: true,
@@ -338,6 +340,68 @@ export function PortfolioConfigurationPage() {
               </div>
             </div>
           </Card>
+
+          <Card>
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Footer</h2>
+                <p className="mt-1 text-sm text-admin-text-soft">
+                  Configure les textes affichés en bas du site et le lien Instagram.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
+                  Texte du footer
+                </label>
+                <Input
+                  value={form.footerText}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      footerText: e.target.value,
+                    }))
+                  }
+                  placeholder="Texte affiché dans le footer"
+                  className="px-3 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
+                  Texte SEO
+                </label>
+                <Textarea
+                  value={form.footerBottomText}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      footerBottomText: e.target.value,
+                    }))
+                  }
+                  placeholder="Texte SEO affiché en bas de page"
+                  className="min-h-24 bg-white/[0.03] px-3 outline-none resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
+                  Lien Instagram
+                </label>
+                <Input
+                  value={form.footerInstagramUrl}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      footerInstagramUrl: e.target.value,
+                    }))
+                  }
+                  placeholder="https://www.instagram.com/withmaelc"
+                  className="px-3 outline-none"
+                />
+              </div>
+            </div>
+          </Card>
         </div>
 
         <div className="space-y-6">
@@ -385,6 +449,41 @@ export function PortfolioConfigurationPage() {
                   className="min-h-24 bg-white/[0.03] px-3 outline-none"
                 />
               </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
+                  Texte du bouton de gauche
+                </label>
+                <Input
+                  value={form.galleryPrimaryButtonLabel}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      galleryPrimaryButtonLabel: e.target.value,
+                    }))
+                  }
+                  placeholder="Voir le portfolio"
+                  className="px-3 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
+                  Texte du bouton de droite
+                </label>
+                <Input
+                  value={form.gallerySecondaryButtonLabel}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      gallerySecondaryButtonLabel: e.target.value,
+                    }))
+                  }
+                  placeholder="Me contacter"
+                  className="px-3 outline-none"
+                />
+              </div>
+
             </div>
           </Card>
 
@@ -499,68 +598,6 @@ export function PortfolioConfigurationPage() {
                     }))
                   }
                   placeholder="Envoyer"
-                  className="px-3 outline-none"
-                />
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="space-y-5">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Footer</h2>
-                <p className="mt-1 text-sm text-admin-text-soft">
-                  Configure les textes affichés en bas du site et le lien Instagram.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm text-admin-text-soft">
-                  Texte du footer
-                </label>
-                <Input
-                  value={form.footerText}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      footerText: e.target.value,
-                    }))
-                  }
-                  placeholder="Texte affiché dans le footer"
-                  className="px-3 outline-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm text-admin-text-soft">
-                  Texte SEO
-                </label>
-                <Textarea
-                  value={form.footerBottomText}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      footerBottomText: e.target.value,
-                    }))
-                  }
-                  placeholder="Texte SEO affiché en bas de page"
-                  className="min-h-24 bg-white/[0.03] px-3 outline-none resize-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm text-admin-text-soft">
-                  Lien Instagram
-                </label>
-                <Input
-                  value={form.footerInstagramUrl}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      footerInstagramUrl: e.target.value,
-                    }))
-                  }
-                  placeholder="https://www.instagram.com/withmaelc"
                   className="px-3 outline-none"
                 />
               </div>
