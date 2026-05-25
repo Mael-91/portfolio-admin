@@ -23,6 +23,9 @@ export async function updatePortfolioSiteSettings(data: {
   contactOptionPrivateEnabled: boolean;
   contactOptionInfoEnabled: boolean;
   contactSubmitButtonLabel: string;
+  footerText: string;
+  footerBottomText: string;
+  footerInstagramUrl: string;
 }) {
   await db.execute(
     `
@@ -41,7 +44,11 @@ export async function updatePortfolioSiteSettings(data: {
       contact_option_pro_enabled = ?,
       contact_option_private_enabled = ?,
       contact_option_info_enabled = ?,
-      contact_submit_button_label = ?
+      contact_submit_button_label = ?,
+      footer_text = ?,
+      footer_bottom_text = ?,
+      footer_instagram_url = ?
+
     ORDER BY id ASC
     LIMIT 1
     `,
@@ -60,6 +67,9 @@ export async function updatePortfolioSiteSettings(data: {
       data.contactOptionPrivateEnabled ? 1 : 0,
       data.contactOptionInfoEnabled ? 1 : 0,
       data.contactSubmitButtonLabel,
+      data.footerText,
+      data.footerBottomText,
+      data.footerInstagramUrl
     ]
   );
 

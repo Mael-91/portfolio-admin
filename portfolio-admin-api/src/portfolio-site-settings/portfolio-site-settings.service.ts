@@ -26,6 +26,10 @@ function mapSettings(row: any) {
     contactOptionInfoEnabled: Boolean(row.contact_option_info_enabled),
 
     contactSubmitButtonLabel: row.contact_submit_button_label ?? "Envoyer",
+
+    footerText: row.footer_text ?? "",
+    footerBottomText: row.footer_bottom_text ?? "",
+    footerInstagramUrl: row.footer_instagram_url ?? "",
   };
 }
 
@@ -58,6 +62,9 @@ export async function savePortfolioSiteSettings(input: {
   contactOptionPrivateEnabled: boolean;
   contactOptionInfoEnabled: boolean;
   contactSubmitButtonLabel: string;
+  footerText: string;
+  footerBottomText: string;
+  footerInstagramUrl: string;
 }) {
   const current = await findPortfolioSiteSettings();
 
@@ -87,6 +94,9 @@ export async function savePortfolioSiteSettings(input: {
     contactOptionPrivateEnabled: input.contactOptionPrivateEnabled,
     contactOptionInfoEnabled: input.contactOptionInfoEnabled,
     contactSubmitButtonLabel: input.contactSubmitButtonLabel,
+    footerText: input.footerText,
+    footerBottomText: input.footerBottomText,
+    footerInstagramUrl: input.footerInstagramUrl,
   });
 
   if (previousFaviconUrl && previousFaviconUrl !== input.siteFaviconUrl) {

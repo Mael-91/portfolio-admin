@@ -49,6 +49,10 @@ portfolioSiteSettingsRouter.put("/", async (req, res) => {
       contactOptionInfoEnabled: z.coerce.boolean(),
 
       contactSubmitButtonLabel: z.string().trim().max(100),
+
+      footerText: z.string().trim().max(255),
+      footerBottomText: z.string().trim().max(500),
+      footerInstagramUrl: z.string().trim().max(500),
     });
 
     const body = schema.parse(req.body);

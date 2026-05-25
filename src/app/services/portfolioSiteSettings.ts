@@ -20,6 +20,10 @@ export type PortfolioSiteSettings = {
   contactOptionInfoEnabled: boolean;
 
   contactSubmitButtonLabel: string;
+
+  footerText: string;
+  footerBottomText: string;
+  footerInstagramUrl: string;
 };
 
 export async function fetchPortfolioSiteSettings() {
