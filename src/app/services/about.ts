@@ -7,6 +7,8 @@ export async function fetchAboutContent() {
       textHtml: string;
       imageAlt: string;
       imageUrl: string;
+      instagramButtonLabel: string;
+      instagramButtonUrl: string;
     };
   }>("/api/about");
 }
@@ -15,6 +17,8 @@ export async function saveAboutContent(payload: {
   textHtml: string;
   imageAlt: string;
   imageUrl: string;
+  instagramButtonLabel: string;
+  instagramButtonUrl: string;
 }) {
   return apiFetch<{
     success: true;
@@ -22,6 +26,8 @@ export async function saveAboutContent(payload: {
       textHtml: string;
       imageAlt: string;
       imageUrl: string;
+      instagramButtonLabel: string;
+      instagramButtonUrl: string;
     };
   }>("/api/about", {
     method: "PUT",

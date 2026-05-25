@@ -12,16 +12,27 @@ export async function updateAboutContent(data: {
   textHtml: string;
   imageUrl: string | null;
   imageAlt: string | null;
+  instagramButtonLabel: string | null;
+  instagramButtonUrl: string | null;
 }) {
   await db.execute(
     `
     UPDATE about_content
-    SET text_html = ?,
-        image_url = ?,
-        image_alt = ?
+    SET
+      text_html = ?,
+      image_url = ?,
+      image_alt = ?,
+      instagram_button_label = ?,
+      instagram_button_url = ?
     LIMIT 1
     `,
-    [data.textHtml, data.imageUrl, data.imageAlt]
+    [
+      data.textHtml,
+      data.imageUrl,
+      data.imageAlt,
+      data.instagramButtonLabel,
+      data.instagramButtonUrl,
+    ]
   );
 
   return getAboutContent();

@@ -31,6 +31,8 @@ aboutRouter.put("/", async (req, res) => {
       textHtml: z.string(),
       imageUrl: z.string().optional(),
       imageAlt: z.string().optional(),
+      instagramButtonLabel: z.string().max(100).optional(),
+      instagramButtonUrl: z.string().max(500).optional(),
     });
 
     const body = schema.parse(req.body);
@@ -39,6 +41,8 @@ aboutRouter.put("/", async (req, res) => {
       textHtml: body.textHtml,
       imageUrl: body.imageUrl ?? "",
       imageAlt: body.imageAlt ?? "",
+      instagramButtonLabel: body.instagramButtonLabel ?? "",
+      instagramButtonUrl: body.instagramButtonUrl ?? "",
     });
 
     if (req.session.pendingAboutImageUrl) {

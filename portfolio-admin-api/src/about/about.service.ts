@@ -12,6 +12,8 @@ export async function fetchAboutContent() {
       textHtml: "",
       imageUrl: "",
       imageAlt: "",
+      instagramButtonLabel: "",
+      instagramButtonUrl: "",
     };
   }
 
@@ -19,6 +21,8 @@ export async function fetchAboutContent() {
     textHtml: content.text_html ?? "",
     imageUrl: content.image_url ?? "",
     imageAlt: content.image_alt ?? "",
+    instagramButtonLabel: content.instagram_button_label ?? "",
+    instagramButtonUrl: content.instagram_button_url ?? "",
   };
 }
 
@@ -26,6 +30,8 @@ export async function saveAboutContent(input: {
   textHtml: string;
   imageUrl: string;
   imageAlt: string;
+  instagramButtonLabel: string;
+  instagramButtonUrl: string;
 }) {
   const current = await getAboutContent();
 
@@ -36,6 +42,8 @@ export async function saveAboutContent(input: {
     textHtml: input.textHtml,
     imageUrl: nextImageUrl || null,
     imageAlt: input.imageAlt || null,
+    instagramButtonLabel: input.instagramButtonLabel || null,
+    instagramButtonUrl: input.instagramButtonUrl || null, 
   });
 
   if (previousImageUrl && previousImageUrl !== nextImageUrl) {
@@ -46,5 +54,7 @@ export async function saveAboutContent(input: {
     textHtml: updated.text_html ?? "",
     imageUrl: updated.image_url ?? "",
     imageAlt: updated.image_alt ?? "",
+    instagramButtonLabel: updated.instagram_button_label ?? "",
+    instagramButtonUrl: updated.instagram_button_url ?? "",
   };
 }

@@ -17,12 +17,16 @@ type AboutForm = {
   textHtml: string;
   imageAlt: string;
   imageUrl: string;
+  instagramButtonLabel: string;
+  instagramButtonUrl: string;
 };
 
 const emptyForm: AboutForm = {
   textHtml: "",
   imageAlt: "",
   imageUrl: "",
+  instagramButtonLabel: "",
+  instagramButtonUrl: "",
 };
 
 function resolveAssetUrl(url: string) {
@@ -52,6 +56,8 @@ export function AboutPage() {
         textHtml: data.about.textHtml ?? "",
         imageAlt: data.about.imageAlt ?? "",
         imageUrl: data.about.imageUrl ?? "",
+        instagramButtonLabel: data.about.instagramButtonLabel ?? "",
+        instagramButtonUrl: data.about.instagramButtonUrl ?? "",
       });
     } catch (error: any) {
       setError();
@@ -316,6 +322,49 @@ export function AboutPage() {
                     Aucune image renseignée.
                   </p>
                 )}
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Bouton Instagram</h2>
+                <p className="mt-1 text-sm text-admin-text-soft">
+                  Modifie le texte et le lien du bouton Instagram affiché sur la page À propos.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
+                  Texte du bouton
+                </label>
+                <Input
+                  value={form.instagramButtonLabel}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      instagramButtonLabel: e.target.value,
+                    }))
+                  }
+                  placeholder="Me suivre sur Instagram"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-admin-text-soft">
+                  Lien Instagram
+                </label>
+                <Input
+                  value={form.instagramButtonUrl}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      instagramButtonUrl: e.target.value,
+                    }))
+                  }
+                  placeholder="https://www.instagram.com/withmaelc"
+                />
               </div>
             </div>
           </Card>
