@@ -22,10 +22,19 @@ export async function apiFetch<T>(
 
   const data = await parseApiResponse(response);
 
+  if (response.status === 401) {
+    const loginPath = "/login";
+
+    if (window.location.pathname !== loginPath) {
+      window.history.replaceState(null, "", loginPath);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
+
+    throw new Error("Session expirée. Veuillez vous reconnecter.");
+  }
+
   if (!response.ok) {
-    throw new Error(
-      extractApiErrorMessage(data, "Erreur serveur")
-    );
+    throw new Error(extractApiErrorMessage(data, "Erreur serveur"));
   }
 
   return data as T;

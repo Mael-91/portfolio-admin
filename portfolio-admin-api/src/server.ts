@@ -49,7 +49,7 @@ const sessionStore = new MySQLStore({
   clearExpired: true,
   checkExpirationInterval: 900000,
 
-  disableTouch: true
+  disableTouch: false
 });
 
 app.use(
@@ -77,6 +77,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     proxy: true,
+    rolling: true,
     cookie: {
       httpOnly: true,
       secure: env.sessionCookieSecure,
