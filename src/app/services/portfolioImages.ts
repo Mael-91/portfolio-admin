@@ -9,7 +9,7 @@ export type PortfolioImage = {
   filePath: string;
   fileUrl: string;
   mimeType: string;
-  displayOrder: number;
+  displayOrder: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -36,6 +36,7 @@ export async function updatePortfolioImage(
     altText: string;
     description?: string;
     isActive: boolean;
+    displayOrder?: number | null;
   }
 ) {
   return apiFetch(`/api/portfolio-images/${id}`, {

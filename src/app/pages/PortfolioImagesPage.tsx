@@ -52,13 +52,15 @@ function SortablePortfolioCard({
   image,
   onEdit,
   onDelete,
+  isSortable = true,
 }: {
   image: PortfolioImage;
   onEdit: (image: PortfolioImage) => void;
   onDelete: (image: PortfolioImage) => void;
+  isSortable?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: String(image.id) });
+    useSortable({ id: String(image.id), disabled: !isSortable });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -76,16 +78,20 @@ function SortablePortfolioCard({
         />
 
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="cursor-grab active:cursor-grabbing bg-black/50"
-            type="button"
-            {...attributes}
-            {...listeners}
-          >
-            Déplacer
-          </Button>
+          {isSortable ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="cursor-grab active:cursor-grabbing bg-black/50"
+              type="button"
+              {...attributes}
+              {...listeners}
+            >
+              Déplacer
+            </Button>
+          ) : (
+            <span />
+          )}
 
           <span
             className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
@@ -150,6 +156,7 @@ export function PortfolioImagesPage() {
     altText: "",
     description: "",
     isActive: true,
+    displayOrder: "",
   });
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -157,6 +164,9 @@ export function PortfolioImagesPage() {
 
   const { showToast } = useToast();
   const { feedbackState, setSuccess, setError, reset } = useFeedback();
+
+  const activeImages = images.filter((image) => image.isActive);
+  const inactiveImages = images.filter((image) => !image.isActive);
 
   const {
     hasFieldError,
@@ -169,6 +179,7 @@ export function PortfolioImagesPage() {
     altText: (value) => value.trim().length > 0,
     description: () => true,
     isActive: () => true,
+    displayOrder: () => true,
   });
 
   /* ========================= */
@@ -258,6 +269,7 @@ export function PortfolioImagesPage() {
       altText: "",
       description: "",
       isActive: true,
+      displayOrder: "",
     });
     setFile(null);
     resetValidation();
@@ -274,6 +286,7 @@ export function PortfolioImagesPage() {
       altText: image.altText,
       description: image.description ?? "",
       isActive: image.isActive,
+      displayOrder: image.displayOrder ? String(image.displayOrder) : "",
     });
   }
 
@@ -316,6 +329,7 @@ export function PortfolioImagesPage() {
         caption: form.caption.trim(),
         description: form.description.trim(),
         isActive: form.isActive ?? true,
+        displayOrder: form.isActive && form.displayOrder ? Number(form.displayOrder) : null,
       };
 
       if (selectedImage) {
@@ -333,6 +347,10 @@ export function PortfolioImagesPage() {
         formData.append("altText", payload.altText);
         formData.append("description", payload.description || "");
         formData.append("isActive", String(form.isActive));
+
+        if (form.isActive && form.displayOrder.trim() !== "") {
+          formData.append("displayOrder", form.displayOrder);
+        }
 
         await createPortfolioImage(formData);
         setSuccess();
@@ -395,36 +413,50 @@ export function PortfolioImagesPage() {
 
   async function handleDragEnd(event: DragEndEvent) {
     reset();
+
     const { active, over } = event;
 
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id) {
+      return;
+    }
 
-    const oldIndex = images.findIndex(
-      (i) => String(i.id) === String(active.id)
-    );
-    const newIndex = images.findIndex(
-      (i) => String(i.id) === String(over.id)
-    );
+    const activeImages = images.filter((image) => image.isActive);
+    const inactiveImages = images.filter((image) => !image.isActive);
 
-    const reordered = arrayMove(images, oldIndex, newIndex).map(
-      (img, index) => ({
-        ...img,
-        displayOrder: index + 1,
-      })
+    const oldIndex = activeImages.findIndex(
+      (image) => String(image.id) === String(active.id)
     );
 
-    setImages(reordered);
+    const newIndex = activeImages.findIndex(
+      (image) => String(image.id) === String(over.id)
+    );
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    const reorderedActiveImages = arrayMove(
+      activeImages,
+      oldIndex,
+      newIndex
+    ).map((image, index) => ({
+      ...image,
+      displayOrder: index + 1,
+    }));
+
+    setImages([...reorderedActiveImages, ...inactiveImages]);
     setSavingOrder(true);
 
     try {
       await reorderPortfolioImages(
-        reordered.map((i) => ({
-          id: i.id,
-          displayOrder: i.displayOrder,
+        reorderedActiveImages.map((image) => ({
+          id: image.id,
+          displayOrder: image.displayOrder!,
         }))
       );
 
       setSuccess();
+
       showToast({
         title: "Succès",
         description: "Ordre mis à jour avec succès.",
@@ -432,11 +464,13 @@ export function PortfolioImagesPage() {
       });
     } catch (err: any) {
       setError();
+
       showToast({
         title: "Erreur",
         description: err.message,
         variant: "error",
       });
+
       await loadImages();
     } finally {
       setSavingOrder(false);
@@ -480,32 +514,58 @@ export function PortfolioImagesPage() {
           {loading ? (
             "Chargement..."
           ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={images.map((i) => String(i.id))}
-                strategy={rectSortingStrategy}
-              >
+            <div className="space-y-8">
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold text-white">
+                  Photos actives ({activeImages.length})
+                </h2>
+
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={activeImages.map((image) => String(image.id))}
+                    strategy={rectSortingStrategy}
+                  >
+                    <div className="auto__grid-preview">
+                      {activeImages.map((img) => (
+                        <SortablePortfolioCard
+                          key={img.id}
+                          image={img}
+                          onEdit={handleEdit}
+                          onDelete={setDeleteTarget}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </section>
+
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold text-white">
+                  Photos inactives ({inactiveImages.length})
+                </h2>
+
                 <div className="auto__grid-preview">
-                  {images.map((img) => (
+                  {inactiveImages.map((img) => (
                     <SortablePortfolioCard
                       key={img.id}
                       image={img}
                       onEdit={handleEdit}
                       onDelete={setDeleteTarget}
+                      isSortable={false}
                     />
                   ))}
                 </div>
-              </SortableContext>
-            </DndContext>
+              </section>
+            </div>
           )}
         </div>
 
         {/* FORM */}
-        <div className="space-y-4">
+        <div className="space-y-4 xl:sticky xl:top-6 xl:self-start">
           <form onSubmit={handleSubmit} className="space-y-3">
             {!selectedImage ? (
               <div className="space-y-3">
@@ -642,6 +702,23 @@ export function PortfolioImagesPage() {
                 }
               />
             </label>
+
+            <Input
+                type="number"
+                min={1}
+                disabled={!form.isActive}
+                value={form.displayOrder}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    displayOrder: e.target.value,
+                  }))
+                }
+                placeholder="Ordre d'affichage"
+                className={`outline-none ${
+                  !form.isActive ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              />
 
             <Button
               type="submit"

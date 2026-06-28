@@ -4,10 +4,12 @@ import {
   deletePortfolioImageById,
   findPortfolioImageById,
   findPortfolioImages,
-  getNextPortfolioDisplayOrder,
+  getNextActivePortfolioDisplayOrder,
   insertPortfolioImage,
   updatePortfolioImage,
   updatePortfolioImageOrder,
+  normalizeActivePortfolioImageOrders,
+  moveActivePortfolioImageToOrder,
 } from "./portfolio.repository";
 import { AppError } from "../common/app-error";
 import { getStoragePath } from "../common/storagePath";
@@ -43,8 +45,16 @@ export async function createPortfolioImage(params: {
   fileUrl: string;
   mimeType: string;
   isActive?: boolean;
+  displayOrder?: number | null;
 }) {
-  const displayOrder = await getNextPortfolioDisplayOrder();
+  const isActive = params.isActive ?? true;
+
+  const displayOrder =
+    isActive && params.displayOrder && params.displayOrder > 0
+      ? params.displayOrder
+      : isActive
+      ? await getNextActivePortfolioDisplayOrder()
+      : null;
 
   const id = await insertPortfolioImage({
     caption: params.caption,
@@ -55,8 +65,14 @@ export async function createPortfolioImage(params: {
     fileUrl: params.fileUrl,
     mimeType: params.mimeType,
     displayOrder,
-    isActive: params.isActive ?? true,
+    isActive,
   });
+
+  if (isActive && params.displayOrder && params.displayOrder > 0) {
+    await moveActivePortfolioImageToOrder(id, params.displayOrder);
+  } else {
+    await normalizeActivePortfolioImageOrders();
+  }
 
   const image = await findPortfolioImageById(id);
 
@@ -77,15 +93,29 @@ export async function editPortfolioImage(params: {
   altText: string;
   description?: string;
   isActive: boolean;
+  displayOrder?: number | null;
 }) {
   const existing = await findPortfolioImageById(params.id);
 
   if (!existing) {
     throw new AppError({
       code: "PORTFOLIO_IMAGE_NOT_FOUND",
-      message: "L'image du portfolio n'a pas été trouvée après sa mise à jour.",
+      message: "L'image du portfolio n'a pas été trouvée.",
       statusCode: 404,
     });
+  }
+
+  const wasActive = Boolean(existing.is_active);
+
+  let displayOrder: number | null = null;
+
+  if (params.isActive) {
+    displayOrder =
+      params.displayOrder && params.displayOrder > 0
+        ? params.displayOrder
+        : wasActive
+        ? Number(existing.display_order ?? 1)
+        : await getNextActivePortfolioDisplayOrder();
   }
 
   await updatePortfolioImage({
@@ -94,7 +124,14 @@ export async function editPortfolioImage(params: {
     altText: params.altText,
     description: params.description ?? null,
     isActive: params.isActive,
+    displayOrder,
   });
+
+  if (params.isActive && params.displayOrder && params.displayOrder > 0) {
+    await moveActivePortfolioImageToOrder(params.id, params.displayOrder);
+  } else {
+    await normalizeActivePortfolioImageOrders();
+  }
 
   const updated = await findPortfolioImageById(params.id);
 
@@ -109,8 +146,12 @@ export async function editPortfolioImage(params: {
   return sanitizeImage(updated);
 }
 
-export async function reorderPortfolioImages(items: Array<{ id: number; displayOrder: number }>) {
+export async function reorderPortfolioImages(
+  items: Array<{ id: number; displayOrder: number }>
+) {
   await updatePortfolioImageOrder(items);
+  await normalizeActivePortfolioImageOrders();
+
   return listPortfolioImages();
 }
 
@@ -126,6 +167,7 @@ export async function removePortfolioImage(id: number) {
   }
 
   await deletePortfolioImageById(id);
+  await normalizeActivePortfolioImageOrders();
 
   try {
     await fs.unlink(existing.file_path);

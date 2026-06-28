@@ -42,11 +42,12 @@ export async function findPortfolioImageById(id: number) {
   return rows[0] ?? null;
 }
 
-export async function getNextPortfolioDisplayOrder() {
-  const [rows] = await db.execute<RowDataPacket[]>(
+export async function getNextActivePortfolioDisplayOrder() {
+  const [rows]: any = await db.execute(
     `
     SELECT COALESCE(MAX(display_order), 0) + 1 AS next_order
     FROM portfolio_images
+    WHERE is_active = 1
     `
   );
 
@@ -61,7 +62,7 @@ export async function insertPortfolioImage(params: {
   filePath: string;
   fileUrl: string;
   mimeType: string;
-  displayOrder: number;
+  displayOrder: number | null;
   isActive?: boolean;
 }) {
   const [result] = await db.execute<ResultSetHeader>(
@@ -101,6 +102,7 @@ export async function updatePortfolioImage(params: {
   altText: string;
   description?: string | null;
   isActive: boolean;
+  displayOrder?: number | null;
 }) {
   await db.execute(
     `
@@ -109,7 +111,8 @@ export async function updatePortfolioImage(params: {
       caption = ?,
       alt_text = ?,
       description = ?,
-      is_active = ?
+      is_active = ?,
+      display_order = ?
     WHERE id = ?
     `,
     [
@@ -117,12 +120,15 @@ export async function updatePortfolioImage(params: {
       params.altText,
       params.description ?? null,
       params.isActive ? 1 : 0,
+      params.isActive ? params.displayOrder ?? 1 : null,
       String(params.id),
     ]
   );
 }
 
-export async function updatePortfolioImageOrder(items: Array<{ id: number; displayOrder: number }>) {
+export async function updatePortfolioImageOrder(
+  items: Array<{ id: number; displayOrder: number }>
+) {
   const connection = await db.getConnection();
 
   try {
@@ -134,6 +140,7 @@ export async function updatePortfolioImageOrder(items: Array<{ id: number; displ
         UPDATE portfolio_images
         SET display_order = ?
         WHERE id = ?
+          AND is_active = 1
         `,
         [item.displayOrder, String(item.id)]
       );
@@ -156,4 +163,94 @@ export async function deletePortfolioImageById(id: number) {
     `,
     [String(id)]
   );
+}
+
+export async function normalizeActivePortfolioImageOrders() {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [rows]: any = await connection.execute(
+      `
+      SELECT id
+      FROM portfolio_images
+      WHERE is_active = 1
+      ORDER BY display_order ASC, created_at ASC
+      `
+    );
+
+    for (let i = 0; i < rows.length; i += 1) {
+      await connection.execute(
+        `
+        UPDATE portfolio_images
+        SET display_order = ?
+        WHERE id = ?
+        `,
+        [i + 1, String(rows[i].id)]
+      );
+    }
+
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function moveActivePortfolioImageToOrder(
+  imageId: number,
+  targetOrder: number
+) {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [rows]: any = await connection.execute(
+      `
+      SELECT id
+      FROM portfolio_images
+      WHERE is_active = 1
+      ORDER BY display_order ASC, created_at ASC
+      `
+    );
+
+    const orderedIds = rows.map((row: any) => Number(row.id));
+    const currentIndex = orderedIds.indexOf(imageId);
+
+    if (currentIndex === -1) {
+      await connection.commit();
+      return;
+    }
+
+    const [removedId] = orderedIds.splice(currentIndex, 1);
+
+    const safeTargetIndex = Math.max(
+      0,
+      Math.min(targetOrder - 1, orderedIds.length)
+    );
+
+    orderedIds.splice(safeTargetIndex, 0, removedId);
+
+    for (let i = 0; i < orderedIds.length; i += 1) {
+      await connection.execute(
+        `
+        UPDATE portfolio_images
+        SET display_order = ?
+        WHERE id = ?
+        `,
+        [i + 1, String(orderedIds[i])]
+      );
+    }
+
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
