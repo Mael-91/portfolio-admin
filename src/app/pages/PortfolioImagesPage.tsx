@@ -78,20 +78,48 @@ function SortablePortfolioCard({
         />
 
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
-          {isSortable ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              className="cursor-grab active:cursor-grabbing bg-black/50"
-              type="button"
-              {...attributes}
-              {...listeners}
-            >
-              Déplacer
-            </Button>
-          ) : (
-            <span />
-          )}
+          <div className="flex items-center gap-2">
+            {isSortable ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="cursor-grab active:cursor-grabbing bg-black/50"
+                type="button"
+                {...attributes}
+                {...listeners}
+                title="Déplacer"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2v20" />
+                  <path d="M2 12h20" />
+                  <path d="m12 2-3 3" />
+                  <path d="m12 2 3 3" />
+                  <path d="m12 22-3-3" />
+                  <path d="m12 22 3-3" />
+                  <path d="m2 12 3-3" />
+                  <path d="m2 12 3 3" />
+                  <path d="m22 12-3-3" />
+                  <path d="m22 12-3 3" />
+                </svg>
+              </Button>
+            ) : (
+              <span />
+            )}
+
+            {image.isActive && image.displayOrder ? (
+              <span className="rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                #{image.displayOrder}
+              </span>
+            ) : null}
+          </div>
 
           <span
             className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
