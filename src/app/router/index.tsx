@@ -13,6 +13,8 @@ import { ServicesContentPage } from "../pages/ServicesContentPage";
 import { SettingsGeneralPage } from "../pages/SettingsGeneralPage";
 import { AboutPage } from "../pages/AboutPage";
 import { PortfolioConfigurationPage } from "../pages/PortfolioConfigurationPage";
+import { PageAccess } from "../components/PageAccess";
+import { RolesSettingsPage } from "../pages/RolesSettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -33,43 +35,47 @@ export const router = createBrowserRouter([
       },
       {
         path: "messages",
-        element: <MessagesPage />,
+        element: <PageAccess path="/messages"><MessagesPage /></PageAccess>,
       },
       {
         path: "messages/:id",
-        element: <MessageDetailPage />,
+        element: <PageAccess path="/messages"><MessageDetailPage /></PageAccess>,
       },
       {
         path: "/settings/rgpd",
-        element: <RGPDPage />,
+        element: <PageAccess path="/settings/rgpd"><RGPDPage /></PageAccess>,
       },
       {
         path: "/legal",
-        element: <LegalDocumentsPage />,
+        element: <PageAccess path="/legal"><LegalDocumentsPage /></PageAccess>,
       },
       {
         path: "/settings/users",
-        element: <UsersSettingsPage />,
+        element: <PageAccess path="/settings/users"><UsersSettingsPage /></PageAccess>,
+      },
+      {
+        path: "/settings/roles",
+        element: <PageAccess path="/settings/roles"><RolesSettingsPage /></PageAccess>,
       },
       {
         path: "/portfolio-images",
-        element: <PortfolioImagesPage />,
+        element: <PageAccess path="/portfolio-images"><PortfolioImagesPage /></PageAccess>,
       },
       {
         path: "/prestations",
-        element: <ServicesContentPage />,
+        element: <PageAccess path="/prestations"><ServicesContentPage /></PageAccess>,
       },
       {
         path: "/settings/general",
-        element: <SettingsGeneralPage />,
+        element: <PageAccess path="/settings/general"><SettingsGeneralPage /></PageAccess>,
       },
       {
         path: "/about",
-        element: <AboutPage />,
+        element: <PageAccess path="/about"><AboutPage /></PageAccess>,
       },
       {
         path: "/portfolio/settings",
-        element: <PortfolioConfigurationPage />,
+        element: <PageAccess path="/portfolio/settings"><PortfolioConfigurationPage /></PageAccess>,
       }
     ],
   },

@@ -1,33 +1,22 @@
-import fs from "node:fs";
-import path from "node:path";
 import multer from "multer";
-import { randomUUID } from "node:crypto";
-import { getPortfolioImagesStorageDir } from "./portfolio.service";
 
-const storageDir = getPortfolioImagesStorageDir();
+const imageExtensions = new Map([
+  ["image/jpeg", ".jpg"],
+  ["image/png", ".png"],
+  ["image/webp", ".webp"],
+  ["image/avif", ".avif"],
+]);
 
-if (!fs.existsSync(storageDir)) {
-  fs.mkdirSync(storageDir, { recursive: true });
+export function portfolioImageExtension(mimeType: string) {
+  return imageExtensions.get(mimeType);
 }
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, storageDir);
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname || "").toLowerCase();
-    cb(null, `${Date.now()}-${randomUUID()}${ext}`);
-  },
-});
 
 function fileFilter(
   _req: Express.Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) {
-  const allowed = ["image/jpeg", "image/png", "image/webp", "image/avif"];
-
-  if (!allowed.includes(file.mimetype)) {
+  if (!portfolioImageExtension(file.mimetype)) {
     cb(new Error("UNSUPPORTED_FILE_TYPE"));
     return;
   }
@@ -36,9 +25,11 @@ function fileFilter(
 }
 
 export const portfolioUpload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 5 * 1024 * 1024,
+    files: 1,
+    fields: 5,
   },
 });

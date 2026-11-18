@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAccountAccess } from "../context/AccountAccessContext";
 
 const stats = [
   { label: "Demandes totales", value: "--", helper: "Compteur branché à l’API ensuite" },
@@ -9,7 +9,9 @@ const stats = [
 ];
 
 export function DashboardPage() {
-  const { user } = useAuth();
+  const { profile, hasPermission } = useAccountAccess();
+  const user = profile?.user;
+  const canReadMessages = hasPermission("messages.read");
 
   return (
     <div className="space-y-8">
@@ -21,7 +23,7 @@ export function DashboardPage() {
                 Dashboard admin
               </p>
               <h1 className="mt-4 max-w-2xl text-4xl font-semibold tracking-tight text-white">
-                Vue d’ensemble de la messagerie et du suivi des demandes.
+                {canReadMessages ? "Vue d’ensemble de la messagerie et du suivi des demandes." : "Accueil du dashboard"}
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-admin-text-soft">
                 Cette base reprend l’esprit du thème sombre : navigation latérale,
@@ -38,14 +40,14 @@ export function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          {canReadMessages && <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/messages"
               className="rounded-2xl bg-admin-accent px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-admin-accent/20 transition hover:brightness-110"
             >
               Ouvrir les demandes
             </Link>
-          </div>
+          </div>}
         </div>
 
         <div className="rounded-[28px] bg-white/[0.025] p-7 shadow-xl shadow-black/20">
@@ -76,7 +78,7 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
+      {canReadMessages && <section className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
         {stats.map((stat) => (
           <article
             key={stat.label}
@@ -89,7 +91,7 @@ export function DashboardPage() {
             <p className="mt-3 text-sm text-admin-text-soft">{stat.helper}</p>
           </article>
         ))}
-      </section>
+      </section>}
 
       <section className="rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-6 shadow-lg shadow-black/10">
         <div>

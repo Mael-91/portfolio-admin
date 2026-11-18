@@ -1,7 +1,7 @@
 import path from "path";
 import { Router } from "express";
 import { z } from "zod";
-import { requireAdminAuth } from "../auth/auth.middleware";
+import { requireAccountAccess } from "../rbac/account-access.middleware";
 import { handleRouteError } from "../common/handle-route-error";
 import {
   getGeneralSettings,
@@ -33,9 +33,7 @@ settingsGeneralRouter.get("/public", async (_req, res) => {
   }
 });
 
-settingsGeneralRouter.use(requireAdminAuth);
-
-settingsGeneralRouter.get("/", async (_req, res) => {
+settingsGeneralRouter.get("/", requireAccountAccess("general.read"), async (_req, res) => {
   try {
     const settings = await getGeneralSettings();
     const storage = await getStorageUsage();
@@ -50,7 +48,7 @@ settingsGeneralRouter.get("/", async (_req, res) => {
   }
 });
 
-settingsGeneralRouter.put("/", async (req, res) => {
+settingsGeneralRouter.put("/", requireAccountAccess("general.write"), async (req, res) => {
   try {
     const schema = z.object({
       siteName: z.string().trim().max(255),
@@ -80,7 +78,7 @@ settingsGeneralRouter.put("/", async (req, res) => {
 });
 
 settingsGeneralRouter.post(
-  "/upload-logo",
+  "/upload-logo", requireAccountAccess("general.write"),
   handleUpload(
     settingsGeneralUpload.single("logo"),
     async (req, res) => {

@@ -1,10 +1,12 @@
 import { apiFetch } from "./api";
+import type { RoleOption } from "./roles";
 
 export type AdminUser = {
   id: number;
   email: string;
   firstName: string;
   lastName: string;
+  roles: RoleOption[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -22,6 +24,7 @@ export async function createAdminUser(payload: {
   firstName: string;
   lastName: string;
   password: string;
+  roleIds?: string[];
 }) {
   return apiFetch<{
     success: true;
@@ -38,6 +41,8 @@ export async function updateAdminUser(
     email: string;
     firstName: string;
     lastName: string;
+    roleIds?: string[];
+    password?: string;
   }
 ) {
   return apiFetch<{

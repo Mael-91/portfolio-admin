@@ -205,7 +205,7 @@ export async function updateMessageProcessingStatus(params: {
 }) {
   const { id, processingStatus } = params;
 
-  await db.execute<ResultSetHeader>(
+  const [result] = await db.execute<ResultSetHeader>(
     `
     UPDATE contact_submissions
     SET
@@ -216,5 +216,5 @@ export async function updateMessageProcessingStatus(params: {
     [processingStatus, String(id)]
   );
 
-  return findMessageById(id);
+  return result.affectedRows > 0;
 }

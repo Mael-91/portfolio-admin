@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { requireAdminAuth } from "../auth/auth.middleware";
+import { requireAccountAccess } from "../rbac/account-access.middleware";
 import {
   getMessageDetail,
   getNewMessagesCount,
@@ -13,8 +13,6 @@ import { handleRouteError } from "../common/handle-route-error";
 
 export const messagesRouter = Router();
 
-messagesRouter.use(requireAdminAuth);
-
 const listSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(10),
@@ -24,7 +22,7 @@ const listSchema = z.object({
   search: z.string().trim().optional(),
 });
 
-messagesRouter.get("/", async (req, res) => {
+messagesRouter.get("/", requireAccountAccess("messages.read"), async (req, res) => {
   try {
     const query = listSchema.parse(req.query);
 
@@ -39,7 +37,7 @@ messagesRouter.get("/", async (req, res) => {
   }
 });
 
-messagesRouter.get("/new-count", async (req, res) => {
+messagesRouter.get("/new-count", requireAccountAccess("messages.read"), async (req, res) => {
   try {
     const schema = z.object({
       lastSeenId: z.coerce.number().int().min(0).default(0),
@@ -57,7 +55,7 @@ messagesRouter.get("/new-count", async (req, res) => {
   }
 });
 
-messagesRouter.get("/count-unprocessed", async (_req, res) => {
+messagesRouter.get("/count-unprocessed", requireAccountAccess("messages.read"), async (_req, res) => {
   try {
     const result = await getUnprocessedMessagesCount();
 
@@ -70,7 +68,7 @@ messagesRouter.get("/count-unprocessed", async (_req, res) => {
   }
 });
 
-messagesRouter.post("/:id/export-rgpd", async (req, res) => {
+messagesRouter.post("/:id/export-rgpd", requireAccountAccess("messages.export_rgpd", { admin: true }), async (req, res) => {
   try {
     const paramsSchema = z.object({
       id: z.coerce.number().int().min(1),
@@ -105,7 +103,7 @@ messagesRouter.post("/:id/export-rgpd", async (req, res) => {
   }
 });
 
-messagesRouter.get("/:id", async (req, res) => {
+messagesRouter.get("/:id", requireAccountAccess("messages.read"), async (req, res) => {
   try {
     const id = Number(req.params.id);
     const message = await getMessageDetail(id);
@@ -126,19 +124,21 @@ messagesRouter.get("/:id", async (req, res) => {
   }
 });
 
-messagesRouter.patch("/:id/processing-status", async (req, res) => {
+messagesRouter.patch("/:id/processing-status", requireAccountAccess("messages.process"), async (req, res) => {
   try {
     const schema = z.object({
       processingStatus: z.enum(["unprocessed", "in_progress", "processed"]),
     });
 
-    const id = Number(req.params.id);
+    const id = z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER).parse(req.params.id);
     const body = schema.parse(req.body);
 
     const message = await setMessageProcessingStatus({
       id,
       processingStatus: body.processingStatus,
     });
+
+    if (!message) return res.status(404).json({ success: false, message: "Message introuvable" });
 
     return res.status(200).json({
       success: true,

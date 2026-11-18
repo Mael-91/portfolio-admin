@@ -33,8 +33,14 @@ export async function apiFetch<T>(
     throw new Error("Session expirée. Veuillez vous reconnecter.");
   }
 
+  if (response.status === 403 && (!options.method || options.method === "GET")) {
+    window.dispatchEvent(new Event("admin-access-changed"));
+  }
+
   if (!response.ok) {
-    throw new Error(extractApiErrorMessage(data, "Erreur serveur"));
+    throw Object.assign(new Error(extractApiErrorMessage(data, "Erreur serveur")), {
+      status: response.status,
+    });
   }
 
   return data as T;

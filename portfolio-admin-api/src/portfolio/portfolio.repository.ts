@@ -98,31 +98,25 @@ export async function insertPortfolioImage(params: {
 
 export async function updatePortfolioImage(params: {
   id: number;
-  caption: string;
-  altText: string;
-  description?: string | null;
-  isActive: boolean;
-  displayOrder?: number | null;
+  caption?: string;
+  altText?: string;
+  description?: string;
+  isActive?: boolean;
+  nextOrder: number | null;
 }) {
+  const active = params.isActive === undefined ? null : Number(params.isActive);
   await db.execute(
-    `
-    UPDATE portfolio_images
-    SET
-      caption = ?,
-      alt_text = ?,
-      description = ?,
-      is_active = ?,
-      display_order = ?
-    WHERE id = ?
-    `,
-    [
-      params.caption,
-      params.altText,
-      params.description ?? null,
-      params.isActive ? 1 : 0,
-      params.isActive ? params.displayOrder ?? 1 : null,
-      String(params.id),
-    ]
+    `UPDATE portfolio_images
+     SET caption = COALESCE(?, caption),
+         alt_text = COALESCE(?, alt_text),
+         description = COALESCE(?, description),
+         display_order = CASE WHEN ? = 0 THEN NULL
+                              WHEN ? = 1 THEN COALESCE(display_order, ?, 1)
+                              ELSE display_order END,
+         is_active = COALESCE(?, is_active)
+     WHERE id = ?`,
+    [params.caption ?? null, params.altText ?? null, params.description ?? null,
+      active, active, params.nextOrder, active, String(params.id)]
   );
 }
 

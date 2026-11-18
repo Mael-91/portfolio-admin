@@ -1,13 +1,9 @@
 import { AppError } from "../common/app-error";
 import { db } from "../db/db";
 import {
-  deleteBulletsByCardId,
   findBulletsByCardIds,
   findCardsBySectionId,
   findSectionByType,
-  insertBullet,
-  updateServiceCard,
-  updateServiceSection,
   type ServiceType,
 } from "./services.repository";
 import {
@@ -17,13 +13,13 @@ import {
 
 type ServiceCardInput = {
   id: number;
-  title: string;
-  bodyEnabled: boolean;
-  bodyHtml: string | null;
-  bulletsEnabled: boolean;
-  priceEnabled: boolean;
-  priceLabel: string | null;
-  bullets: string[];
+  title?: string;
+  bodyEnabled?: boolean;
+  bodyHtml?: string | null;
+  bulletsEnabled?: boolean;
+  priceEnabled?: boolean;
+  priceLabel?: string | null;
+  bullets?: string[];
 };
 
 const SERVICES_SECTION_ENABLED_KEY = "services_section_enabled";
@@ -81,13 +77,12 @@ export async function getServicesContent(serviceType: ServiceType) {
 
 export async function saveServicesContent(params: {
   serviceType: ServiceType;
-  introEnabled: boolean;
+  introEnabled?: boolean;
   introHtml?: string | null;
   cards: ServiceCardInput[];
-  sectionEnabled: boolean;
+  sectionEnabled?: boolean;
 }) {
   const section = await findSectionByType(params.serviceType);
-
   if (!section) {
     throw new AppError({
       code: "SERVICE_SECTION_NOT_FOUND",
@@ -96,78 +91,47 @@ export async function saveServicesContent(params: {
     });
   }
 
-  const connection = await db.getConnection();
+  const ids = new Set((await findCardsBySectionId(section.id)).map(({ id }) => id));
+  if (params.cards.some(({ id }) => !ids.has(id)) ||
+      new Set(params.cards.map(({ id }) => id)).size !== params.cards.length) {
+    throw new AppError({ code: "INVALID_SERVICE_CARD", message: "Cartes de prestation invalides.", statusCode: 400 });
+  }
 
+  const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
 
-    await upsertSetting(
-      "services_section_enabled",
-      params.sectionEnabled ? "true" : "false"
-    );
-
-    await connection.execute(
-      `
-      UPDATE service_sections
-      SET
-        intro_enabled = ?,
-        intro_html = ?
-      WHERE id = ?
-      `,
-      [
-        params.introEnabled ? 1 : 0,
-        normalizeHtml(params.introHtml),
-        String(section.id),
-      ]
-    );
+    if (params.sectionEnabled !== undefined) {
+      await upsertSetting(SERVICES_SECTION_ENABLED_KEY, String(params.sectionEnabled), connection);
+    }
+    if (params.introEnabled !== undefined || params.introHtml !== undefined) {
+      await connection.execute(
+        `UPDATE service_sections
+         SET intro_enabled = COALESCE(?, intro_enabled), intro_html = IF(?, ?, intro_html)
+         WHERE id = ?`,
+        [params.introEnabled ?? null, params.introHtml !== undefined, normalizeHtml(params.introHtml), String(section.id)]
+      );
+    }
 
     for (const card of params.cards) {
       await connection.execute(
-        `
-        UPDATE service_cards
-        SET
-          title = ?,
-          body_enabled = ?,
-          body_html = ?,
-          bullets_enabled = ?,
-          price_enabled = ?,
-          price_label = ?
-        WHERE id = ?
-        `,
-        [
-          card.title,
-          card.bodyEnabled ? 1 : 0,
-          normalizeHtml(card.bodyHtml),
-          card.bulletsEnabled ? 1 : 0,
-          card.priceEnabled ? 1 : 0,
-          normalizeLabel(card.priceLabel),
-          String(card.id),
-        ]
+        `UPDATE service_cards
+         SET title = COALESCE(?, title), body_enabled = COALESCE(?, body_enabled),
+             body_html = IF(?, ?, body_html), bullets_enabled = COALESCE(?, bullets_enabled),
+             price_enabled = COALESCE(?, price_enabled), price_label = IF(?, ?, price_label)
+         WHERE id = ? AND section_id = ?`,
+        [card.title ?? null, card.bodyEnabled ?? null, card.bodyHtml !== undefined, normalizeHtml(card.bodyHtml),
+          card.bulletsEnabled ?? null, card.priceEnabled ?? null, card.priceLabel !== undefined,
+          normalizeLabel(card.priceLabel), String(card.id), String(section.id)]
       );
 
-      await connection.execute(
-        `
-        DELETE FROM service_card_bullets
-        WHERE card_id = ?
-        `,
-        [String(card.id)]
-      );
-
-      const filteredBullets = card.bullets
-        .map((item) => item.trim())
-        .filter(Boolean);
-
-      for (let i = 0; i < filteredBullets.length; i += 1) {
+      if (card.bullets === undefined) continue;
+      await connection.execute("DELETE FROM service_card_bullets WHERE card_id = ?", [String(card.id)]);
+      const bullets = card.bullets.map((item) => item.trim()).filter(Boolean);
+      for (const [index, bullet] of bullets.entries()) {
         await connection.execute(
-          `
-          INSERT INTO service_card_bullets (
-            card_id,
-            bullet_index,
-            content
-          )
-          VALUES (?, ?, ?)
-          `,
-          [String(card.id), String(i + 1), filteredBullets[i]]
+          "INSERT INTO service_card_bullets (card_id, bullet_index, content) VALUES (?, ?, ?)",
+          [String(card.id), String(index + 1), bullet]
         );
       }
     }
@@ -179,6 +143,4 @@ export async function saveServicesContent(params: {
   } finally {
     connection.release();
   }
-
-  return getServicesContent(params.serviceType);
 }

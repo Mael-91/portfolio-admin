@@ -1,9 +1,10 @@
+import { getSocketChannels, issueSocketTicket } from "../websocket/ws-access";
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { loginAdmin } from "./auth.service";
 import { env } from "../env";
 import { requireAdminAuth } from "./auth.middleware";
+import { requireAccountAccess } from "../rbac/account-access.middleware";
 import { loginRateLimit } from "./login-rate-limit";
 
 export const authRouter = Router();
@@ -88,9 +89,20 @@ authRouter.post("/logout", requireAdminAuth,(req, res) => {
 });
 
 
-authRouter.get("/me", requireAdminAuth, (req, res) => {
+authRouter.get("/me", requireAccountAccess(), (req, res) => {
   return res.status(200).json({
     success: true,
-    user: req.session.adminUser,
+    ...res.locals.accountAccess,
   });
+});
+authRouter.post("/ws-ticket", requireAccountAccess(), (req, res) => {
+  res.set("Cache-Control", "no-store");
+  const { user, permissions } = res.locals.accountAccess;
+  const channels = getSocketChannels(permissions);
+  if (!channels.messages && !channels.rgpd) {
+    return res.status(403).json({ success: false, message: "Accès interdit" });
+  }
+  const ticket = issueSocketTicket({ sessionId: req.sessionID, userId: user.id });
+  if (!ticket) return res.status(503).json({ success: false, message: "Notifications temporairement indisponibles" });
+  return res.json({ success: true, ticket });
 });

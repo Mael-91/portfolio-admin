@@ -1,3 +1,4 @@
+import { useAccountAccess } from "../context/AccountAccessContext";
 import { useEffect, useState } from "react";
 import {
   fetchPortfolioSiteSettings,
@@ -22,6 +23,9 @@ function resolveAssetUrl(url: string) {
 type UploadTarget = "siteFaviconUrl" | "homeBackgroundImageUrl";
 
 export function PortfolioConfigurationPage() {
+  const { hasPermission } = useAccountAccess();
+  const canWrite = hasPermission("portfolio_settings.write");
+  const canUpload = hasPermission("portfolio_settings.upload");
   const { showToast } = useToast();
   const { setError, setSuccess, reset } = useFeedback();
 
@@ -155,7 +159,7 @@ export function PortfolioConfigurationPage() {
           </p>
         </div>
 
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || !canWrite}>
           {saving ? "Enregistrement..." : "Enregistrer"}
         </Button>
       </div>
@@ -179,6 +183,7 @@ export function PortfolioConfigurationPage() {
                   Titre du site
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.siteTitle}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -196,6 +201,7 @@ export function PortfolioConfigurationPage() {
                   Description du site
                 </label>
                 <Textarea
+                  disabled={!canWrite}
                   value={form.siteDescription}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -230,6 +236,7 @@ export function PortfolioConfigurationPage() {
 
                   <div className="flex-1 space-y-2">
                     <input
+                      disabled={!canUpload}
                       type="file"
                       accept="image/*"
                       onChange={(e) => handleFileChange(e, "siteFaviconUrl")}
@@ -260,6 +267,7 @@ export function PortfolioConfigurationPage() {
                   Titre d’accueil
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.homeTitle}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -277,6 +285,7 @@ export function PortfolioConfigurationPage() {
                   Sous-titre d’accueil
                 </label>
                 <Textarea
+                  disabled={!canWrite}
                   value={form.homeSubtitle}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -330,6 +339,7 @@ export function PortfolioConfigurationPage() {
                 )}
 
                 <input
+                  disabled={!canUpload}
                   type="file"
                   accept="image/*"
                   onChange={(e) =>
@@ -355,6 +365,7 @@ export function PortfolioConfigurationPage() {
                   Texte du footer
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.footerText}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -372,6 +383,7 @@ export function PortfolioConfigurationPage() {
                   Texte SEO
                 </label>
                 <Textarea
+                  disabled={!canWrite}
                   value={form.footerBottomText}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -389,6 +401,7 @@ export function PortfolioConfigurationPage() {
                   Lien Instagram
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.footerInstagramUrl}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -421,6 +434,7 @@ export function PortfolioConfigurationPage() {
                   Titre de section
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.gallerySectionTitle}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -438,6 +452,7 @@ export function PortfolioConfigurationPage() {
                   Sous-titre de section
                 </label>
                 <Textarea
+                  disabled={!canWrite}
                   value={form.gallerySectionSubtitle}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -455,6 +470,7 @@ export function PortfolioConfigurationPage() {
                   Texte du bouton de gauche
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.galleryPrimaryButtonLabel}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -472,6 +488,7 @@ export function PortfolioConfigurationPage() {
                   Texte du bouton de droite
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.gallerySecondaryButtonLabel}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -503,6 +520,7 @@ export function PortfolioConfigurationPage() {
                   Titre de la section contact
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.contactSectionTitle}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -520,6 +538,7 @@ export function PortfolioConfigurationPage() {
                   Sous-titre de la section contact
                 </label>
                 <Textarea
+                  disabled={!canWrite}
                   value={form.contactSectionSubtitle}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -543,6 +562,7 @@ export function PortfolioConfigurationPage() {
                       Devis professionnel
                     </span>
                     <Switch
+                      disabled={!canWrite}
                       checked={form.contactOptionProEnabled}
                       onChange={(checked) =>
                         setForm((prev) => ({
@@ -558,6 +578,7 @@ export function PortfolioConfigurationPage() {
                       Devis particulier
                     </span>
                     <Switch
+                      disabled={!canWrite}
                       checked={form.contactOptionPrivateEnabled}
                       onChange={(checked) =>
                         setForm((prev) => ({
@@ -573,6 +594,7 @@ export function PortfolioConfigurationPage() {
                       Demande d’information
                     </span>
                     <Switch
+                      disabled={!canWrite}
                       checked={form.contactOptionInfoEnabled}
                       onChange={(checked) =>
                         setForm((prev) => ({
@@ -590,6 +612,7 @@ export function PortfolioConfigurationPage() {
                   Texte du bouton d’envoi
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.contactSubmitButtonLabel}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -604,7 +627,7 @@ export function PortfolioConfigurationPage() {
             </div>
           </Card>
 
-          <Button onClick={handleSave} disabled={saving} className="w-full">
+          <Button onClick={handleSave} disabled={saving || !canWrite} className="w-full">
             {saving ? "Enregistrement..." : "Enregistrer la configuration"}
           </Button>
         </div>

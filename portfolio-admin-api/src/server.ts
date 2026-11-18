@@ -1,3 +1,5 @@
+import { getSocketChannels } from "./websocket/ws-access";
+import { loadAccountAccess } from "./rbac/account-access";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -23,6 +25,8 @@ import { ensureStorageFolders } from "./common/ensureStorageFolders";
 import { settingsGeneralRouter } from "./settings-general/settings-general.routes";
 import { aboutRouter } from "./about/about.routes";
 import { portfolioSiteSettingsRouter } from "./portfolio-site-settings/portfolio-site-settings.routes";
+
+import { rolesRouter } from "./rbac/roles.routes";
 
 const app = express();
 
@@ -92,6 +96,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/messages", messagesRouter);
 app.use("/api/settings/rgpd", RGPDRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/roles", rolesRouter);
 app.use("/api/legal/documents", legalRouter);
 app.use("/internal/events", internalEventsRouter);
 app.use("/api/portfolio-images", portfolioRouter);
@@ -124,6 +129,14 @@ app.listen(env.port, async () => {
 
 startWebSocketServer({
   getUnprocessedCount: countUnprocessedMessages,
+  async checkAccess({ sessionId, userId }) {
+    const stored = await new Promise<session.SessionData | null | undefined>((resolve, reject) => {
+      sessionStore.get(sessionId, (error, data) => error ? reject(error) : resolve(data));
+    });
+    if (stored?.adminUser?.id !== userId) return null;
+    const access = await loadAccountAccess(userId);
+    return access ? getSocketChannels(access.permissions) : null;
+  },
 });
 
 startRgpdCron();

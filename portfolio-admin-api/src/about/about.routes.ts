@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { requireAdminAuth } from "../auth/auth.middleware";
+import { requireAccountAccess } from "../rbac/account-access.middleware";
 import { handleRouteError } from "../common/handle-route-error";
 import { fetchAboutContent, saveAboutContent } from "./about.service";
 import { aboutUpload } from "./about.upload";
@@ -10,9 +10,7 @@ import { handleUpload } from "../common/handle-upload";
 
 export const aboutRouter = Router();
 
-aboutRouter.use(requireAdminAuth);
-
-aboutRouter.get("/", async (_req, res) => {
+aboutRouter.get("/", requireAccountAccess("about.read"), async (_req, res) => {
   try {
     const about = await fetchAboutContent();
 
@@ -25,7 +23,7 @@ aboutRouter.get("/", async (_req, res) => {
   }
 });
 
-aboutRouter.put("/", async (req, res) => {
+aboutRouter.put("/", requireAccountAccess("about.write"), async (req, res) => {
   try {
     const schema = z.object({
       textHtml: z.string(),
@@ -51,7 +49,7 @@ aboutRouter.put("/", async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      about,
+      ...(res.locals.accountAccess.permissions.includes("about.read") ? { about } : {}),
     });
   } catch (error) {
     return handleRouteError(res, error, "sauvegarde page à propos");
@@ -59,7 +57,7 @@ aboutRouter.put("/", async (req, res) => {
 });
 
 aboutRouter.post(
-  "/upload-image",
+  "/upload-image", requireAccountAccess("about.upload"),
   handleUpload(
     aboutUpload.single("image"),
     async (req, res) => {
@@ -92,7 +90,7 @@ aboutRouter.post(
   )
 );
 
-aboutRouter.post("/cleanup-orphans", async (_req, res) => {
+aboutRouter.post("/cleanup-orphans", requireAccountAccess("about.cleanup"), async (_req, res) => {
   try {
     const result = await cleanupOrphanAboutImages();
 

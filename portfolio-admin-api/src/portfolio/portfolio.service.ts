@@ -47,7 +47,7 @@ export async function createPortfolioImage(params: {
   isActive?: boolean;
   displayOrder?: number | null;
 }) {
-  const isActive = params.isActive ?? true;
+  const isActive = params.isActive ?? false;
 
   const displayOrder =
     isActive && params.displayOrder && params.displayOrder > 0
@@ -70,7 +70,7 @@ export async function createPortfolioImage(params: {
 
   if (isActive && params.displayOrder && params.displayOrder > 0) {
     await moveActivePortfolioImageToOrder(id, params.displayOrder);
-  } else {
+  } else if (isActive) {
     await normalizeActivePortfolioImageOrders();
   }
 
@@ -89,14 +89,13 @@ export async function createPortfolioImage(params: {
 
 export async function editPortfolioImage(params: {
   id: number;
-  caption: string;
-  altText: string;
+  caption?: string;
+  altText?: string;
   description?: string;
-  isActive: boolean;
-  displayOrder?: number | null;
+  isActive?: boolean;
+  displayOrder?: number;
 }) {
   const existing = await findPortfolioImageById(params.id);
-
   if (!existing) {
     throw new AppError({
       code: "PORTFOLIO_IMAGE_NOT_FOUND",
@@ -106,43 +105,19 @@ export async function editPortfolioImage(params: {
   }
 
   const wasActive = Boolean(existing.is_active);
+  const nextOrder = params.isActive === true && !wasActive
+    ? await getNextActivePortfolioDisplayOrder()
+    : null;
+  await updatePortfolioImage({ ...params, nextOrder });
 
-  let displayOrder: number | null = null;
-
-  if (params.isActive) {
-    displayOrder =
-      params.displayOrder && params.displayOrder > 0
-        ? params.displayOrder
-        : wasActive
-        ? Number(existing.display_order ?? 1)
-        : await getNextActivePortfolioDisplayOrder();
-  }
-
-  await updatePortfolioImage({
-    id: params.id,
-    caption: params.caption,
-    altText: params.altText,
-    description: params.description ?? null,
-    isActive: params.isActive,
-    displayOrder,
-  });
-
-  if (params.isActive && params.displayOrder && params.displayOrder > 0) {
+  if (params.displayOrder !== undefined) {
     await moveActivePortfolioImageToOrder(params.id, params.displayOrder);
-  } else {
+  } else if (params.isActive !== undefined) {
     await normalizeActivePortfolioImageOrders();
   }
 
   const updated = await findPortfolioImageById(params.id);
-
-  if (!updated) {
-    throw new AppError({
-      code: "PORTFOLIO_IMAGE_NOT_FOUND",
-      message: "L'image du portfolio n'a pas été trouvée après sa mise à jour.",
-      statusCode: 404,
-    });
-  }
-
+  if (!updated) throw new Error("Image introuvable après modification");
   return sanitizeImage(updated);
 }
 
@@ -152,7 +127,6 @@ export async function reorderPortfolioImages(
   await updatePortfolioImageOrder(items);
   await normalizeActivePortfolioImageOrders();
 
-  return listPortfolioImages();
 }
 
 export async function removePortfolioImage(id: number) {

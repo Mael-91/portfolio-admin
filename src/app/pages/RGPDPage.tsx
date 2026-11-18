@@ -1,3 +1,4 @@
+import { useAccountAccess } from "../context/AccountAccessContext";
 import { useEffect, useState } from "react";
 import { useMessageNotifications } from "../hooks/useMessageNotifications";
 import { Button } from "../components/ui/Button";
@@ -13,6 +14,9 @@ import { useFeedback } from "../hooks/useFeedback";
 //import { useToast } from "../hooks/useToast";
 
 export function RGPDPage() {
+  const { hasPermission, isAdmin } = useAccountAccess();
+  const canUpdate = hasPermission("rgpd.write");
+  const canPurge = isAdmin && canUpdate;
   const [retentionDays, setRetentionDays] = useState(90);
   const [autoPurgeEnabled, setAutoPurgeEnabled] = useState(true);
   const [purgeHour, setPurgeHour] = useState("03:00");
@@ -23,7 +27,7 @@ export function RGPDPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const { refreshSignal } = useMessageNotifications();
+  const { rgpdRefreshSignal } = useMessageNotifications();
   const { reset } = useFeedback();
 
   async function loadAll() {
@@ -95,7 +99,7 @@ export function RGPDPage() {
   }, [retentionDays, purgeHour, loading]);
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || !canUpdate) return;
 
     setSaving(true);
     setSaved(false);
@@ -109,12 +113,12 @@ export function RGPDPage() {
     }, 600);
 
     return () => clearTimeout(timeout);
-  }, [retentionDays, autoPurgeEnabled, purgeHour]);
+  }, [retentionDays, autoPurgeEnabled, purgeHour, canUpdate]);
 
   useEffect(() => {
-    if (refreshSignal === 0) return;
+    if (rgpdRefreshSignal === 0) return;
     loadAll();
-  }, [refreshSignal]);
+  }, [rgpdRefreshSignal]);
 
   if (loading) {
     return <div className="text-white">Chargement...</div>;
@@ -187,6 +191,7 @@ export function RGPDPage() {
               Durée de conservation (jours)
             </label>
             <Input
+              disabled={!canUpdate}
               type="number"
               min={1}
               value={retentionDays}
@@ -200,6 +205,7 @@ export function RGPDPage() {
               Heure de purge (0 - 23)
             </label>
             <Input
+              disabled={!canUpdate}
               type="time"
               value={purgeHour}
               onChange={(e) => setPurgeHour(e.target.value)}
@@ -218,6 +224,7 @@ export function RGPDPage() {
             </div>
 
             <Switch
+              disabled={!canUpdate}
               checked={autoPurgeEnabled}
               onChange={setAutoPurgeEnabled}
               size="sm"
@@ -226,19 +233,21 @@ export function RGPDPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-red-500/10 bg-red-500/5 p-6">
-        <h2 className="text-lg font-semibold text-white">Action critique</h2>
+      {canPurge && (
+        <div className="rounded-2xl border border-red-500/10 bg-red-500/5 p-6">
+          <h2 className="text-lg font-semibold text-white">Action critique</h2>
 
-        <Button
-          variant="dangerSoft"
-          onClick={() => setShowModal(true)}
-          className="mt-3"
-        >
-          Purger maintenant
-        </Button>
-      </div>
+          <Button
+            variant="dangerSoft"
+            onClick={() => setShowModal(true)}
+            className="mt-3"
+          >
+            Purger maintenant
+          </Button>
+        </div>
+      )}
 
-      {showModal && (
+      {canPurge && showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-md rounded-2xl border border-white/10 bg-admin-panel p-6 shadow-2xl">
             <h3 className="text-lg font-semibold text-white">

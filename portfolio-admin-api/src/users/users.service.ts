@@ -1,22 +1,21 @@
 import bcrypt from "bcrypt";
 import {
-  findAdminUserByEmail,
-  findAdminUserById,
   findAdminUsers,
   insertAdminUser,
   updateAdminUser,
-  updateAdminUserActiveStatus,
   updateAdminUserPassword,
-  deleteAdminUserById
+  type AdminUserRow,
+  mutateAdminUserStatus
 } from "./users.repository";
 import { AppError } from "../common/app-error";
 
-function sanitizeUser(user: any) {
+function sanitizeUser(user: AdminUserRow) {
   return {
     id: user.id,
     email: user.email,
     firstName: user.first_name,
     lastName: user.last_name,
+    roles: user.roles,
     isActive: Boolean(user.is_active),
     createdAt: user.created_at,
     updatedAt: user.updated_at,
@@ -28,51 +27,24 @@ export async function listAdminUsers() {
   return users.map(sanitizeUser);
 }
 
+async function hashAdminPassword(password: string) {
+  const errors = validatePasswordStrength(password);
+  if (errors.length) {
+    throw new AppError({ code: "WEAK_PASSWORD", message: errors.join(" "), statusCode: 400 });
+  }
+  return bcrypt.hash(password, 12);
+}
+
 export async function createAdminUser(params: {
+  actorId: number;
   email: string;
   password: string;
   firstName: string;
   lastName: string;
+  roleIds?: string[];
 }) {
-  const existing = await findAdminUserByEmail(params.email);
-
-  if (existing) {
-    throw new AppError({
-      code: "EMAIL_ALREADY_EXISTS",
-      message: "Cet email existe déjà.",
-      statusCode: 409,
-    });
-  }
-
-  const passwordErrors = validatePasswordStrength(params.password);
-
-  if (passwordErrors.length > 0) {
-    throw new AppError({
-      code: "WEAK_PASSWORD",
-      message: passwordErrors.join(" "),
-      statusCode: 400,
-    });
-  }
-
-  const passwordHash = await bcrypt.hash(params.password, 12);
-
-  const id = await insertAdminUser({
-    email: params.email,
-    passwordHash,
-    firstName: params.firstName,
-    lastName: params.lastName,
-  });
-
-  const user = await findAdminUserById(id);
-
-  if (!user) {
-    throw new AppError({
-      code: "USER_NOT_FOUND_AFTER_CREATE",
-      message: "Utilisateur introuvable après création.",
-      statusCode: 500,
-    });
-  }
-
+  const { password, ...account } = params;
+  const user = await insertAdminUser({ ...account, passwordHash: await hashAdminPassword(password) });
   return sanitizeUser(user);
 }
 
@@ -88,104 +60,37 @@ export async function deleteAdminUser(params: {
     });
   }
 
-  const user = await findAdminUserById(params.id);
-
-  if (!user) {
-    throw new AppError({
-      code: "USER_NOT_FOUND",
-      message: "Utilisateur introuvable.",
-      statusCode: 404,
-    });
-  }
-
-  await deleteAdminUserById(params.id);
+  await mutateAdminUserStatus({
+    id: params.id,
+    actorId: params.currentAdminUserId,
+    operation: "delete",
+  });
 
   return { success: true };
 }
 
 export async function editAdminUser(params: {
   id: number;
+  actorId: number;
   email: string;
   firstName: string;
   lastName: string;
+  roleIds?: string[];
+  password?: string;
 }) {
-  const user = await findAdminUserById(params.id);
-
-  if (!user) {
-    throw new AppError({
-      code: "USER_NOT_FOUND",
-      message: "Utilisateur introuvable.",
-      statusCode: 404,
-    });
-  }
-
-  const existing = await findAdminUserByEmail(params.email);
-
-  if (existing && existing.id !== params.id) {
-    throw new AppError({
-      code: "EMAIL_ALREADY_EXISTS",
-      message: "Cet email existe déjà.",
-      statusCode: 409,
-    });
-  }
-
-  await updateAdminUser(params);
-
-  const updated = await findAdminUserById(params.id);
-
-  if (!updated) {
-    throw new AppError({
-      code: "USER_NOT_FOUND",
-      message: "Utilisateur introuvable.",
-      statusCode: 404,
-    });
-  }
-
-  return sanitizeUser(updated);
+  const { password, ...account } = params;
+  const passwordHash = password === undefined ? undefined : await hashAdminPassword(password);
+  return sanitizeUser(await updateAdminUser({ ...account, passwordHash }));
 }
 
 export async function resetAdminUserPassword(params: {
   id: number;
+  actorId: number;
   password: string;
 }) {
-  const user = await findAdminUserById(params.id);
-
-  if (!user) {
-    throw new AppError({
-      code: "USER_NOT_FOUND",
-      message: "Utilisateur introuvable.",
-      statusCode: 404,
-    });
-  }
-
-  const passwordErrors = validatePasswordStrength(params.password);
-
-  if (passwordErrors.length > 0) {
-    throw new AppError({
-      code: "WEAK_PASSWORD",
-      message: passwordErrors.join(" "),
-      statusCode: 400,
-    });
-  }
-
-  const passwordHash = await bcrypt.hash(params.password, 12);
-
-  await updateAdminUserPassword({
-    id: params.id,
-    passwordHash,
-  });
-
-  const updated = await findAdminUserById(params.id);
-
-  if (!updated) {
-    throw new AppError({
-      code: "USER_NOT_FOUND",
-      message: "Utilisateur introuvable.",
-      statusCode: 404,
-    });
-  }
-
-  return sanitizeUser(updated);
+  const { password, ...account } = params;
+  const user = await updateAdminUserPassword({ ...account, passwordHash: await hashAdminPassword(password) });
+  return sanitizeUser(user);
 }
 
 export async function setAdminUserActiveStatus(params: {
@@ -201,31 +106,12 @@ export async function setAdminUserActiveStatus(params: {
     });
   }
 
-  const user = await findAdminUserById(params.id);
-
-  if (!user) {
-    throw new AppError({
-      code: "USER_NOT_FOUND",
-      message: "Utilisateur introuvable.",
-      statusCode: 404,
-    });
-  }
-
-  await updateAdminUserActiveStatus({
+  const updated = await mutateAdminUserStatus({
     id: params.id,
-    isActive: params.isActive,
+    actorId: params.currentAdminUserId,
+    operation: params.isActive ? "enable" : "disable",
   });
-
-  const updated = await findAdminUserById(params.id);
-
-  if (!updated) {
-    throw new AppError({
-      code: "USER_NOT_FOUND",
-      message: "Utilisateur introuvable.",
-      statusCode: 404,
-    });
-  }
-
+  if (!updated) throw new Error("Utilisateur introuvable après mise à jour");
   return sanitizeUser(updated);
 }
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAdminAuth } from "../auth/auth.middleware";
+import { requireAccountAccess } from "../rbac/account-access.middleware";
 import {
   getAppSettings,
   updateAppSettings,
@@ -11,10 +11,8 @@ import { runRgpdPurgeNow } from "./settings.service";
 
 export const RGPDRouter = Router();
 
-RGPDRouter.use(requireAdminAuth);
-
 // GET
-RGPDRouter.get("/", async (_req, res) => {
+RGPDRouter.get("/", requireAccountAccess("rgpd.read"), async (_req, res) => {
   const settings = await getAppSettings();
 
   res.json({
@@ -24,7 +22,7 @@ RGPDRouter.get("/", async (_req, res) => {
 });
 
 // PATCH
-RGPDRouter.patch("/", async (req, res) => {
+RGPDRouter.patch("/", requireAccountAccess("rgpd.write"), async (req, res) => {
   const { retentionDays, autoPurgeEnabled, purgeHour } = req.body;
 
   if (
@@ -71,7 +69,7 @@ RGPDRouter.patch("/", async (req, res) => {
 });
 
 // POST purge
-RGPDRouter.post("/purge-now", async (_req, res) => {
+RGPDRouter.post("/purge-now", requireAccountAccess("rgpd.write", { admin: true }), async (_req, res) => {
   const result = await runRgpdPurgeNow();
   const unprocessedCount = await countUnprocessedMessages();
 
@@ -86,7 +84,7 @@ RGPDRouter.post("/purge-now", async (_req, res) => {
   });
 });
 
-RGPDRouter.get("/rgpd-stats", async (req, res) => {
+RGPDRouter.get("/rgpd-stats", requireAccountAccess("rgpd.read"), async (req, res) => {
   const retentionDays = req.query.retentionDays
     ? Number(req.query.retentionDays)
     : undefined;

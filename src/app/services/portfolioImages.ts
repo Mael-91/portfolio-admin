@@ -32,11 +32,11 @@ export async function createPortfolioImage(formData: FormData) {
 export async function updatePortfolioImage(
   id: number,
   payload: {
-    caption: string;
-    altText: string;
+    caption?: string;
+    altText?: string;
     description?: string;
-    isActive: boolean;
-    displayOrder?: number | null;
+    isActive?: boolean;
+    displayOrder?: number;
   }
 ) {
   return apiFetch(`/api/portfolio-images/${id}`, {

@@ -15,6 +15,8 @@ export interface LoginResponse {
 export interface MeResponse {
   success: boolean;
   user: AuthUser;
+  permissions?: string[];
+  roles?: string[];
 }
 
 export async function login(params: {

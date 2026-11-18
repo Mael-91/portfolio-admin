@@ -1,9 +1,12 @@
+import { useAccountAccess } from "../context/AccountAccessContext";
 import { useEffect, useMemo, useState } from "react";
 import {
   fetchServicesContent,
   saveServicesContent,
   type ServiceCard,
   type ServiceType,
+  type ServicesSection,
+  type ServicesChange,
 } from "../services/servicesContent";
 import { LegalEditor } from "../components/editor/LegalEditor";
 import { useToast } from "../hooks/useToast";
@@ -15,7 +18,28 @@ import { useFeedback } from "../hooks/useFeedback";
 
 type EditableCard = ServiceCard;
 
+function serviceChanges(
+  section: ServicesSection,
+  cards: ServiceCard[],
+  canWrite: boolean,
+  canSetVisibility: boolean
+): ServicesChange {
+  return {
+    serviceType: section.serviceType,
+    ...(canWrite ? { introHtml: section.introHtml } : {}),
+    ...(canSetVisibility ? { introEnabled: section.introEnabled, sectionEnabled: section.sectionEnabled } : {}),
+    cards: cards.map((card) => ({
+      id: card.id,
+      ...(canWrite ? { title: card.title, bodyHtml: card.bodyHtml, priceLabel: card.priceLabel, bullets: card.bullets } : {}),
+      ...(canSetVisibility ? { bodyEnabled: card.bodyEnabled, bulletsEnabled: card.bulletsEnabled, priceEnabled: card.priceEnabled } : {}),
+    })),
+  };
+}
+
 export function ServicesContentPage() {
+  const { hasPermission } = useAccountAccess();
+  const canWrite = hasPermission("services.write");
+  const canSetVisibility = hasPermission("services.visibility");
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<ServiceType>("pro");
@@ -31,29 +55,14 @@ export function ServicesContentPage() {
   const { setError, reset } = useFeedback();
 
   const autoSavePayload = useMemo(
-    () => ({
-      serviceType: activeTab,
-      introEnabled,
-      introHtml,
-      sectionEnabled,
-      cards: cards.map((card) => ({
-        id: card.id,
-        title: card.title,
-        bodyEnabled: card.bodyEnabled,
-        bodyHtml: card.bodyHtml,
-        bulletsEnabled: card.bulletsEnabled,
-        priceEnabled: card.priceEnabled,
-        priceLabel: card.priceLabel,
-        bullets: card.bullets,
-      })),
-    }),
-    [activeTab, introEnabled, introHtml, sectionEnabled, cards]
+    () => serviceChanges({ serviceType: activeTab, introEnabled, introHtml, sectionEnabled }, cards, canWrite, canSetVisibility),
+    [activeTab, introEnabled, introHtml, sectionEnabled, cards, canWrite, canSetVisibility]
   );
 
   const { saveNow, markAsSaved } = useAutoSave({
     value: autoSavePayload,
     delay: 1000,
-    enabled: cards.length === 3,
+    enabled: !loading && cards.length === 3 && (canWrite || canSetVisibility),
     onSave: async (payload) => {
       try {
         await saveServicesContent(payload);
@@ -79,22 +88,7 @@ export function ServicesContentPage() {
       setIntroHtml(data.section.introHtml ?? "");
       setCards(data.cards);
       setSectionEnabled(data.section.sectionEnabled);
-      markAsSaved({
-        serviceType,
-        introEnabled: data.section.introEnabled,
-        introHtml: data.section.introHtml ?? "",
-        sectionEnabled: data.section.sectionEnabled ?? false,
-        cards: data.cards.map((card: ServiceCard) => ({
-          id: card.id,
-          title: card.title,
-          bodyEnabled: card.bodyEnabled,
-          bodyHtml: card.bodyHtml,
-          bulletsEnabled: card.bulletsEnabled,
-          priceEnabled: card.priceEnabled,
-          priceLabel: card.priceLabel,
-          bullets: card.bullets,
-        })),
-      });
+      markAsSaved(serviceChanges(data.section, data.cards, canWrite, canSetVisibility));
     } catch (error: any) {
       setError();
       showToast({
@@ -165,6 +159,7 @@ export function ServicesContentPage() {
           </div>
 
           <Switch
+            disabled={!canSetVisibility}
             checked={sectionEnabled}
             onChange={setSectionEnabled}
           />
@@ -208,7 +203,7 @@ export function ServicesContentPage() {
             <section className="rounded-2xl bg-white/[0.03] p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold">Texte d’introduction</h2>
-                <Switch variant="success" checked={introEnabled} onChange={setIntroEnabled} />
+                <Switch disabled={!canSetVisibility} variant="success" checked={introEnabled} onChange={setIntroEnabled} />
               </div>
 
               <div
@@ -219,7 +214,7 @@ export function ServicesContentPage() {
                 }`}
               >
                 <div className="pt-2">
-                  <LegalEditor content={introHtml} onChange={setIntroHtml} />
+                  <LegalEditor editable={canWrite} content={introHtml} onChange={setIntroHtml} />
                 </div>
               </div>
             </section>
@@ -241,6 +236,7 @@ export function ServicesContentPage() {
                       Titre
                     </label>
                     <Input
+                      disabled={!canWrite}
                       value={card.title}
                       onChange={(e) =>
                         updateCard(card.id, (current) => ({
@@ -257,7 +253,7 @@ export function ServicesContentPage() {
                     <span className="text-sm text-admin-text-soft">
                       Afficher le texte
                     </span>
-                    <Switch variant="success" checked={card.bodyEnabled} onChange={(value) =>
+                    <Switch disabled={!canSetVisibility} variant="success" checked={card.bodyEnabled} onChange={(value) =>
                         updateCard(card.id, (current) => ({
                           ...current,
                           bodyEnabled: value,
@@ -274,6 +270,7 @@ export function ServicesContentPage() {
                   >
                     <div className="pt-2">
                       <LegalEditor
+                        editable={canWrite}
                         content={card.bodyHtml}
                         onChange={(value) =>
                           updateCard(card.id, (current) => ({
@@ -289,7 +286,7 @@ export function ServicesContentPage() {
                     <span className="text-sm text-admin-text-soft">
                       Afficher la liste à puces
                     </span>
-                    <Switch variant="success" checked={card.bulletsEnabled} onChange={(value) =>
+                    <Switch disabled={!canSetVisibility} variant="success" checked={card.bulletsEnabled} onChange={(value) =>
                         updateCard(card.id, (current) => ({
                           ...current,
                           bulletsEnabled: value,
@@ -300,6 +297,7 @@ export function ServicesContentPage() {
                   <div className="space-y-2">
                     {card.bullets.map((bullet, index) => (
                       <Input
+                        disabled={!canWrite}
                         key={`${card.id}-${index}`}
                         value={bullet}
                         onChange={(e) =>
@@ -316,6 +314,7 @@ export function ServicesContentPage() {
                     ))}
 
                     <Button variant="secondary"
+                      disabled={!canWrite}
                       type="button"
                       onClick={() =>
                         updateCard(card.id, (current) => ({
@@ -332,7 +331,7 @@ export function ServicesContentPage() {
                     <span className="text-sm text-admin-text-soft">
                       Afficher le prix
                     </span>
-                    <Switch variant="success" checked={card.priceEnabled} onChange={(value) =>
+                    <Switch disabled={!canSetVisibility} variant="success" checked={card.priceEnabled} onChange={(value) =>
                         updateCard(card.id, (current) => ({
                           ...current,
                           priceEnabled: value,
@@ -352,6 +351,7 @@ export function ServicesContentPage() {
                         Libellé du prix
                       </label>
                       <Input
+                        disabled={!canWrite}
                         value={card.priceLabel}
                         onChange={(e) =>
                           updateCard(card.id, (current) => ({
@@ -373,7 +373,7 @@ export function ServicesContentPage() {
                 size="lg"
                 type="button"
                 onClick={handleSave}
-                disabled={saving}
+                disabled={saving || (!canWrite && !canSetVisibility)}
                 className={`rounded-2xl py-2.5 text-sm font-medium  ${
                   saving
                     ? "cursor-not-allowed bg-white/10 text-white/60"

@@ -2,10 +2,12 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import { logout } from "../services/auth";
 import Sidebar from "../components/Sidebar";
+import { useAccountAccess } from "../context/AccountAccessContext";
 import HeaderSearch from "../components/HeaderSearch";
 
 export function AdminLayout() {
   const navigate = useNavigate();
+  const { hasPermission } = useAccountAccess();
 
   const handleLogout = useCallback(async () => {
     await logout();
@@ -18,7 +20,7 @@ export function AdminLayout() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           {/* 🔍 SEARCH BAR */}
-          <HeaderSearch />
+          {hasPermission("messages.read") ? <HeaderSearch /> : <div />}
           {/* Actions */}
           <div className="flex items-center gap-5">
             <button className="relative text-admin-text-soft transition hover:text-white">

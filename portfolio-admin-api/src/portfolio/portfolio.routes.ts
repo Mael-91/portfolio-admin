@@ -1,24 +1,26 @@
 import path from "node:path";
 import { Router } from "express";
 import { z } from "zod";
-import { requireAdminAuth } from "../auth/auth.middleware";
+import { requireAccountAccess } from "../rbac/account-access.middleware";
 import {
   createPortfolioImage,
+  getPortfolioImagesStorageDir,
   editPortfolioImage,
   listPortfolioImages,
   removePortfolioImage,
   reorderPortfolioImages,
 } from "./portfolio.service";
-import { portfolioUpload } from "./portfolio.upload";
+import { portfolioImageExtension, portfolioUpload } from "./portfolio.upload";
 import { handleRouteError } from "../common/handle-route-error";
-import multer from "multer";
+import fs from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { imagePermissions } from "../rbac/content-permissions";
+import { accessDenied } from "../rbac/role-transaction";
 import { handleUpload } from "../common/handle-upload";
 
 export const portfolioRouter = Router();
 
-portfolioRouter.use(requireAdminAuth);
-
-portfolioRouter.get("/", async (_req, res) => {
+portfolioRouter.get("/", requireAccountAccess("images.read"), async (_req, res) => {
   try {
     const images = await listPortfolioImages();
 
@@ -31,7 +33,7 @@ portfolioRouter.get("/", async (_req, res) => {
   }
 });
 
-portfolioRouter.post("/",
+portfolioRouter.post("/", requireAccountAccess("images.add"),
   handleUpload(
     portfolioUpload.single("image"),
     async (req, res) => {
@@ -39,7 +41,7 @@ portfolioRouter.post("/",
         caption: z.string().trim().min(1).max(255),
         altText: z.string().trim().min(1).max(255),
         description: z.string().trim().max(5000).optional(),
-        isActive: z.coerce.boolean().optional(),
+        isActive: z.stringbool().optional(),
         displayOrder: z.preprocess(
           (value) => {
             if (
@@ -64,24 +66,30 @@ portfolioRouter.post("/",
         });
       }
 
-      const fileUrl = `/uploads/portfolio-images/${req.file.filename}`;
-      const filePath = path.resolve(req.file.path);
+      const { permissions } = res.locals.accountAccess;
+      const isActive = body.isActive ?? false;
+      if (imagePermissions(body, true).some((code) => !permissions.includes(code))) throw accessDenied();
+
+      const fileName = `${randomUUID()}${portfolioImageExtension(req.file.mimetype)}`;
+      const filePath = path.resolve(getPortfolioImagesStorageDir(), fileName);
+      const fileUrl = `/uploads/portfolio-images/${fileName}`;
+      await fs.writeFile(filePath, req.file.buffer, { flag: "wx" });
 
       const image = await createPortfolioImage({
         caption: body.caption,
         altText: body.altText,
         description: body.description,
-        fileName: req.file.filename,
+        fileName,
         filePath,
         fileUrl,
         mimeType: req.file.mimetype,
-        isActive: body.isActive ?? true,
+        isActive,
         displayOrder: body.displayOrder,
       });
 
       return res.status(201).json({
         success: true,
-        image,
+        ...(permissions.includes("images.read") ? { image } : { id: image.id }),
       });
     },
     {
@@ -92,44 +100,29 @@ portfolioRouter.post("/",
   )
 );
 
-portfolioRouter.patch("/:id", async (req, res) => {
+portfolioRouter.patch("/:id", requireAccountAccess(), async (req, res) => {
   try {
     const paramsSchema = z.object({
       id: z.coerce.number().int().min(1),
     });
 
-    const bodySchema = z.object({
-      caption: z.string().trim().min(1).max(255),
-      altText: z.string().trim().min(1).max(255),
+    const bodySchema = z.strictObject({
+      caption: z.string().trim().min(1).max(255).optional(),
+      altText: z.string().trim().min(1).max(255).optional(),
       description: z.string().trim().max(5000).optional(),
-      isActive: z.coerce.boolean().optional(),
-      displayOrder: z.preprocess(
-        (value) => {
-          if (value === "" || value === null || value === undefined) {
-            return undefined;
-          }
-
-          return value;
-        },
-        z.coerce.number().int().min(1).optional()
-      ),
-    });
+      isActive: z.boolean().optional(),
+      displayOrder: z.number().int().min(1).optional(),
+    }).refine((body) => Object.keys(body).length > 0, "Aucune modification fournie");
 
     const params = paramsSchema.parse(req.params);
     const body = bodySchema.parse(req.body);
+    const { permissions } = res.locals.accountAccess;
+    if (imagePermissions(body, false).some((code) => !permissions.includes(code))) throw accessDenied();
 
-    const image = await editPortfolioImage({
-      id: params.id,
-      caption: body.caption,
-      altText: body.altText,
-      description: body.description,
-      isActive: body.isActive ?? true,
-      displayOrder: body.displayOrder,
-    });
-
-    return res.status(200).json({
+    const image = await editPortfolioImage({ id: params.id, ...body });
+    return res.json({
       success: true,
-      image,
+      ...(permissions.includes("images.read") ? { image } : { id: params.id }),
     });
   } catch (error) {
     return handleRouteError(
@@ -140,7 +133,7 @@ portfolioRouter.patch("/:id", async (req, res) => {
   }
 });
 
-portfolioRouter.patch("/reorder/all", async (req, res) => {
+portfolioRouter.patch("/reorder/all", requireAccountAccess("images.reorder"), async (req, res) => {
   try {
     const schema = z.object({
       items: z.array(
@@ -153,18 +146,17 @@ portfolioRouter.patch("/reorder/all", async (req, res) => {
 
     const body = schema.parse(req.body);
 
-    const images = await reorderPortfolioImages(body.items);
+    await reorderPortfolioImages(body.items);
 
     return res.status(200).json({
       success: true,
-      images,
     });
   } catch (error: any) {
     return handleRouteError(res, error, "Erreur dans le réordonnancement des images du portfolio");
   }
 });
 
-portfolioRouter.delete("/:id", async (req, res) => {
+portfolioRouter.delete("/:id", requireAccountAccess("images.delete"), async (req, res) => {
   try {
     const paramsSchema = z.object({
       id: z.coerce.number().int().min(1),

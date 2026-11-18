@@ -1,3 +1,4 @@
+import { useAccountAccess } from "../context/AccountAccessContext";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import {
@@ -88,6 +89,8 @@ const processingStatusOptions: Array<{
 ];
 
 export function MessageDetailPage() {
+  const { hasPermission, isAdmin } = useAccountAccess();
+  const canProcess = hasPermission("messages.process");
   const { id } = useParams();
   const location = useLocation();
   const { showToast } = useToast();
@@ -147,7 +150,7 @@ export function MessageDetailPage() {
       setIsUpdatingStatus(true);
 
       const response = await updateMessageProcessingStatus(Number(id), status);
-      setMessage(response.message);
+      setMessage((current) => current ? { ...current, processingStatus: response.message.processingStatus } : current);
 
       showToast({
         title: "Statut mis à jour",
@@ -497,6 +500,7 @@ export function MessageDetailPage() {
               </div>
             </div>
 
+            {canProcess && (
             <div className="mt-6">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-admin-text-muted">
                 Changer le statut
@@ -545,8 +549,10 @@ export function MessageDetailPage() {
                 })}
               </div>
             </div>
+            )}
           </div>
 
+          {isAdmin && (
           <div className="rounded-[24px] bg-white/[0.025] p-6 shadow-lg shadow-black/10">
             <h2 className="text-base font-semibold text-white">Actions</h2>
 
@@ -556,11 +562,12 @@ export function MessageDetailPage() {
               </Button>
             </div>
           </div>
+          )}
         </aside>
       </div>
 
       <ExportRgpdModal
-        isOpen={isExportModalOpen}
+        isOpen={isAdmin && isExportModalOpen}
         defaultEmail={message.email}
         isSubmitting={isExportingRgpd}
         onClose={() => setIsExportModalOpen(false)}

@@ -1,3 +1,4 @@
+import { useAccountAccess } from "../context/AccountAccessContext";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -66,6 +67,8 @@ function getStorageLabel(folderName: string) {
 }
 
 export function SettingsGeneralPage() {
+  const { hasPermission } = useAccountAccess();
+  const canWrite = hasPermission("general.write");
   const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -234,14 +237,16 @@ export function SettingsGeneralPage() {
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          isLoading={saving}
-          disabled={saving}
-        >
-          {saving ? "Enregistrement..." : "Enregistrer"}
-        </Button>
+        {canWrite && (
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            isLoading={saving}
+            disabled={saving}
+          >
+            {saving ? "Enregistrement..." : "Enregistrer"}
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -262,6 +267,7 @@ export function SettingsGeneralPage() {
                   Nom du site
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.siteName}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, siteName: e.target.value }))
@@ -305,6 +311,7 @@ export function SettingsGeneralPage() {
                   </label>
 
                   <Input
+                    disabled={!canWrite}
                     value={form.siteLogoUrl}
                     onChange={(e) =>
                       setForm((prev) => ({
@@ -316,6 +323,7 @@ export function SettingsGeneralPage() {
                   />
 
                   <input
+                    disabled={!canWrite}
                     type="file"
                     accept="image/*"
                     onChange={(e) =>
@@ -340,6 +348,7 @@ export function SettingsGeneralPage() {
                   </label>
 
                   <Input
+                    disabled={!canWrite}
                     value={form.siteSidebarLogoUrl}
                     onChange={(e) =>
                       setForm((prev) => ({
@@ -351,6 +360,7 @@ export function SettingsGeneralPage() {
                   />
 
                   <input
+                    disabled={!canWrite}
                     type="file"
                     accept="image/*"
                     onChange={(e) =>

@@ -1,12 +1,15 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
+import { MessageNotificationsProvider } from "../providers/MessageNotificationsProvider";
+import { AccountAccessContext } from "../context/AccountAccessContext";
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, profile } = useAuth();
 
   if (isLoading) {
     return (
@@ -20,5 +23,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <AccountAccessContext.Provider value={profile}>
+      <MessageNotificationsProvider enabled={Boolean(profile?.permissions?.some((code) => code === "messages.read" || code === "rgpd.read"))}>
+        {children}
+      </MessageNotificationsProvider>
+    </AccountAccessContext.Provider>
+  );
 }

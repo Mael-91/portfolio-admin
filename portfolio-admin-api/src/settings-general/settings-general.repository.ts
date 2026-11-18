@@ -19,8 +19,8 @@ export async function getSettingsByKeys(keys: string[]) {
   return result;
 }
 
-export async function upsertSetting(key: string, value: string) {
-  await db.execute(
+export async function upsertSetting(key: string, value: string, executor: Pick<typeof db, "execute"> = db) {
+  await executor.execute(
     `
     INSERT INTO app_settings (key_name, value)
     VALUES (?, ?)

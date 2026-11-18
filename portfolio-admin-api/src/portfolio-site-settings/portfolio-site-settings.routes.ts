@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { requireAdminAuth } from "../auth/auth.middleware";
+import { requireAccountAccess } from "../rbac/account-access.middleware";
 import { handleRouteError } from "../common/handle-route-error";
 import { handleUpload } from "../common/handle-upload";
 import {
@@ -12,9 +12,7 @@ import { deletePortfolioSiteImageIfExists } from "./portfolio-site-settings.file
 
 export const portfolioSiteSettingsRouter = Router();
 
-portfolioSiteSettingsRouter.use(requireAdminAuth);
-
-portfolioSiteSettingsRouter.get("/", async (_req, res) => {
+portfolioSiteSettingsRouter.get("/", requireAccountAccess("portfolio_settings.read"), async (_req, res) => {
   try {
     const settings = await getPortfolioSiteSettings();
 
@@ -27,7 +25,7 @@ portfolioSiteSettingsRouter.get("/", async (_req, res) => {
   }
 });
 
-portfolioSiteSettingsRouter.put("/", async (req, res) => {
+portfolioSiteSettingsRouter.put("/", requireAccountAccess("portfolio_settings.write"), async (req, res) => {
   try {
     const schema = z.object({
       siteTitle: z.string().trim().max(255),
@@ -75,7 +73,7 @@ portfolioSiteSettingsRouter.put("/", async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      settings,
+      ...(res.locals.accountAccess.permissions.includes("portfolio_settings.read") ? { settings } : {}),
     });
   } catch (error) {
     return handleRouteError(res, error, "sauvegarde configuration portfolio");
@@ -83,7 +81,7 @@ portfolioSiteSettingsRouter.put("/", async (req, res) => {
 });
 
 portfolioSiteSettingsRouter.post(
-  "/upload",
+  "/upload", requireAccountAccess("portfolio_settings.upload"),
   handleUpload(
     portfolioSiteSettingsUpload.single("image"),
     async (req, res) => {

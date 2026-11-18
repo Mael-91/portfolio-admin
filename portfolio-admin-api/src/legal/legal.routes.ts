@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { requireAdminAuth } from "../auth/auth.middleware";
+import { requireAccountAccess } from "../rbac/account-access.middleware";
 import {
   getCurrentLegalDocument,
   getDraftLegalDocument,
@@ -20,16 +20,14 @@ const documentTypeSchema = z.enum([
   "terms_pro",
 ]);
 
-legalRouter.use(requireAdminAuth);
-
-legalRouter.get("/types", (_req, res) => {
+legalRouter.get("/types", requireAccountAccess("legal.read"), (_req, res) => {
   return res.json({
     success: true,
     types: getLegalDocumentTypes(),
   });
 });
 
-legalRouter.get("/current", async (req, res) => {
+legalRouter.get("/current", requireAccountAccess("legal.read"), async (req, res) => {
   const schema = z.object({
     type: documentTypeSchema,
   });
@@ -43,7 +41,7 @@ legalRouter.get("/current", async (req, res) => {
   });
 });
 
-legalRouter.get("/draft", async (req, res) => {
+legalRouter.get("/draft", requireAccountAccess("legal.read"), async (req, res) => {
   const schema = z.object({
     type: documentTypeSchema,
   });
@@ -57,7 +55,7 @@ legalRouter.get("/draft", async (req, res) => {
   });
 });
 
-legalRouter.get("/history", async (req, res) => {
+legalRouter.get("/history", requireAccountAccess("legal.read"), async (req, res) => {
   const schema = z.object({
     type: documentTypeSchema,
   });
@@ -71,7 +69,7 @@ legalRouter.get("/history", async (req, res) => {
   });
 });
 
-legalRouter.post("/draft", async (req, res) => {
+legalRouter.post("/draft", requireAccountAccess("legal.draft"), async (req, res) => {
   const schema = z.object({
     documentType: documentTypeSchema,
     contentHtml: z.string().min(1),
@@ -87,11 +85,11 @@ legalRouter.post("/draft", async (req, res) => {
 
   return res.json({
     success: true,
-    document,
+    ...(res.locals.accountAccess.permissions.includes("legal.read") ? { document } : { id: document?.id }),
   });
 });
 
-legalRouter.post("/publish", async (req, res) => {
+legalRouter.post("/publish", requireAccountAccess("legal.publish"), async (req, res) => {
   const schema = z.object({
     documentType: documentTypeSchema,
     contentHtml: z.string().min(1),
@@ -107,11 +105,11 @@ legalRouter.post("/publish", async (req, res) => {
 
   return res.json({
     success: true,
-    document,
+    ...(res.locals.accountAccess.permissions.includes("legal.read") ? { document } : { id: document?.id }),
   });
 });
 
-legalRouter.get("/:id/download", async (req, res) => {
+legalRouter.get("/:id/download", requireAccountAccess("legal.download"), async (req, res) => {
   const schema = z.object({
     id: z.coerce.number().int().min(1),
   });

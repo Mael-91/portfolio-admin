@@ -148,19 +148,11 @@ export async function fetchMessageDetail(
 export async function updateMessageProcessingStatus(
   id: number,
   processingStatus: ProcessingStatus
-): Promise<{ success: boolean; message: MessageDetail }> {
-  const data = await apiFetch<{
-    success: boolean;
-    message: ApiContactMessage;
-  }>(`/api/messages/${id}/processing-status`, {
-    method: "PATCH",
-    body: JSON.stringify({processingStatus}),
-  });
-
-  return {
-    success: data.success,
-    message: mapApiMessageToDetail(data.message),
-  };
+) {
+  return apiFetch<{ success: boolean; message: { id: number; processingStatus: ProcessingStatus } }>(
+    `/api/messages/${id}/processing-status`,
+    { method: "PATCH", body: JSON.stringify({ processingStatus }) }
+  );
 }
 
 export async function fetchNewMessagesCount(

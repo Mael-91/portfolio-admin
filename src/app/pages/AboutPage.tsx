@@ -1,3 +1,4 @@
+import { useAccountAccess } from "../context/AccountAccessContext";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -36,6 +37,10 @@ function resolveAssetUrl(url: string) {
 }
 
 export function AboutPage() {
+  const { hasPermission } = useAccountAccess();
+  const canWrite = hasPermission("about.write");
+  const canUpload = hasPermission("about.upload");
+  const canCleanup = hasPermission("about.cleanup");
   const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -194,7 +199,7 @@ export function AboutPage() {
             variant="secondary"
             onClick={handleCleanupOrphans}
             isLoading={cleaningOrphans}
-            disabled={cleaningOrphans}
+            disabled={cleaningOrphans || !canCleanup}
           >
             {cleaningOrphans
               ? "Nettoyage..."
@@ -205,7 +210,7 @@ export function AboutPage() {
             variant="primary"
             onClick={handleSave}
             isLoading={saving}
-            disabled={saving}
+            disabled={saving || !canWrite}
           >
             {saving ? "Enregistrement..." : "Enregistrer"}
           </Button>
@@ -226,6 +231,7 @@ export function AboutPage() {
               </div>
 
               <LegalEditor
+                editable={canWrite}
                 content={form.textHtml}
                 onChange={(value) =>
                   setForm((prev) => ({
@@ -253,6 +259,7 @@ export function AboutPage() {
                   URL de l’image
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.imageUrl}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -269,6 +276,7 @@ export function AboutPage() {
                   Alt de l’image
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.imageAlt}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -282,6 +290,7 @@ export function AboutPage() {
 
               <div className="space-y-3">
                 <input
+                  disabled={!canUpload}
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleUpload(e.target.files?.[0] ?? null)}
@@ -340,6 +349,7 @@ export function AboutPage() {
                   Texte du bouton
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.instagramButtonLabel}
                   onChange={(e) =>
                     setForm((prev) => ({
@@ -356,6 +366,7 @@ export function AboutPage() {
                   Lien Instagram
                 </label>
                 <Input
+                  disabled={!canWrite}
                   value={form.instagramButtonUrl}
                   onChange={(e) =>
                     setForm((prev) => ({

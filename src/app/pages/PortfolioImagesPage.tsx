@@ -1,3 +1,4 @@
+import { useAccountAccess } from "../context/AccountAccessContext";
 import { useEffect, useState } from "react";
 import {
   DndContext,
@@ -55,8 +56,8 @@ function SortablePortfolioCard({
   isSortable = true,
 }: {
   image: PortfolioImage;
-  onEdit: (image: PortfolioImage) => void;
-  onDelete: (image: PortfolioImage) => void;
+  onEdit?: (image: PortfolioImage) => void;
+  onDelete?: (image: PortfolioImage) => void;
   isSortable?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -137,21 +138,21 @@ function SortablePortfolioCard({
         <div className="font-medium text-white">{image.caption}</div>
 
         <div className="mt-1 flex gap-2">
-          <Button
+          {onEdit && <Button
             variant="secondary"
             size="sm"
             onClick={() => onEdit(image)}
           >
             Modifier
-          </Button>
+          </Button>}
 
-          <Button
+          {onDelete && <Button
             variant="dangerSoft"
             size="sm"
             onClick={() => onDelete(image)}
           >
             Supprimer
-          </Button>
+          </Button>}
         </div>
       </figcaption>
     </figure>
@@ -163,6 +164,12 @@ function SortablePortfolioCard({
 /* ========================= */
 
 export function PortfolioImagesPage() {
+  const { hasPermission } = useAccountAccess();
+  const canAdd = hasPermission("images.add");
+  const canUpdate = hasPermission("images.update");
+  const canPublish = hasPermission("images.publish");
+  const canReorder = hasPermission("images.reorder");
+  const canDelete = hasPermission("images.delete");
   const sensors = useSensors(useSensor(PointerSensor));
 
   const [images, setImages] = useState<PortfolioImage[]>([]);
@@ -361,7 +368,14 @@ export function PortfolioImagesPage() {
       };
 
       if (selectedImage) {
-        await updatePortfolioImage(selectedImage.id, payload);
+        const changes = {
+          ...(canUpdate ? { caption: payload.caption, altText: payload.altText, description: payload.description } : {}),
+          ...(canPublish && payload.isActive !== selectedImage.isActive ? { isActive: payload.isActive } : {}),
+          ...(canReorder && payload.displayOrder !== null && payload.displayOrder !== selectedImage.displayOrder
+            ? { displayOrder: payload.displayOrder } : {}),
+        };
+        if (!Object.keys(changes).length) return;
+        await updatePortfolioImage(selectedImage.id, changes);
         setSuccess();
         showToast({
           title: "Succès",
@@ -374,9 +388,9 @@ export function PortfolioImagesPage() {
         formData.append("caption", payload.caption);
         formData.append("altText", payload.altText);
         formData.append("description", payload.description || "");
-        formData.append("isActive", String(form.isActive));
+        if (canPublish) formData.append("isActive", String(form.isActive));
 
-        if (form.isActive && form.displayOrder.trim() !== "") {
+        if (canPublish && canReorder && form.isActive && form.displayOrder.trim() !== "") {
           formData.append("displayOrder", form.displayOrder);
         }
 
@@ -536,7 +550,7 @@ export function PortfolioImagesPage() {
 
       <h1 className="text-2xl font-semibold">Portfolio</h1>
 
-      <div className="grid xl:grid-cols-[1fr_350px] gap-6">
+      <div className={canAdd || selectedImage ? "grid gap-6 xl:grid-cols-[1fr_350px]" : "grid gap-6"}>
         {/* GRID */}
         <div>
           {loading ? (
@@ -551,7 +565,7 @@ export function PortfolioImagesPage() {
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
+                  onDragEnd={canReorder ? handleDragEnd : undefined}
                 >
                   <SortableContext
                     items={activeImages.map((image) => String(image.id))}
@@ -562,8 +576,9 @@ export function PortfolioImagesPage() {
                         <SortablePortfolioCard
                           key={img.id}
                           image={img}
-                          onEdit={handleEdit}
-                          onDelete={setDeleteTarget}
+                          onEdit={canUpdate || canPublish || canReorder ? handleEdit : undefined}
+                          onDelete={canDelete ? setDeleteTarget : undefined}
+                          isSortable={canReorder}
                         />
                       ))}
                     </div>
@@ -581,8 +596,8 @@ export function PortfolioImagesPage() {
                     <SortablePortfolioCard
                       key={img.id}
                       image={img}
-                      onEdit={handleEdit}
-                      onDelete={setDeleteTarget}
+                      onEdit={canUpdate || canPublish || canReorder ? handleEdit : undefined}
+                      onDelete={canDelete ? setDeleteTarget : undefined}
                       isSortable={false}
                     />
                   ))}
@@ -593,7 +608,7 @@ export function PortfolioImagesPage() {
         </div>
 
         {/* FORM */}
-        <div className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+        {(canAdd || selectedImage) && <div className="space-y-4 xl:sticky xl:top-6 xl:self-start">
           <form onSubmit={handleSubmit} className="space-y-3">
             {!selectedImage ? (
               <div className="space-y-3">
@@ -674,6 +689,7 @@ export function PortfolioImagesPage() {
             ) : null}
 
             <Input
+              disabled={Boolean(selectedImage) && !canUpdate}
               value={form.caption}
               onChange={(e) =>
                 setForm({ ...form, caption: e.target.value })
@@ -689,6 +705,7 @@ export function PortfolioImagesPage() {
               )}
             />
             <Input
+              disabled={Boolean(selectedImage) && !canUpdate}
               value={form.altText}
               onChange={(e) =>
                 setForm({ ...form, altText: e.target.value })
@@ -704,6 +721,7 @@ export function PortfolioImagesPage() {
               )}
             />
             <Textarea
+              disabled={Boolean(selectedImage) && !canUpdate}
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
@@ -724,7 +742,8 @@ export function PortfolioImagesPage() {
                 Activer la photo sur le site
               </span>
               <Switch
-                checked={form.isActive}
+                checked={canPublish || selectedImage ? form.isActive : false}
+                disabled={!canPublish}
                 onChange={(checked) =>
                   setForm((prev) => ({ ...prev, isActive: checked }))
                 }
@@ -734,7 +753,7 @@ export function PortfolioImagesPage() {
             <Input
                 type="number"
                 min={1}
-                disabled={!form.isActive}
+                disabled={!canReorder || !form.isActive || (!selectedImage && !canPublish)}
                 value={form.displayOrder}
                 onChange={(e) =>
                   setForm((prev) => ({
@@ -766,11 +785,11 @@ export function PortfolioImagesPage() {
                 : "Ajouter la photo"}
             </Button>
           </form>
-        </div>
+        </div>}
       </div>
 
       <DeletePortfolioImageModal
-        isOpen={!!deleteTarget}
+        isOpen={canDelete && !!deleteTarget}
         imageLabel={deleteTarget?.caption}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}

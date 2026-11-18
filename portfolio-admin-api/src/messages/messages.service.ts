@@ -93,9 +93,8 @@ export async function setMessageProcessingStatus(params: {
   id: number;
   processingStatus: "unprocessed" | "in_progress" | "processed";
 }) {
-  await updateMessageProcessingStatus(params);
-
-  return getMessageDetail(params.id);
+  const updated = await updateMessageProcessingStatus(params);
+  return updated ? { id: params.id, processingStatus: params.processingStatus } : null;
 }
 
 export async function getNewMessagesCount(lastSeenId: number) {

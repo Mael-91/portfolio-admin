@@ -4,6 +4,16 @@ import { memo, useEffect, useState } from "react";
 import { env } from "../../env";
 import { useGeneralSettings } from "../context/GeneralSettingsContext";
 
+import { useAccountAccess } from "../context/AccountAccessContext";
+import { PAGE_PERMISSIONS } from "../router/page-access";
+
+const settingsLinks = [
+  { href: "/settings/rgpd", label: "RGPD" },
+  { href: "/settings/users", label: "Utilisateurs" },
+  { href: "/settings/roles", label: "Gestion des rôles" },
+  { href: "/settings/general", label: "Paramètres généraux" },
+];
+
 type SidebarProps = {
   onLogout: () => void | Promise<void>;
 };
@@ -135,6 +145,10 @@ function cn(...classes: Array<string | false | null | undefined>) {
 
 function SidebarComponent({ onLogout }: SidebarProps) {
   const location = useLocation();
+  const { hasPermission, isAdmin } = useAccountAccess();
+  const links = settingsLinks.filter(({ href }) =>
+    href === "/settings/roles" ? isAdmin : !PAGE_PERMISSIONS[href] || hasPermission(PAGE_PERMISSIONS[href])
+  );
   const { unprocessedCount } = useMessageNotifications();
 
   const isSettingsRoute = location.pathname.startsWith("/settings");
@@ -169,7 +183,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
 
       <div className="px-5 pt-8">
         <nav className="space-y-2">
-          {navItems.map((item) => {
+          {navItems.filter(({ href }) => href === "/" || hasPermission(PAGE_PERMISSIONS[href])).map((item) => {
             const isActive =
               item.href === "/"
                 ? location.pathname === "/"
@@ -214,7 +228,7 @@ function SidebarComponent({ onLogout }: SidebarProps) {
           })}
 
           {/* PARAMÈTRES DROPDOWN */}
-          <div className="space-y-2">
+          {links.length > 0 && <div className="space-y-2">
             <button
               type="button"
               onClick={() => setSettingsOpen((prev) => !prev)}
@@ -246,44 +260,21 @@ function SidebarComponent({ onLogout }: SidebarProps) {
 
             {settingsOpen && (
               <div className="ml-6 space-y-1 border-l border-white/6 pl-3">
-                <Link
-                  to="/settings/rgpd"
-                  className={cn(
-                    "block rounded-xl px-3 py-2 text-sm transition",
-                    location.pathname === "/settings/rgpd"
-                      ? "bg-white/8 text-white"
-                      : "text-admin-text-soft hover:bg-white/5 hover:text-white"
-                  )}
-                >
-                  RGPD
-                </Link>
-
-                <Link
-                  to="/settings/users"
-                  className={cn(
-                    "block rounded-xl px-3 py-2 text-sm transition",
-                    location.pathname === "/settings/users"
-                      ? "bg-white/8 text-white"
-                      : "text-admin-text-soft hover:bg-white/5 hover:text-white"
-                  )}
-                >
-                  Utilisateurs
-                </Link>
-
-                <Link
-                  to="/settings/general"
-                  className={cn(
-                    "block rounded-xl px-3 py-2 text-sm transition",
-                    location.pathname === "/settings/general"
-                      ? "bg-white/8 text-white"
-                      : "text-admin-text-soft hover:bg-white/5 hover:text-white"
-                  )}
-                >
-                  Paramètre généraux
-                </Link>
+                {links.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    to={href}
+                    className={cn(
+                      "block rounded-xl px-3 py-2 text-sm transition",
+                      location.pathname === href ? "bg-white/8 text-white" : "text-admin-text-soft hover:bg-white/5 hover:text-white"
+                    )}
+                  >
+                    {label}
+                  </Link>
+                ))}
               </div>
             )}
-          </div>
+          </div>}
         </nav>
       </div>
 

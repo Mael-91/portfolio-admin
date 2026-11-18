@@ -8,10 +8,11 @@ import { LegalPreviewModal } from "../legal/LegalPreviewModal";
 
 type LegalEditorProps = {
   content: string;
+  editable?: boolean;
   onChange: (html: string) => void;
 };
 
-export function LegalEditor({ content, onChange }: LegalEditorProps) {
+export function LegalEditor({ content, onChange, editable = true }: LegalEditorProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const editor = useEditor({
@@ -25,6 +26,7 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
       }),
     ],
     content,
+    editable,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
@@ -64,6 +66,10 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
     }
   }, [content, editor]);
 
+  useEffect(() => {
+    editor?.setEditable(editable, false);
+  }, [editor, editable]);
+
   if (!editor) {
     return null;
   }
@@ -71,10 +77,10 @@ export function LegalEditor({ content, onChange }: LegalEditorProps) {
   return (
     <>
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-lg shadow-black/10">
-        <EditorToolbar
+        {editable && <EditorToolbar
           editor={editor}
           onPreview={() => setIsPreviewOpen(true)}
-        />
+        />}
 
         <div className="bg-white/[0.02]">
           <EditorContent editor={editor} />

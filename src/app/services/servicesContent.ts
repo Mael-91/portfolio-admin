@@ -33,27 +33,26 @@ export async function fetchServicesContent(serviceType: ServiceType) {
   }>(`${url.pathname}${url.search}`);
 }
 
-export async function saveServicesContent(payload: {
+type EditableFields = {
+  title: string;
+  bodyEnabled: boolean;
+  bodyHtml: string;
+  bulletsEnabled: boolean;
+  priceEnabled: boolean;
+  priceLabel: string;
+  bullets: string[];
+};
+
+export type ServicesChange = {
   serviceType: ServiceType;
-  introEnabled: boolean;
-  introHtml: string;
-  sectionEnabled: boolean;
-  cards: Array<{
-    id: number;
-    title: string;
-    bodyEnabled: boolean;
-    bodyHtml: string;
-    bulletsEnabled: boolean;
-    bullets: string[];
-    priceEnabled: boolean;
-    priceLabel: string;
-  }>;
-}) {
-  return apiFetch<{
-    success: true;
-    section: ServicesSection;
-    cards: ServiceCard[];
-  }>("/api/services-content", {
+  introEnabled?: boolean;
+  introHtml?: string;
+  sectionEnabled?: boolean;
+  cards: ({ id: number } & Partial<EditableFields>)[];
+};
+
+export function saveServicesContent(payload: ServicesChange) {
+  return apiFetch<{ success: true }>("/api/services-content", {
     method: "PUT",
     body: JSON.stringify(payload),
   });

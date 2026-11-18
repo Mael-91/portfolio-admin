@@ -1,3 +1,4 @@
+import { useAccountAccess } from "../context/AccountAccessContext";
 import { useEffect, useMemo, useState } from "react";
 import {
   fetchCurrentLegalDocument,
@@ -29,6 +30,10 @@ type LegalDocumentItem = {
 };
 
 export function LegalDocumentsPage() {
+  const { hasPermission } = useAccountAccess();
+  const canDraft = hasPermission("legal.draft");
+  const canPublish = hasPermission("legal.publish");
+  const canDownload = hasPermission("legal.download");
   const [types, setTypes] = useState<LegalTypeItem[]>([]);
   const [selectedType, setSelectedType] =
     useState<LegalDocumentType>("privacy_content");
@@ -184,7 +189,7 @@ export function LegalDocumentsPage() {
             </div>
           ) : (
             <>
-              <LegalEditor content={editorContent} onChange={setEditorContent} />
+              <LegalEditor content={editorContent} onChange={setEditorContent} editable={canDraft || canPublish} />
             </>
           )}
         </section>
@@ -241,6 +246,12 @@ export function LegalDocumentsPage() {
                     <div className="mt-1 text-admin-text-soft">
                       {new Date(item.published_at ?? item.created_at).toLocaleString("fr-FR")}
                     </div>
+                    {canDownload && (
+                      <a href={getLegalDownloadUrl(item.id)} target="_blank" rel="noreferrer"
+                        className="mt-2 inline-block text-admin-text-soft underline hover:text-white">
+                        Télécharger cette version
+                      </a>
+                    )}
                   </div>
                 ))
               )}
@@ -252,23 +263,23 @@ export function LegalDocumentsPage() {
             </p>
 
             <div className="mt-4 flex flex-col gap-3">
-              <Button variant="secondary" type="button"
+              {canDraft && <Button variant="secondary" type="button"
               onClick={handleSaveDraft}
               disabled={savingDraft || editorContent === currentDocument?.content_html}
               className="w-full text-left"
               >
                 {savingDraft ? "Enregistrement..." : "Enregistrer en brouillon"}
-              </Button>
-              <Button 
+              </Button>}
+              {canPublish && <Button
                 type="button"
                 onClick={() => setShowPublishModal(true)}
                 disabled={publishing}
                 className="w-full"
               >
                 Mettre à jour
-              </Button>
+              </Button>}
 
-              {currentDownloadId ? (
+              {canDownload && currentDownloadId ? (
                 <a
                   href={getLegalDownloadUrl(currentDownloadId)}
                   target="_blank"
@@ -295,7 +306,7 @@ export function LegalDocumentsPage() {
       </div>
 
       <ConfirmLegalPublishModal
-        isOpen={showPublishModal}
+        isOpen={canPublish && showPublishModal}
         onClose={() => setShowPublishModal(false)}
         onConfirm={handlePublish}
         isSubmitting={publishing}

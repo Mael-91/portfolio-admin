@@ -1,3 +1,4 @@
+import { apiFetch } from "../services/api";
 import {
   createContext,
   useContext,
@@ -14,6 +15,7 @@ type ContextType = {
   unprocessedCount: number;
   newMessagesCount: number;
   refreshSignal: number;
+  rgpdRefreshSignal: number;
   connectionStatus: "connecting" | "connected" | "disconnected";
   resetNewMessagesCount: () => void;
   refreshUnprocessedCount: () => Promise<void>;
@@ -23,8 +25,8 @@ const MessageNotificationsContext = createContext<ContextType | null>(null);
 
 type WsMessage =
   | {
-      type: "connected";
-      unprocessedCount: number;
+      type: "connected" | "message:count";
+      unprocessedCount?: number;
       timestamp: string;
     }
   | {
@@ -35,28 +37,29 @@ type WsMessage =
     }
   | {
       type: "rgpd:purge";
-      unprocessedCount: number;
       deletedCount: number;
       timestamp: string;
     };
 
 export function MessageNotificationsProvider({
   children,
+  enabled,
 }: {
   children: React.ReactNode;
+  enabled: boolean;
 }) {
   const { showToast } = useToast();
 
   const [unprocessedCount, setUnprocessedCount] = useState(0);
   const [newMessagesCount, setNewMessagesCount] = useState(0);
   const [refreshSignal, setRefreshSignal] = useState(0);
+  const [rgpdRefreshSignal, setRgpdRefreshSignal] = useState(0);
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "disconnected"
   >("connecting");
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<number | null>(null);
-  const isUnmountedRef = useRef(false);
   const previousCountRef = useRef<number | null>(null);
   const showToastRef = useRef(showToast);
   const lastRgpdToastKeyRef = useRef<string | null>(null);
@@ -87,12 +90,34 @@ export function MessageNotificationsProvider({
   }, [showToast]);
 
   useEffect(() => {
-    isUnmountedRef.current = false;
+    if (!enabled) return;
+    let cancelled = false;
+    const controller = new AbortController();
 
-    function connect() {
+    function retry() {
+      if (!cancelled) reconnectTimeoutRef.current = window.setTimeout(() => void connect(), 3000);
+    }
+
+    async function connect() {
       setConnectionStatus("connecting");
-
-      const ws = new WebSocket(env.websocketUrl);
+      let ws: WebSocket;
+      try {
+        const { ticket } = await apiFetch<{ ticket: string }>("/api/auth/ws-ticket", {
+          method: "POST",
+          signal: controller.signal,
+        });
+        if (cancelled) return;
+        ws = new WebSocket(env.websocketUrl, ["rbac-v1", `ticket.${ticket}`]);
+      } catch (error) {
+        if (cancelled) return;
+        setConnectionStatus("disconnected");
+        if (error instanceof Error && "status" in error && error.status === 403) {
+          window.dispatchEvent(new Event("admin-access-changed"));
+        } else {
+          retry();
+        }
+        return;
+      }
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -103,10 +128,13 @@ export function MessageNotificationsProvider({
         try {
           const data: WsMessage = JSON.parse(event.data);
 
-          if (data.type === "connected") {
-            previousCountRef.current = data.unprocessedCount;
-            setUnprocessedCount(data.unprocessedCount);
-            setNewMessagesCount(0);
+          if (data.type === "connected" || data.type === "message:count") {
+            if (data.unprocessedCount !== undefined) {
+              previousCountRef.current = data.unprocessedCount;
+              setUnprocessedCount(data.unprocessedCount);
+            }
+            if (data.type === "connected") setNewMessagesCount(0);
+            setRefreshSignal((value) => value + 1);
             return;
           }
 
@@ -143,17 +171,8 @@ export function MessageNotificationsProvider({
           }
 
           if (data.type === "rgpd:purge") {
-            previousCountRef.current = data.unprocessedCount;
-
-            setUnprocessedCount((prev) => {
-              if (prev !== data.unprocessedCount) {
-                setRefreshSignal((value) => value + 1);
-                return data.unprocessedCount;
-              }
-              return prev;
-            });
-
-            const toastKey = `${data.timestamp}:${data.deletedCount}:${data.unprocessedCount}`;
+            setRgpdRefreshSignal((value) => value + 1);
+            const toastKey = `${data.timestamp}:${data.deletedCount}`;
 
             if (lastRgpdToastKeyRef.current !== toastKey) {
               lastRgpdToastKeyRef.current = toastKey;
@@ -175,16 +194,17 @@ export function MessageNotificationsProvider({
         }
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        if (cancelled) return;
         setConnectionStatus("disconnected");
 
-        if (isUnmountedRef.current) {
-          return;
+        if (event.code === 1008 || event.code === 4001) {
+          previousCountRef.current = null;
+          setUnprocessedCount(0);
+          setNewMessagesCount(0);
+          window.dispatchEvent(new Event("admin-access-changed"));
         }
-
-        reconnectTimeoutRef.current = window.setTimeout(() => {
-          connect();
-        }, 3000);
+        retry();
       };
 
       ws.onerror = () => {
@@ -192,10 +212,11 @@ export function MessageNotificationsProvider({
       };
     }
 
-    connect();
+    void connect();
 
     return () => {
-      isUnmountedRef.current = true;
+      cancelled = true;
+      controller.abort();
 
       if (reconnectTimeoutRef.current) {
         window.clearTimeout(reconnectTimeoutRef.current);
@@ -203,13 +224,14 @@ export function MessageNotificationsProvider({
 
       wsRef.current?.close();
     };
-  }, []);
+  }, [enabled]);
 
   const value = useMemo(
   () => ({
     unprocessedCount,
     newMessagesCount,
     refreshSignal,
+    rgpdRefreshSignal,
     connectionStatus,
     resetNewMessagesCount,
     refreshUnprocessedCount,
@@ -218,6 +240,7 @@ export function MessageNotificationsProvider({
     unprocessedCount,
     newMessagesCount,
     refreshSignal,
+    rgpdRefreshSignal,
     connectionStatus,
   ]
 );
